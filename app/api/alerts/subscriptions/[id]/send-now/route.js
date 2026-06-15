@@ -1,6 +1,7 @@
 import { agencyKey, errorResponse, json } from "../../../../_lib/http";
 import { extractJobItems, normalizeJob, searchJobs } from "../../../../_lib/ba";
 import { getSubscription, recordDelivery } from "../../../../_lib/store";
+import { buildDigestHtml, sendEmail } from "../../../../_lib/email";
 
 export const runtime = "nodejs";
 
@@ -16,15 +17,21 @@ export async function POST(request, { params }) {
     });
     const rows = extractJobItems(payload).map(normalizeJob);
     const subject = `${rows.length} neue BA-Stellenangebote: ${subscription.keyword} in ${subscription.location}`;
-    await recordDelivery(subscription, agency.email, subject, "dry_run");
+    const delivery = await sendEmail({
+      to: agency.email,
+      subject,
+      html: buildDigestHtml({ agency, subscription, rows }),
+    });
+    await recordDelivery(subscription, agency.email, subject, delivery.status);
 
     return json({
       subscription_id: subscription.id,
       recipient: agency.email,
       job_count: rows.length,
-      sent: false,
-      dry_run: true,
-      delivery_status: "dry_run",
+      sent: delivery.status === "sent",
+      dry_run: delivery.status === "dry_run",
+      delivery_status: delivery.status,
+      provider_id: delivery.providerId,
     });
   } catch (error) {
     return errorResponse(error);
