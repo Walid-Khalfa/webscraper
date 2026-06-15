@@ -1,154 +1,89 @@
-# Emploi Agences App
+# Emploi Agences App (Unified Next.js Portal)
 
-Search German Federal Employment Agency job offers through the public job board API and export matching results as CSV.
+Search German Federal Employment Agency job offers through the public job board API, view normalized salary ranges, and export matching results as CSV.
 
-The current public Jobsuche frontend uses:
+This project is a unified **Next.js 14 App Router** application hosting both the interactive React dashboard and its Node.js API endpoints.
 
-```text
-https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v6/jobs
-```
+---
 
-with the public frontend header:
+## Technical Features
 
-```text
-X-API-Key: jobboerse-jobsuche
-```
+1. **Job Search & Normalization:** Connects to the public Bundesagentur für Arbeit API with a robust fallback mechanism (supports OAuth and public key API headers). Standardizes response fields, normalizes salary indications to standard Euros (EUR), and handles paging and location filtering.
+2. **CSV Export:** Fetches up to 200 jobs across two pages and packages them into a clean, downloadable CSV format with UTF-8 encoding.
+3. **SaaS Agency Alerts:** Allows recruitment agencies to:
+   - Create a local workspace and obtain an agency API key (`X-Agency-Key`).
+   - Subscribe to search criteria (keyword, location, frequency).
+   - Receive a daily digest of new matching job offers via email.
+4. **Cron Job / Scheduler:** Includes an automated endpoint to trigger digests for all active agency subscriptions.
 
-## Create The Project Structure
+---
 
-```powershell
-mkdir emploi-agences-app
-cd emploi-agences-app
-mkdir backend\app\api, backend\app\models, backend\app\services, backend\app\db, backend\tests
-npm create vite@latest frontend -- --template react
-```
+## Getting Started
 
-This workspace already contains the generated application under `backend/` and `frontend/`.
+### Prerequisites
 
-## Backend Setup
+- [Node.js](https://nodejs.org/) (v18.x or v20.x recommended)
 
-Use Python 3.11 for the pinned dependency set.
+### Local Development
 
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-Copy-Item .env.example .env
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
+1. **Install dependencies:**
+   ```powershell
+   npm install
+   ```
 
-Health check:
+2. **Configure environment variables:**
+   Create a `.env.local` file in the root directory (optional, only needed if configuring official BA OAuth, Resend, or Cron security):
+   ```text
+   # Bundesagentur für Arbeit API (Optional OAuth - falls vorhanden)
+   BA_CLIENT_ID=
+   BA_CLIENT_SECRET=
+   BA_TOKEN_URL=
 
-```text
-http://localhost:8000/health
-```
+   # SSL verification fallback (set to false if local certs block public BA API)
+   BA_API_VERIFY_SSL=true
 
-Swagger UI:
+   # Email service (Resend API)
+   RESEND_API_KEY=
+   EMAIL_FROM=BA Job Agent <jobs@example.com>
 
-```text
-http://localhost:8000/docs
-```
+   # Cron authentication secret
+   CRON_SECRET=my_secret_cron_passphrase
+   ```
 
-Search endpoint:
+3. **Start the development server:**
+   ```powershell
+   npm run dev
+   ```
 
-```text
-http://localhost:8000/api/jobs/search?keyword=Softwareentwickler&location=Berlin&page=1&size=25
-```
+4. **Open the browser:**
+   Go to [http://localhost:3000](http://localhost:3000). The app is localized in German.
 
-CSV export endpoint:
+---
 
-```text
-http://localhost:8000/api/jobs/export/csv?keyword=Softwareentwickler&location=Berlin
-```
+## API Documentation
 
-## SaaS Agency Alerts
+### 1. Job Search
+- **Endpoint:** `GET /api/jobs/search`
+- **Params:** `keyword` (e.g. `Softwareentwickler`), `location` (e.g. `Berlin`), `page`, `size`, `exactLocation` (boolean)
+- **Response:** JSON payload of normalized search results.
 
-The SaaS layer lets each employment agency create an isolated workspace, store search subscriptions, and receive updated offers by email.
+### 2. Export CSV
+- **Endpoint:** `GET /api/jobs/export/csv`
+- **Params:** `keyword`, `location`, `exactLocation`
+- **Response:** `text/csv` stream with a dynamically named attachment.
 
-Local email delivery is safe by default. If SMTP variables are empty, the backend records a dry-run delivery instead of sending a real email.
+### 3. Agencies & Alert Subscriptions
+- **Create Agency Workspace:** `POST /api/agencies`
+  - Body: `{"name": "Agency Name", "email": "agency@example.com", "plan": "starter"}`
+  - Returns: `{"api_key": "emp_..."}` (required for X-Agency-Key header).
+- **Create Alert Subscription:** `POST /api/alerts/subscriptions`
+  - Header: `X-Agency-Key: emp_...`
+  - Body: `{"keyword": "Softwareentwickler", "location": "Berlin", "frequency": "daily", "max_results": 25}`
+- **Trigger Digest Immediately:** `POST /api/alerts/subscriptions/:id/send-now`
+  - Header: `X-Agency-Key: emp_...`
+  - Delivers (or dry-runs) a custom HTML email digest with the top matching offers.
 
-SMTP environment variables:
-
-```text
-SMTP_HOST=
-SMTP_PORT=587
-SMTP_USERNAME=
-SMTP_PASSWORD=
-SMTP_FROM_EMAIL=
-SMTP_USE_TLS=true
-BA_API_VERIFY_SSL=true
-```
-
-If your local Windows/corporate certificate store blocks the public BA API during a demo, set `BA_API_VERIFY_SSL=false` locally only. Keep it `true` in production.
-
-Create an agency workspace:
-
-```powershell
-curl -X POST http://localhost:8000/api/agencies `
-  -H "Content-Type: application/json" `
-  -d '{"name":"Berlin Talent Partners","email":"agency@example.com","plan":"starter"}'
-```
-
-The response includes an `api_key`. Store it securely. Use it as `X-Agency-Key` for agency-scoped alert endpoints.
-
-Create a daily search subscription:
-
-```powershell
-curl -X POST http://localhost:8000/api/alerts/subscriptions `
-  -H "Content-Type: application/json" `
-  -H "X-Agency-Key: emp_your_key_here" `
-  -d '{"keyword":"Softwareentwickler","location":"Berlin","frequency":"daily","max_results":25}'
-```
-
-List subscriptions:
-
-```powershell
-curl http://localhost:8000/api/alerts/subscriptions `
-  -H "X-Agency-Key: emp_your_key_here"
-```
-
-Send a digest immediately:
-
-```powershell
-curl -X POST http://localhost:8000/api/alerts/subscriptions/1/send-now `
-  -H "X-Agency-Key: emp_your_key_here"
-```
-
-For production scheduling, call the digest endpoint from Railway Cron, GitHub Actions, or another managed scheduler. Keep SMTP credentials in environment variables, not in source code.
-
-## Frontend Setup
-
-```powershell
-cd frontend
-npm install
-npm install axios lucide-react
-npm run dev
-```
-
-Open:
-
-```text
-http://localhost:5173
-```
-
-For production builds, set the API base URL without changing code:
-
-```powershell
-$env:VITE_API_BASE_URL="https://your-backend.example.com/api/jobs"
-npm run build
-```
-
-## Deployment
-
-Railway/Vercel deployment files are included:
-
-```text
-backend/railway.json
-backend/Procfile
-backend/runtime.txt
-frontend/vercel.json
-frontend/.env.production.example
-```
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for the exact Railway and Vercel steps.
+### 4. Scheduler / Cron
+- **Endpoint:** `GET /api/cron/agents`
+- **Headers:** `Authorization: Bearer <CRON_SECRET>` (if `CRON_SECRET` is configured in env)
+- **Action:** Iterates through all active subscriptions, executes queries, compiles digests, sends emails, and registers delivery statuses in the store.
