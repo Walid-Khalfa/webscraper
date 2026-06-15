@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 
 export async function GET(request) {
   try {
-    return json(listSubscriptions(agencyKey(request)));
+    return json(await listSubscriptions(agencyKey(request)));
   } catch (error) {
     return errorResponse(error);
   }
@@ -19,7 +19,7 @@ export async function POST(request) {
       error.status = 400;
       throw error;
     }
-    return json(createSubscription(agencyKey(request), payload), 201);
+    return json(await createSubscription(agencyKey(request), payload), 201);
   } catch (error) {
     return errorResponse(error);
   }

@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 
 export async function GET(request) {
   try {
-    return json(getAgency(agencyKey(request)));
+    return json(await getAgency(agencyKey(request)));
   } catch (error) {
     return errorResponse(error);
   }

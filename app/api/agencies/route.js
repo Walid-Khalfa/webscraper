@@ -11,7 +11,7 @@ export async function POST(request) {
       error.status = 400;
       throw error;
     }
-    return json(createAgency(payload), 201);
+    return json(await createAgency(payload), 201);
   } catch (error) {
     return errorResponse(error);
   }

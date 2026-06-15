@@ -1,0 +1,51 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Agency {
+  id             Int                  @id @default(autoincrement())
+  name           String
+  email          String               @unique
+  plan           String               @default("starter")
+  apiKeyHash     String               @unique @map("api_key_hash")
+  isActive       Boolean              @default(true) @map("is_active")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  subscriptions  SearchSubscription[]
+
+  @@map("agencies")
+}
+
+model SearchSubscription {
+  id          Int             @id @default(autoincrement())
+  agencyId    Int             @map("agency_id")
+  keyword     String
+  location    String
+  frequency   String          @default("daily")
+  maxResults  Int             @default(25) @map("max_results")
+  isActive    Boolean         @default(true) @map("is_active")
+  lastSentAt  DateTime?       @map("last_sent_at")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  agency      Agency          @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  deliveries  EmailDelivery[]
+
+  @@map("search_subscriptions")
+}
+
+model EmailDelivery {
+  id             Int                @id @default(autoincrement())
+  subscriptionId Int                @map("subscription_id")
+  recipientEmail String             @map("recipient_email")
+  subject        String
+  status         String             @default("pending")
+  errorMessage   String?            @map("error_message")
+  sentAt         DateTime?          @map("sent_at")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  subscription   SearchSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@map("email_deliveries")
+}

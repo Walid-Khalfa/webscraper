@@ -66,7 +66,7 @@ export async function GET(request) {
       throw error;
     }
 
-    const jobs = listAllAgencySubscriptions();
+    const jobs = await listAllAgencySubscriptions();
     const results = [];
 
     for (const { agency, subscription } of jobs) {
@@ -86,7 +86,7 @@ export async function GET(request) {
           subject,
           html: buildDigestHtml({ agency, subscription, rows }),
         });
-        recordDelivery(subscription, agency.email, subject, status);
+        await recordDelivery(subscription, agency.email, subject, status);
         results.push({ subscription_id: subscription.id, status, job_count: rows.length });
       } catch (error) {
         results.push({ subscription_id: subscription.id, status: "failed", error: error.message });

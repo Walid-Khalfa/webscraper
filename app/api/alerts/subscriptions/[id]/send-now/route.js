@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export async function POST(request, { params }) {
   try {
     const { id } = await params;
-    const { agency, subscription } = getSubscription(agencyKey(request), id);
+    const { agency, subscription } = await getSubscription(agencyKey(request), id);
     const payload = await searchJobs({
       keyword: subscription.keyword,
       location: subscription.location,
@@ -16,7 +16,7 @@ export async function POST(request, { params }) {
     });
     const rows = extractJobItems(payload).map(normalizeJob);
     const subject = `${rows.length} neue BA-Stellenangebote: ${subscription.keyword} in ${subscription.location}`;
-    recordDelivery(subscription, agency.email, subject, "dry_run");
+    await recordDelivery(subscription, agency.email, subject, "dry_run");
 
     return json({
       subscription_id: subscription.id,
