@@ -1,0 +1,223 @@
+const PUBLIC_SEARCH_URL = "https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v6/jobs";
+
+const BA_HEADERS = {
+  Accept: "application/json, text/plain, */*",
+  Origin: "https://www.arbeitsagentur.de",
+  Referer: "https://www.arbeitsagentur.de/jobsuche/",
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36",
+  "X-API-Key": "jobboerse-jobsuche",
+};
+
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const responseCache = globalThis.__baSearchCache ?? new Map();
+globalThis.__baSearchCache = responseCache;
+
+let oauthToken = globalThis.__baOauthToken ?? null;
+
+async function getOAuthToken() {
+  const clientId = process.env.BA_CLIENT_ID;
+  const clientSecret = process.env.BA_CLIENT_SECRET;
+  const tokenUrl = process.env.BA_TOKEN_URL;
+
+  if (!clientId || !clientSecret || !tokenUrl) return null;
+  if (oauthToken?.accessToken && oauthToken.expiresAt > Date.now() + 30_000) return oauthToken.accessToken;
+
+  const body = new URLSearchParams({
+    grant_type: "client_credentials",
+    client_id: clientId,
+    client_secret: clientSecret,
+  });
+  const response = await fetch(tokenUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`BA OAuth token request failed with ${response.status}`);
+  }
+
+  const payload = await response.json();
+  oauthToken = {
+    accessToken: payload.access_token,
+    expiresAt: Date.now() + Math.max(Number(payload.expires_in || 300) - 30, 30) * 1000,
+  };
+  globalThis.__baOauthToken = oauthToken;
+  return oauthToken.accessToken;
+}
+
+async function getBaHeaders() {
+  const token = await getOAuthToken();
+  if (!token) return BA_HEADERS;
+
+  const { "X-API-Key": _apiKey, ...headers } = BA_HEADERS;
+  return {
+    ...headers,
+    Authorization: `Bearer ${token}`,
+  };
+}
+
+function clonePayload(payload) {
+  return JSON.parse(JSON.stringify(payload));
+}
+
+export async function searchJobs({ keyword, location, page = 1, size = 25 }) {
+  const params = new URLSearchParams({
+    page: String(Math.max(Number(page) || 1, 1)),
+    size: String(Math.min(Math.max(Number(size) || 25, 1), 100)),
+  });
+
+  if (keyword) params.set("was", keyword);
+  if (location) params.set("wo", location);
+
+  const url = `${PUBLIC_SEARCH_URL}?${params.toString()}`;
+  const cached = responseCache.get(url);
+  if (cached && cached.expiresAt > Date.now()) return clonePayload(cached.payload);
+
+  let response = await fetch(url, {
+    headers: await getBaHeaders(),
+    cache: "no-store",
+  });
+
+  if (response.status === 401 && oauthToken) {
+    oauthToken = null;
+    globalThis.__baOauthToken = null;
+    response = await fetch(url, {
+      headers: await getBaHeaders(),
+      cache: "no-store",
+    });
+  }
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Bundesagentur API returned ${response.status}: ${text.slice(0, 180)}`);
+  }
+
+  const payload = await response.json();
+  responseCache.set(url, { payload, expiresAt: Date.now() + CACHE_TTL_MS });
+  return clonePayload(payload);
+}
+
+export function extractJobItems(payload) {
+  if (Array.isArray(payload)) return payload.filter((item) => item && typeof item === "object");
+  if (!payload || typeof payload !== "object") return [];
+
+  const keys = ["ergebnisliste", "stellenangebote", "angebote", "jobs", "items", "results", "content", "data"];
+  for (const key of keys) {
+    const value = payload[key];
+    if (Array.isArray(value)) return value.filter((item) => item && typeof item === "object");
+    if (value && typeof value === "object") {
+      const nested = extractJobItems(value);
+      if (nested.length) return nested;
+    }
+  }
+
+  return Object.values(payload).reduce((best, value) => {
+    const nested = extractJobItems(value);
+    return nested.length > best.length ? nested : best;
+  }, []);
+}
+
+function valueAt(item, paths) {
+  for (const path of paths) {
+    let current = item;
+    for (const part of path.split(".")) {
+      if (Array.isArray(current)) {
+        current = current
+          .map((entry) => (entry && typeof entry === "object" ? entry[part] : undefined))
+          .filter((value) => value !== undefined && value !== null && value !== "");
+      } else {
+        current = current && typeof current === "object" ? current[part] : undefined;
+      }
+      if (current === undefined || current === null) break;
+    }
+    if (current !== undefined && current !== null && current !== "") return current;
+  }
+  return "";
+}
+
+function flatten(value) {
+  if (!value) return "";
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number") return String(value);
+  if (Array.isArray(value)) return value.map(flatten).filter(Boolean).join(", ");
+  if (typeof value === "object") {
+    const preferred = ["name", "bezeichnung", "ort", "plz", "strasse", "region"];
+    const parts = preferred.map((key) => flatten(value[key])).filter(Boolean);
+    return parts.length ? parts.join(", ") : Object.values(value).map(flatten).filter(Boolean).join(", ");
+  }
+  return String(value);
+}
+
+function formatEuro(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "";
+  return new Intl.NumberFormat("de-DE", {
+    maximumFractionDigits: number % 1 === 0 ? 0 : 2,
+    style: "currency",
+    currency: "EUR",
+  }).format(number);
+}
+
+function normalizeSalary(item) {
+  const type = valueAt(item, ["verguetungsangabe"]);
+  const fixed = valueAt(item, ["festgehalt"]);
+  const from = valueAt(item, ["gehaltsspanneVon"]);
+  const to = valueAt(item, ["gehaltsspanneBis"]);
+  const unit = String(type || valueAt(item, ["artDerVerguetung"]) || "").toLocaleLowerCase("de-DE");
+  const suffix = unit.includes("stunde") ? "/Std." : unit.includes("jahr") ? "/Jahr" : "";
+
+  if (from || to) return `${from ? formatEuro(from) : ""}${from && to ? " - " : ""}${to ? formatEuro(to) : ""} ${suffix}`.trim();
+  if (fixed) return `${formatEuro(fixed)} ${suffix}`.trim();
+  return "Keine Gehaltsangabe";
+}
+
+export function normalizeJob(item) {
+  const reference = valueAt(item, ["referenznummer", "refnr", "refNr", "reference", "id", "hashId", "stellenangebotsId"]);
+  const title = valueAt(item, ["titel", "title", "stellenangebotsTitel", "stellenbezeichnung", "beruf", "jobtitel"]);
+  const employer = valueAt(item, ["arbeitgeber", "arbeitgebername", "firma", "unternehmen", "company", "betrieb.name"]);
+  const location = valueAt(item, ["arbeitsort", "arbeitsorte", "stellenlokationen.adresse.ort", "ort", "standort", "adresse.ort"]);
+  const postalCode = valueAt(item, ["plz", "postleitzahl", "stellenlokationen.adresse.plz", "arbeitsort.plz", "adresse.plz"]);
+  const occupation = valueAt(item, ["beruf", "berufsbezeichnung", "hauptberuf", "occupation", "berufsfeld", "branche"]);
+  const url = flatten(valueAt(item, ["url", "link", "externeURL", "stellenangebotUrl", "detailUrl", "externalUrl"]));
+  const referenceText = flatten(reference);
+
+  return {
+    Referenz: referenceText,
+    Titel: flatten(title),
+    Arbeitgeber: flatten(employer),
+    Ort: flatten(location),
+    Postleitzahl: flatten(postalCode),
+    Gehalt: normalizeSalary(item),
+    Beruf: flatten(occupation),
+    URL: url || (referenceText ? `https://www.arbeitsagentur.de/jobsuche/jobdetail/${referenceText}` : ""),
+  };
+}
+
+function normalizeLocationName(value) {
+  return String(value || "")
+    .trim()
+    .toLocaleLowerCase("de-DE");
+}
+
+export function filterJobsByExactLocation(items, location) {
+  const expectedLocation = normalizeLocationName(location);
+  if (!expectedLocation) return items;
+
+  return items.filter((item) => {
+    const normalized = normalizeJob(item);
+    return normalizeLocationName(normalized.Ort) === expectedLocation;
+  });
+}
+
+export function toCsv(rows) {
+  const headers = ["Referenz", "Titel", "Arbeitgeber", "Ort", "Postleitzahl", "Gehalt", "Beruf", "URL"];
+  const escapeCell = (value) => {
+    const text = String(value ?? "");
+    return /[";\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+  };
+  const lines = [headers.join(";"), ...rows.map((row) => headers.map((header) => escapeCell(row[header])).join(";"))];
+  return `\uFEFF${lines.join("\r\n")}`;
+}
