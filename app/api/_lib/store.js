@@ -157,6 +157,15 @@ export async function getSubscription(apiKey, id) {
   };
 }
 
+export async function deactivateSubscription(id) {
+  const subscription = await prisma.searchSubscription.update({
+    where: { id: Number(id) },
+    data: { isActive: false },
+  });
+
+  return mapSubscription(subscription);
+}
+
 export async function recordDelivery(subscription, recipient, subject, status, errorMessage = null) {
   const now = new Date();
 

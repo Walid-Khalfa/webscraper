@@ -486,6 +486,7 @@ export default function Home() {
                     <span>Ort</span>
                     <input value={alertForm.location} onChange={(event) => setAlertForm({ ...alertForm, location: event.target.value })} />
                   </label>
+                  <p className="form-hint">E-Mail-Agenten verwenden immer den exakten Ort, damit keine umliegenden Gemeinden in die Zusammenfassung geraten.</p>
                   <button className="secondary-action" type="submit" disabled={saasLoading || !agency}>
                     <Plus size={19} />
                     Benachrichtigung anlegen

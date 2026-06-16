@@ -565,6 +565,14 @@ button:disabled {
   font-size: 1.1rem;
 }
 
+.form-hint {
+  margin: -2px 0 2px;
+  color: var(--steel);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .api-key-box {
   display: grid;
   gap: 8px;

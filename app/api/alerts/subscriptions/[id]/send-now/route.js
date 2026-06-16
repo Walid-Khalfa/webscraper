@@ -1,5 +1,5 @@
 import { agencyKey, errorResponse, json } from "../../../../_lib/http";
-import { extractJobItems, normalizeJob, searchJobs } from "../../../../_lib/ba";
+import { extractJobItems, filterJobsByExactLocation, normalizeJob, searchJobs } from "../../../../_lib/ba";
 import { getSubscription, recordDelivery } from "../../../../_lib/store";
 import { buildDigestHtml, sendEmail } from "../../../../_lib/email";
 
@@ -15,7 +15,7 @@ export async function POST(request, { params }) {
       page: 1,
       size: subscription.max_results,
     });
-    const rows = extractJobItems(payload).map(normalizeJob);
+    const rows = filterJobsByExactLocation(extractJobItems(payload), subscription.location).map(normalizeJob);
     const subject = `${rows.length} neue BA-Stellenangebote: ${subscription.keyword} in ${subscription.location}`;
     const delivery = await sendEmail({
       to: agency.email,
