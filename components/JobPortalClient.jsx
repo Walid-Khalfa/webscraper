@@ -890,6 +890,16 @@ export default function Home() {
             ))}
           </div>
         </section>
+
+        <footer className="site-footer" aria-label="KhalfaJobs Branding">
+          <p className="site-footer-title">Entwickelt von Walid Khalfa</p>
+          <div className="site-footer-links">
+            <a href="mailto:walid@khalfajobs.me">walid@khalfajobs.me</a>
+            <a href="https://wa.me/21653097624" target="_blank" rel="noreferrer">
+              WhatsApp: +216 53 097 624
+            </a>
+          </div>
+        </footer>
       </section>
     </main>
   );
