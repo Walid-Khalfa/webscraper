@@ -28,15 +28,15 @@ export default function JobCard({ job }) {
         <MapPin size={18} aria-hidden="true" />
         <span>{job.location}</span>
       </div>
-      <div className={`meta-line salary-line${job.salary === "Keine Gehaltsangabe" ? " muted-salary" : ""}`}>
+      <div className={`meta-line salary-line${job.salary === "Keine Verguetung angegeben" ? " muted-salary" : ""}`}>
         <WalletCards size={18} aria-hidden="true" />
-        <span>{job.salary || "Keine Gehaltsangabe"}</span>
+        <span>{job.salary || "Keine Verguetung angegeben"}</span>
       </div>
       <div className="job-card-footer">
         {job.occupation ? <p className="occupation">{job.occupation}</p> : <span />}
         {job.url ? (
-          <a className="apply-link" href={job.url} target="_blank" rel="noopener noreferrer" aria-label={`${job.title} bewerben`}>
-            Bewerben
+          <a className="apply-link" href={job.url} target="_blank" rel="noopener noreferrer" aria-label={`${job.title} bei der Quelle oeffnen`}>
+            Zur Stelle
           </a>
         ) : null}
       </div>

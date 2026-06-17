@@ -125,7 +125,7 @@ function normalizeSalary(item) {
 
   if (from || to) return `${from ? formatEuro(from) : ""}${from && to ? " - " : ""}${to ? formatEuro(to) : ""} ${suffix}`.trim();
   if (fixed) return `${formatEuro(fixed)} ${suffix}`.trim();
-  return "Keine Gehaltsangabe";
+  return "Keine Verguetung angegeben";
 }
 
 function normalizeJob(item) {
@@ -138,9 +138,9 @@ function normalizeJob(item) {
   const referenceText = flatten(reference);
   return {
     reference: referenceText,
-    title: flatten(title) || "Stellenangebot ohne Titel",
-    employer: flatten(employer) || "Arbeitgeber nicht angegeben",
-    location: flatten(location) || "Ort nicht angegeben",
+    title: flatten(title) || "Stellenprofil ohne Titel",
+    employer: flatten(employer) || "Arbeitgeber nicht genannt",
+    location: flatten(location) || "Standort nicht genannt",
     occupation: flatten(occupation),
     salary: normalizeSalary(item),
     url: url || (referenceText ? `https://www.arbeitsagentur.de/jobsuche/jobdetail/${referenceText}` : ""),
@@ -256,20 +256,20 @@ export default function Home() {
   const trustItems = useMemo(
     () => [
       {
-        label: "Live-API",
+        label: "Datenquelle",
         value: "Bundesagentur fuer Arbeit",
       },
       {
-        label: "Aktuelle Treffer",
-        value: hasSearched ? `${totalResults || jobs.length} Ergebnisse` : "Suche starten",
+        label: "Suchstatus",
+        value: hasSearched ? `${totalResults || jobs.length} Treffer verfuergbar` : "Bereit fuer Ihre Recherche",
       },
       {
         label: "Aktualisierung",
         value: formatLastUpdated(lastSearchAt),
       },
       {
-        label: "Fuer Recruiting-Teams",
-        value: "CSV-Export und Job-Alarm",
+        label: "Recruiting-Tools",
+        value: "CSV-Export und Job-Alarme",
       },
     ],
     [hasSearched, jobs.length, lastSearchAt, totalResults],
@@ -329,7 +329,7 @@ export default function Home() {
     setError("");
     setHasSearched(true);
     setPage(1);
-    pushToast("loading", "Suche laeuft...", true);
+    pushToast("loading", "Suchergebnisse werden geladen...", true);
     try {
       const params = new URLSearchParams({ keyword, location, page: "1", size: "25", exactLocation: String(exactLocation) });
       const shareParams = new URLSearchParams({ keyword, location, exactLocation: String(exactLocation) });
@@ -338,7 +338,7 @@ export default function Home() {
       setPayload(result);
       setLastSearchAt(Date.now());
       const count = extractJobs(result).length;
-      pushToast(count ? "success" : "success", count ? `${count} Stellenangebote gefunden` : "Keine passenden Stellenangebote gefunden");
+      pushToast(count ? "success" : "success", count ? `${count} relevante Stellenangebote geladen` : "Keine passenden Stellenangebote gefunden");
     } catch (err) {
       setPayload(null);
       const message = getErrorMessage(err, "Suche");
@@ -353,7 +353,7 @@ export default function Home() {
     const nextPage = page + 1;
     setLoadingMore(true);
     setError("");
-    pushToast("loading", "Weitere Stellenangebote werden geladen...", true);
+    pushToast("loading", "Weitere Treffer werden geladen...", true);
     try {
       const params = new URLSearchParams({ keyword, location, page: String(nextPage), size: "25", exactLocation: String(exactLocation) });
       const result = await requestJson(`/api/jobs/search?${params.toString()}`);
@@ -361,7 +361,7 @@ export default function Home() {
       setPayload((current) => mergePayload(current, result));
       setPage(nextPage);
       setLastSearchAt(Date.now());
-      pushToast(nextCount ? "success" : "success", nextCount ? `${nextCount} weitere Stellenangebote geladen` : "Keine weiteren Stellenangebote gefunden");
+      pushToast(nextCount ? "success" : "success", nextCount ? `${nextCount} weitere Treffer geladen` : "Keine weiteren Treffer gefunden");
     } catch (err) {
       const message = getErrorMessage(err, "Suche");
       setError(message);
@@ -382,7 +382,7 @@ export default function Home() {
     try {
       const params = new URLSearchParams({ keyword, location, exactLocation: String(exactLocation) });
       const response = await fetch(`/api/jobs/export/csv?${params.toString()}`);
-      if (!response.ok) throw new Error((await response.json()).detail || "CSV-Export fehlgeschlagen");
+      if (!response.ok) throw new Error((await response.json()).detail || "CSV-Export konnte nicht erstellt werden");
       const safeKeyword = (keyword || "alle").trim().replace(/\s+/g, "-");
       const safeLocation = (location || "deutschland").trim().replace(/\s+/g, "-");
       downloadBlob(await response.blob(), `stellenangebote-${safeKeyword}-${safeLocation}.csv`);
@@ -415,7 +415,7 @@ export default function Home() {
       });
       setAgency(created);
       localStorage.setItem("agencyProfile", JSON.stringify(created));
-      setSaasStatus("Agentur-Arbeitsbereich erstellt.");
+      setSaasStatus("Der Agentur-Zugang wurde erfolgreich eingerichtet.");
       trackEvent("agency_created", {
         plan: created.plan,
       });
@@ -430,7 +430,7 @@ export default function Home() {
     localStorage.removeItem("agencyProfile");
     setAgency(null);
     setSubscriptions([]);
-    setSaasStatus("Lokaler Agentur-Arbeitsbereich wurde aus diesem Browser entfernt.");
+      setSaasStatus("Der lokale Agentur-Zugang wurde aus diesem Browser entfernt.");
   }
 
   function normalizeSubscriptionText(value) {
@@ -449,7 +449,7 @@ export default function Home() {
   async function handleCreateAlert(event) {
     event.preventDefault();
     if (!agency?.api_key) {
-      setSaasStatus("Erstellen Sie zuerst einen Agentur-Arbeitsbereich, bevor Sie E-Mail-Benachrichtigungen anlegen.");
+      setSaasStatus("Richten Sie zuerst einen Agentur-Zugang ein, bevor Sie einen Job-Alarm anlegen.");
       return;
     }
     setSaasLoading(true);
@@ -461,13 +461,13 @@ export default function Home() {
         body: JSON.stringify(alertForm),
       });
       await refreshSubscriptions(agency.api_key);
-      setSaasStatus("E-Mail-Benachrichtigung erstellt. Sie kann jetzt manuell oder per geplantem Job ausgefuehrt werden.");
+      setSaasStatus("Der Job-Alarm wurde eingerichtet und kann ab sofort genutzt werden.");
       trackEvent("agency_alert_created", {
         keyword: alertForm.keyword,
         location: alertForm.location,
       });
     } catch (err) {
-      setSaasStatus(getErrorMessage(err, "Benachrichtigungserstellung"));
+      setSaasStatus(getErrorMessage(err, "Einrichtung des Job-Alarms"));
     } finally {
       setSaasLoading(false);
     }
@@ -484,8 +484,8 @@ export default function Home() {
       await refreshSubscriptions(agency.api_key);
       setSaasStatus(
         result.dry_run
-          ? `Zusammenfassung fuer ${result.recipient} vorbereitet. Konfigurieren Sie SMTP, um echte E-Mails zu versenden.`
-          : `Zusammenfassung mit ${result.job_count} Stellenangeboten an ${result.recipient} gesendet.`,
+          ? `Die Zusammenfassung fuer ${result.recipient} wurde vorbereitet. Hinterlegen Sie einen Mail-Dienst, um reale Zustellungen zu aktivieren.`
+          : `Die Zusammenfassung mit ${result.job_count} Treffern wurde an ${result.recipient} gesendet.`,
       );
       trackEvent("agency_alert_send_now", {
         subscriptionId,
@@ -493,7 +493,7 @@ export default function Home() {
         dryRun: Boolean(result.dry_run),
       });
     } catch (err) {
-      setSaasStatus(getErrorMessage(err, "Versand der Zusammenfassung"));
+      setSaasStatus(getErrorMessage(err, "Versand des Job-Alarms"));
     } finally {
       setSaasLoading(false);
     }
@@ -509,12 +509,12 @@ export default function Home() {
         headers: { "X-Agency-Key": agency.api_key },
       });
       await refreshSubscriptions(agency.api_key);
-      setSaasStatus("Benachrichtigung wurde entfernt.");
+      setSaasStatus("Der Job-Alarm wurde entfernt.");
       trackEvent("agency_alert_deleted", {
         subscriptionId,
       });
     } catch (err) {
-      setSaasStatus(getErrorMessage(err, "Loeschen der Benachrichtigung"));
+      setSaasStatus(getErrorMessage(err, "Loeschen des Job-Alarms"));
     } finally {
       setSaasLoading(false);
     }
@@ -537,25 +537,25 @@ export default function Home() {
 
       <section className="workspace">
         <div className="product-topbar">
-          <span>KhalfaJobs fuer Recruiting-Teams</span>
+          <span>KhalfaJobs fuer Personalvermittlungen</span>
           <span>Datenquelle: Bundesagentur fuer Arbeit</span>
-          <span>Live-Suche, CSV-Export und Job-Alarme</span>
+          <span>Live-Recherche, CSV-Export und Job-Alarme</span>
         </div>
 
         <header className="masthead hero-layout">
           <div className="hero-primary">
-            <p className="eyebrow">Live-Stellensuche fuer Agenturen, Recruiter und Personalberater</p>
-            <h1>Finden Sie passende Fachkraefte schneller.</h1>
+            <p className="eyebrow">LIVE-STELLENSUCHE FUER RECRUITING-TEAMS</p>
+            <h1>Relevante Stellenangebote fuer Ihr Recruiting in wenigen Sekunden.</h1>
             <p className="hero-copy">
-              Durchsuchen Sie aktuelle Stellenangebote der Bundesagentur fuer Arbeit in Echtzeit und exportieren Sie passende Ergebnisse als CSV.
+              Durchsuchen Sie aktuelle Stellenangebote der Bundesagentur fuer Arbeit in Echtzeit und exportieren Sie passende Treffer direkt als CSV.
             </p>
           </div>
           <div className="hero-proof">
             <div className="sync-badge">
               <Clock size={18} aria-hidden="true" />
-              Live-API
+              Live-Daten
             </div>
-            <p>Fuer Arbeitsvermittlungen, Personalberater, Headhunter und mittelstaendische Recruiting-Teams.</p>
+            <p>Entwickelt fuer Arbeitsvermittler, Personalberater, Recruiting-Agenturen, Headhunter und HR-Dienstleister.</p>
           </div>
         </header>
 
@@ -567,7 +567,7 @@ export default function Home() {
             }
           }}>
             <label className="suggest-field">
-              <span>Beruf oder Suchbegriff</span>
+              <span>Gesuchte Position oder Suchbegriff</span>
               <div className="suggest-input-wrap">
                 <input
                   value={keyword}
@@ -624,7 +624,7 @@ export default function Home() {
               ) : null}
             </label>
             <label className="suggest-field">
-              <span>Ort</span>
+              <span>Standort</span>
               <div className="suggest-input-wrap">
                 <input
                   value={location}
@@ -644,7 +644,7 @@ export default function Home() {
                 <button
                   className="suggest-toggle"
                   type="button"
-                  aria-label="Ortsvorschlaege anzeigen"
+                  aria-label="Standortvorschlaege anzeigen"
                   aria-expanded={openSuggest === "location"}
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => {
@@ -682,11 +682,11 @@ export default function Home() {
             </label>
             <label className="exact-location-toggle">
               <input type="checkbox" checked={exactLocation} onChange={(event) => setExactLocation(event.target.checked)} />
-              <span>Nur exakte Treffer</span>
+              <span>Nur exakte Standorte</span>
             </label>
             <button className="primary-action" type="submit" disabled={loading}>
               {loading ? <LoaderCircle className="spin" size={19} /> : <Search size={19} />}
-              Suchen
+              Stellen finden
             </button>
           </form>
 
@@ -700,7 +700,7 @@ export default function Home() {
           </div>
 
           <div className="quick-searches">
-            <span className="quick-search-label">Beliebte Einstiege</span>
+            <span className="quick-search-label">Beliebte Suchanfragen</span>
             {quickSearches.map((entry) => (
               <button
                 key={`${entry.keyword}-${entry.location}`}
@@ -732,11 +732,11 @@ export default function Home() {
                 <h2>
                   {loading
                     ? "Aktuelle Stellenangebote werden geladen..."
-                    : `${jobs.length} Angebote${totalResults ? ` von ${totalResults}` : ""}`}
+                    : `${jobs.length} Stellenangebote${totalResults ? ` von ${totalResults}` : ""}`}
                 </h2>
               </div>
               <div className="results-actions">
-                <p>{loading ? "Wir fragen die Bundesagentur-API live ab." : "Exportieren Sie passende Treffer direkt als CSV fuer Ihr Recruiting-Team."}</p>
+                <p>{loading ? "Die offiziellen BA-Daten werden live geladen." : "Exportieren Sie relevante Treffer direkt als CSV fuer Ihr Recruiting-Team."}</p>
                 <button className="ghost-action" type="button" onClick={handleExport} disabled={exporting || loading}>
                   {exporting ? <LoaderCircle className="spin" size={19} /> : <Download size={19} />}
                   CSV exportieren
@@ -745,7 +745,7 @@ export default function Home() {
             </section>
 
             <div className="filter-note">
-              Die Bundesagentur-API kann Ergebnisse aus dem Umkreis liefern. Mit "Nur exakter Ort" werden nur Angebote aus dem eingegebenen Ort angezeigt und exportiert.
+              Die Bundesagentur fuer Arbeit kann Treffer aus dem Umkreis liefern. Mit "Nur exakte Standorte" werden nur Stellenangebote fuer den eingegebenen Ort angezeigt und exportiert.
             </div>
           </>
         ) : null}
@@ -776,11 +776,11 @@ export default function Home() {
               <AlertTriangle size={42} />
             </div>
             <h3>Keine passenden Stellenangebote gefunden</h3>
-            <p>Die Suche war erfolgreich, aber die aktuellen Filter liefern keine Treffer.</p>
+            <p>Die Suche wurde erfolgreich ausgefuehrt, liefert mit den aktuellen Kriterien jedoch keine passenden Treffer.</p>
             <ul className="zero-actions">
-              <li>Pruefen Sie die Schreibweise des Ortes.</li>
-              <li>Entfernen Sie "Nur exakter Ort", wenn auch umliegende Orte relevant sind.</li>
-              <li>Verwenden Sie einen allgemeineren Suchbegriff.</li>
+              <li>Pruefen Sie die Schreibweise von Beruf und Standort.</li>
+              <li>Deaktivieren Sie "Nur exakte Standorte", wenn auch angrenzende Orte relevant sind.</li>
+              <li>Verwenden Sie einen allgemeineren Suchbegriff fuer eine breitere Recherche.</li>
             </ul>
           </div>
         ) : (
@@ -789,15 +789,15 @@ export default function Home() {
               <Search size={42} />
             </div>
             <h3>Aktuelle Stellenangebote</h3>
-            <p>Geben Sie einen Beruf und einen Ort ein, um passende Stellenangebote zu finden. Danach stehen CSV-Export und Job-Alarm sofort zur Verfuegung.</p>
+            <p>Starten Sie eine Suche nach Beruf und Standort, um relevante Stellenangebote sofort zu pruefen, zu exportieren oder per Job-Alarm zu verfolgen.</p>
           </div>
         )}
 
         <section className="saas-section secondary-zone">
           <div className="saas-header">
             <div>
-              <p className="eyebrow">Job-Alarm per E-Mail</p>
-              <h2>Erhalten Sie neue passende Stellenangebote automatisch jeden Morgen.</h2>
+              <p className="eyebrow">Job-Alarm fuer Recruiting-Teams</p>
+              <h2>Neue passende Stellenangebote automatisch per E-Mail erhalten.</h2>
             </div>
             <button
               className="secondary-action"
@@ -812,7 +812,7 @@ export default function Home() {
               aria-expanded={agentOpen}
             >
               <Mail size={18} aria-hidden="true" />
-              {agentOpen ? "Agent ausblenden" : "Agent konfigurieren"}
+              {agentOpen ? "Job-Alarm ausblenden" : "Job-Alarm einrichten"}
             </button>
           </div>
 
@@ -820,37 +820,37 @@ export default function Home() {
             <div className="agent-body">
               <div className="agent-summary">
                 <strong>Einrichtung in zwei Schritten</strong>
-                <span>Legen Sie zuerst den Agentur-Zugang an und erstellen Sie danach einen Job-Alarm fuer Beruf und Ort.</span>
+                <span>Legen Sie zuerst Ihren Agentur-Zugang an und definieren Sie anschliessend Beruf und Standort fuer den Job-Alarm.</span>
               </div>
               <div className="saas-grid">
                 <form className="saas-panel saas-panel-secondary" onSubmit={handleCreateAgency}>
                   <div className="panel-title">
                     <KeyRound size={19} aria-hidden="true" />
-                    <h3>1. Agentur-Zugang</h3>
+                    <h3>1. Agentur-Zugang einrichten</h3>
                   </div>
                   <label>
-                    <span>Name der Agentur</span>
+                    <span>Agenturname</span>
                     <input value={agencyForm.name} onChange={(event) => setAgencyForm({ ...agencyForm, name: event.target.value })} />
                   </label>
                   <label>
-                    <span>E-Mail-Adresse</span>
+                    <span>Kontakt-E-Mail</span>
                     <input type="email" value={agencyForm.email} onChange={(event) => setAgencyForm({ ...agencyForm, email: event.target.value })} />
                   </label>
                   <button className="primary-action" type="submit" disabled={saasLoading}>
                     {saasLoading ? <LoaderCircle className="spin" size={19} /> : <Plus size={19} />}
-                    {agency ? "Neue Agentur anlegen" : "Agentur-Zugang erstellen"}
+                    {agency ? "Weiteren Zugang anlegen" : "Agentur-Zugang erstellen"}
                   </button>
                   {agency ? (
                     <div className="agency-summary-card">
                       <div>
-                        <span>Arbeitsbereich aktiv</span>
+                        <span>Aktiver Agentur-Zugang</span>
                         <strong>{agency.name}</strong>
                         <p>{agency.email}</p>
                       </div>
                       <div className="agency-summary-actions">
                         <button className="secondary-action" type="button" onClick={handleForgetAgency}>
                           <LogOut size={17} />
-                          Entfernen
+                          Zugang entfernen
                         </button>
                       </div>
                     </div>
@@ -865,10 +865,10 @@ export default function Home() {
                 }}>
                   <div className="panel-title">
                     <Mail size={19} aria-hidden="true" />
-                    <h3>2. Job-Alarm erstellen</h3>
+                    <h3>2. Job-Alarm anlegen</h3>
                   </div>
                   <label className="suggest-field">
-                    <span>Beruf</span>
+                    <span>Beruf oder Suchprofil</span>
                     <div className="suggest-input-wrap">
                       <input
                         value={alertForm.keyword}
@@ -888,7 +888,7 @@ export default function Home() {
                       <button
                         className="suggest-toggle"
                         type="button"
-                        aria-label="Suchbegriffe anzeigen"
+                        aria-label="Suchprofile anzeigen"
                         aria-expanded={agentSuggest === "keyword"}
                         onMouseDown={(event) => event.preventDefault()}
                         onClick={() => {
@@ -925,7 +925,7 @@ export default function Home() {
                     ) : null}
                   </label>
                   <label className="suggest-field">
-                    <span>Ort</span>
+                    <span>Standort</span>
                     <div className="suggest-input-wrap">
                       <input
                         value={alertForm.location}
@@ -945,7 +945,7 @@ export default function Home() {
                       <button
                         className="suggest-toggle"
                         type="button"
-                        aria-label="Orte anzeigen"
+                        aria-label="Standorte anzeigen"
                         aria-expanded={agentSuggest === "location"}
                         onMouseDown={(event) => event.preventDefault()}
                         onClick={() => {
@@ -981,12 +981,12 @@ export default function Home() {
                       </div>
                     ) : null}
                   </label>
-                  <p className="form-hint">Der Job-Alarm nutzt immer den exakten Ort, damit nur wirklich passende Treffer in Ihrer taeglichen Zusammenfassung landen.</p>
+                  <p className="form-hint">Der Job-Alarm arbeitet mit exakten Standorten, damit nur wirklich relevante Treffer in Ihrer taeglichen Zusammenfassung erscheinen.</p>
                   <button className="secondary-action" type="submit" disabled={saasLoading || !agency}>
                     <Plus size={19} />
                     Job-Alarm erstellen
                   </button>
-                  <div className="alarm-trust-line">Datenquelle: Bundesagentur fuer Arbeit</div>
+                  <div className="alarm-trust-line">Datenquelle: Bundesagentur fuer Arbeit · Versand auf Basis Ihres gespeicherten Suchprofils</div>
                 </form>
               </div>
             </div>
@@ -998,9 +998,9 @@ export default function Home() {
             {subscriptions.map((subscription) => (
               <article className="subscription-row" key={subscription.id}>
                 <div className="subscription-copy">
-                  <span className="subscription-kicker">Aktive Benachrichtigung</span>
-                  <strong>{normalizeSubscriptionText(subscription.keyword) || "Suchbegriff fehlt"}</strong>
-                  <span className="subscription-location">{normalizeSubscriptionText(subscription.location) || "Ort fehlt"}</span>
+                  <span className="subscription-kicker">Aktiver Job-Alarm</span>
+                  <strong>{normalizeSubscriptionText(subscription.keyword) || "Suchprofil fehlt"}</strong>
+                  <span className="subscription-location">{normalizeSubscriptionText(subscription.location) || "Standort fehlt"}</span>
                 </div>
                 <span className="subscription-frequency">{subscription.frequency}</span>
                 <div className="subscription-actions">
@@ -1010,7 +1010,7 @@ export default function Home() {
                   </button>
                   <button className="secondary-action" type="button" onClick={() => handleSendNow(subscription.id)} disabled={saasLoading}>
                     <Send size={18} />
-                    Jetzt senden
+                    Jetzt versenden
                   </button>
                 </div>
               </article>
@@ -1019,8 +1019,14 @@ export default function Home() {
         </section>
 
         <footer className="site-footer" aria-label="KhalfaJobs Branding">
-          <p className="site-footer-title">Entwickelt von Walid Khalfa</p>
+          <p className="site-footer-title">KhalfaJobs fuer professionelle Personalvermittlung</p>
           <div className="site-footer-links">
+            <span>Datenquelle: Bundesagentur fuer Arbeit</span>
+            <a href="/">Impressum</a>
+            <a href="/">Datenschutz</a>
+            <a href="mailto:walid@khalfajobs.me">Kontakt</a>
+            <a href="/health">API-Status</a>
+            <a href="https://github.com/Walid-Khalfa/webscraper" target="_blank" rel="noreferrer">GitHub</a>
             <a href="mailto:walid@khalfajobs.me">walid@khalfajobs.me</a>
             <a href="https://wa.me/21653097624" target="_blank" rel="noreferrer">
               WhatsApp: +216 53 097 624

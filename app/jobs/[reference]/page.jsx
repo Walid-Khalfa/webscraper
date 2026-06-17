@@ -33,9 +33,9 @@ function getEmploymentType(raw) {
 
 function buildDescription(job, raw) {
   return [
-    `${job.Titel || "Stellenangebot"} bei ${job.Arbeitgeber || "Arbeitgeber nicht angegeben"} in ${job.Ort || "Deutschland"}.`,
+    `${job.Titel || "Stellenangebot"} bei ${job.Arbeitgeber || "Arbeitgeber nicht genannt"} in ${job.Ort || "Deutschland"}.`,
     job.Beruf ? `Beruf: ${job.Beruf}.` : "",
-    job.Gehalt && job.Gehalt !== "Keine Gehaltsangabe" ? `Verguetung: ${job.Gehalt}.` : "",
+    job.Gehalt && job.Gehalt !== "Keine Verguetung angegeben" ? `Verguetung: ${job.Gehalt}.` : "",
     flatten(valueAt(raw, ["stellenangebotsart"])) ? `Angebotsart: ${flatten(valueAt(raw, ["stellenangebotsart"]))}.` : "",
   ]
     .filter(Boolean)
@@ -62,7 +62,7 @@ function buildJobPosting({ job, raw, reference }) {
     employmentType: getEmploymentType(raw),
     hiringOrganization: {
       "@type": "Organization",
-      name: job.Arbeitgeber || "Arbeitgeber nicht angegeben",
+      name: job.Arbeitgeber || "Arbeitgeber nicht genannt",
       sameAs: job.URL || undefined,
     },
     jobLocation: {
@@ -139,7 +139,7 @@ export default async function JobDetailPage({ params }) {
       </aside>
       <article className="workspace job-detail-page">
         <a className="back-link" href="/">
-          Zurueck zur Suche
+          Zurueck zur Recruiting-Suche
         </a>
         <header className="job-detail-hero">
           <p className="eyebrow">Google Jobs optimierte Detailseite</p>
@@ -148,7 +148,7 @@ export default async function JobDetailPage({ params }) {
           <div className="job-detail-actions">
             <a className="primary-action apply-link-large" href={officialUrl} target="_blank" rel="noopener noreferrer">
               <ExternalLink size={19} aria-hidden="true" />
-              Offizielle Bewerbung oeffnen
+              Originalanzeige oeffnen
             </a>
           </div>
         </header>
@@ -157,27 +157,27 @@ export default async function JobDetailPage({ params }) {
           <div className="job-detail-card">
             <Building2 size={22} aria-hidden="true" />
             <span>Arbeitgeber</span>
-            <strong>{job.Arbeitgeber || "Nicht angegeben"}</strong>
+            <strong>{job.Arbeitgeber || "Nicht genannt"}</strong>
           </div>
           <div className="job-detail-card">
             <MapPin size={22} aria-hidden="true" />
             <span>Arbeitsort</span>
-            <strong>{[job.Postleitzahl, job.Ort].filter(Boolean).join(" ") || "Nicht angegeben"}</strong>
+            <strong>{[job.Postleitzahl, job.Ort].filter(Boolean).join(" ") || "Nicht genannt"}</strong>
           </div>
           <div className="job-detail-card">
             <WalletCards size={22} aria-hidden="true" />
             <span>Gehalt</span>
-            <strong>{job.Gehalt || "Keine Gehaltsangabe"}</strong>
+            <strong>{job.Gehalt || "Keine Verguetung angegeben"}</strong>
           </div>
           <div className="job-detail-card">
             <BriefcaseBusiness size={22} aria-hidden="true" />
             <span>Beruf</span>
-            <strong>{job.Beruf || "Nicht angegeben"}</strong>
+            <strong>{job.Beruf || "Nicht genannt"}</strong>
           </div>
           <div className="job-detail-card">
             <CalendarDays size={22} aria-hidden="true" />
             <span>Veroeffentlicht</span>
-            <strong>{datePosted || "Nicht angegeben"}</strong>
+            <strong>{datePosted || "Nicht genannt"}</strong>
           </div>
           <div className="job-detail-card">
             <CalendarDays size={22} aria-hidden="true" />
@@ -187,12 +187,12 @@ export default async function JobDetailPage({ params }) {
         </section>
 
         <section className="job-detail-section">
-          <h2>Referenz und Quelle</h2>
+          <h2>Referenz und Datenquelle</h2>
           <p>
             Referenznummer: <strong>{reference}</strong>
           </p>
           <p>
-            Diese Seite bereitet die oeffentlichen Daten der Bundesagentur fuer Arbeit fuer Suchmaschinen strukturiert auf. Die Bewerbung erfolgt ueber die offizielle Quelle.
+            Diese Detailseite strukturiert die oeffentlichen Daten der Bundesagentur fuer Arbeit fuer Recruiting-Teams und Suchmaschinen. Die Originalanzeige bleibt die massgebliche Quelle.
           </p>
         </section>
       </article>
