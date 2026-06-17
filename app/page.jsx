@@ -4,9 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Clock,
+  Copy,
   Download,
+  Eye,
+  EyeOff,
   KeyRound,
   LoaderCircle,
+  LogOut,
   Mail,
   Plus,
   Search,
@@ -146,8 +150,9 @@ export default function Home() {
   const [hasSearched, setHasSearched] = useState(false);
   const [agentOpen, setAgentOpen] = useState(false);
   const [agency, setAgency] = useState(null);
-  const [agencyForm, setAgencyForm] = useState({ name: "Berlin Talent Partners", email: "agency@example.com", plan: "starter" });
-  const [alertForm, setAlertForm] = useState({ keyword: "Softwareentwickler", location: "Berlin", frequency: "daily", max_results: 25 });
+  const [showAgencyKey, setShowAgencyKey] = useState(false);
+  const [agencyForm, setAgencyForm] = useState({ name: "", email: "", plan: "starter" });
+  const [alertForm, setAlertForm] = useState({ keyword: "", location: "", frequency: "daily", max_results: 25 });
   const [subscriptions, setSubscriptions] = useState([]);
   const [saasStatus, setSaasStatus] = useState("");
   const [saasLoading, setSaasLoading] = useState(false);
@@ -268,6 +273,20 @@ export default function Home() {
     } finally {
       setSaasLoading(false);
     }
+  }
+
+  async function handleCopyAgencyKey() {
+    if (!agency?.api_key) return;
+    await navigator.clipboard.writeText(agency.api_key);
+    setSaasStatus("Agentur-Schluessel wurde in die Zwischenablage kopiert.");
+  }
+
+  function handleForgetAgency() {
+    localStorage.removeItem("agencyProfile");
+    setAgency(null);
+    setSubscriptions([]);
+    setShowAgencyKey(false);
+    setSaasStatus("Lokaler Agentur-Arbeitsbereich wurde aus diesem Browser entfernt.");
   }
 
   async function refreshSubscriptions(apiKey = agency?.api_key) {
@@ -472,8 +491,28 @@ export default function Home() {
                   </button>
                   {agency ? (
                     <div className="api-key-box">
-                      <span>Agentur-Schluessel</span>
-                      <code>{agency.api_key}</code>
+                      <div>
+                        <span>Aktiver Arbeitsbereich</span>
+                        <strong>{agency.name}</strong>
+                      </div>
+                      <div>
+                        <span>Agentur-Schluessel</span>
+                        <code>{showAgencyKey ? agency.api_key : "emp_********************************"}</code>
+                      </div>
+                      <div className="api-key-actions">
+                        <button className="secondary-action" type="button" onClick={() => setShowAgencyKey((visible) => !visible)}>
+                          {showAgencyKey ? <EyeOff size={17} /> : <Eye size={17} />}
+                          {showAgencyKey ? "Ausblenden" : "Anzeigen"}
+                        </button>
+                        <button className="secondary-action" type="button" onClick={handleCopyAgencyKey}>
+                          <Copy size={17} />
+                          Kopieren
+                        </button>
+                        <button className="secondary-action" type="button" onClick={handleForgetAgency}>
+                          <LogOut size={17} />
+                          Entfernen
+                        </button>
+                      </div>
                     </div>
                   ) : null}
                 </form>
