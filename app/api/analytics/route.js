@@ -1,5 +1,6 @@
 import { captureEvent } from "../_lib/analytics";
 import { errorResponse, json } from "../_lib/http";
+import { recordProductEvent } from "../_lib/product-insights";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,14 @@ export async function POST(request) {
     const result = await captureEvent({
       event: payload.event,
       distinctId: payload.distinctId || forwardedFor || "anonymous",
+      url: requestUrl,
+      properties: payload.properties || {},
+    });
+
+    await recordProductEvent({
+      event: payload.event,
+      distinctId: payload.distinctId || forwardedFor || "anonymous",
+      path: payload.path || request.nextUrl.pathname,
       url: requestUrl,
       properties: payload.properties || {},
     });

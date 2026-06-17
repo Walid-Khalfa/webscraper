@@ -172,7 +172,7 @@ function formatLastUpdated(value) {
   return `Vor ${hours} Stunde${hours === 1 ? "" : "n"} aktualisiert`;
 }
 
-export default function Home({ initialShowcase }) {
+export default function Home({ initialShowcase, platformInsights }) {
   const [keyword, setKeyword] = useState("Softwareentwickler");
   const [location, setLocation] = useState("Berlin");
   const [openSuggest, setOpenSuggest] = useState(null);
@@ -261,18 +261,18 @@ export default function Home({ initialShowcase }) {
       },
       {
         label: "Suchstatus",
-        value: hasSearched ? `${totalResults || jobs.length} Treffer verfuergbar` : "Bereit fuer Ihre Recherche",
+        value: hasSearched ? `${totalResults || jobs.length} Treffer verfuegbar` : "Bereit fuer Ihre Recherche",
       },
       {
         label: "Aktualisierung",
-        value: formatLastUpdated(lastSearchAt),
+        value: hasSearched ? formatLastUpdated(lastSearchAt) : platformInsights?.lastActivityLabel || "Noch keine Aktivitaet",
       },
       {
         label: "Recruiting-Tools",
         value: "CSV-Export und Job-Alarme",
       },
     ],
-    [hasSearched, jobs.length, lastSearchAt, totalResults],
+    [hasSearched, jobs.length, lastSearchAt, totalResults, platformInsights?.lastActivityLabel],
   );
 
   function pushToast(type, message, persist = false) {
@@ -347,6 +347,12 @@ export default function Home({ initialShowcase }) {
       const result = await requestJson(`/api/jobs/search?${params.toString()}`);
       setPayload(result);
       setLastSearchAt(Date.now());
+      trackEvent("search_completed", {
+        keyword,
+        location,
+        exactLocation,
+        resultCount: extractJobs(result).length,
+      });
       const count = extractJobs(result).length;
       pushToast(count ? "success" : "success", count ? `${count} relevante Stellenangebote geladen` : "Keine passenden Stellenangebote gefunden");
     } catch (err) {
@@ -806,18 +812,33 @@ export default function Home({ initialShowcase }) {
             <section className="insights-strip" aria-label="Live Recruiting Insights">
               <article className="insight-card">
                 <span>Live Recruiting Insights</span>
-                <strong>{initialShowcase?.metrics?.sampleHits || 0} Beispiel-Treffer</strong>
-                <p>Live geladen aus beliebten Recruiting-Suchen.</p>
+                <strong>{platformInsights?.searchesToday || 0} Suchen heute</strong>
+                <p>Persistierte Suchaktivitaet aus Ihrer Plattform.</p>
               </article>
               <article className="insight-card">
-                <span>Aktive Suchprofile</span>
-                <strong>{initialShowcase?.metrics?.activeProfiles || 0}</strong>
-                <p>Direkt als Einstieg fuer Ihr Team nutzbar.</p>
+                <span>Aktive Job-Alarme</span>
+                <strong>{platformInsights?.activeAlerts || 0}</strong>
+                <p>Gespeicherte Suchprofile fuer wiederkehrende Recruiting-Suchen.</p>
               </article>
               <article className="insight-card">
-                <span>Aktive Regionen</span>
-                <strong>{initialShowcase?.metrics?.activeRegions || 0}</strong>
-                <p>Beispiele aus stark nachgefragten Recruiting-Maerkten.</p>
+                <span>CSV-Exporte heute</span>
+                <strong>{platformInsights?.exportsToday || 0}</strong>
+                <p>Direkt aus Live-Treffern fuer Recruiting-Workflows erstellt.</p>
+              </article>
+              <article className="insight-card">
+                <span>Aktive Agentur-Zugaenge</span>
+                <strong>{platformInsights?.activeAgencies || 0}</strong>
+                <p>Aktive Arbeitsbereiche auf Ihrer Plattform.</p>
+              </article>
+              <article className="insight-card">
+                <span>Versendete Job-Alarme heute</span>
+                <strong>{platformInsights?.alertsSentToday || 0}</strong>
+                <p>Erfolgreich zugestellte Recruiting-Zusammenfassungen.</p>
+              </article>
+              <article className="insight-card">
+                <span>Letzte Plattform-Aktivitaet</span>
+                <strong>{platformInsights?.lastActivityLabel || "Noch keine Aktivitaet"}</strong>
+                <p>Basierend auf Such-, Export- und Alarm-Ereignissen.</p>
               </article>
             </section>
 

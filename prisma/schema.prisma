@@ -20,6 +20,19 @@ model Agency {
   @@map("agencies")
 }
 
+model ProductEvent {
+  id         Int      @id @default(autoincrement())
+  event      String
+  distinctId String?  @map("distinct_id")
+  path       String?
+  url        String?
+  properties Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([event, createdAt])
+  @@map("product_events")
+}
+
 model SearchSubscription {
   id          Int             @id @default(autoincrement())
   agencyId    Int             @map("agency_id")

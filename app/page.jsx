@@ -1,5 +1,6 @@
 import JobPortalClient from "../components/JobPortalClient";
 import { extractJobItems, normalizeJob, searchJobs } from "./api/_lib/ba";
+import { getPlatformInsights } from "./api/_lib/product-insights";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://emploi-agences-next.vercel.app";
 const showcaseQueries = [
@@ -133,7 +134,7 @@ async function getShowcaseData() {
 }
 
 export default async function Page() {
-  const showcase = await getShowcaseData();
+  const [showcase, platformInsights] = await Promise.all([getShowcaseData(), getPlatformInsights()]);
 
   return (
     <>
@@ -141,7 +142,7 @@ export default async function Page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData()) }}
       />
-      <JobPortalClient initialShowcase={showcase} />
+      <JobPortalClient initialShowcase={showcase} platformInsights={platformInsights} />
     </>
   );
 }

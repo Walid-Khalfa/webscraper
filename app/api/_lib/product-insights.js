@@ -1,0 +1,104 @@
+import { prisma } from "./prisma";
+
+function startOfToday() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function relativeFrom(date) {
+  if (!date) return "Noch keine Aktivitaet";
+  const diffMs = Date.now() - new Date(date).getTime();
+  const minutes = Math.max(0, Math.round(diffMs / 60000));
+  if (minutes <= 1) return "Vor weniger als 1 Minute";
+  if (minutes < 60) return `Vor ${minutes} Minuten`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `Vor ${hours} Stunde${hours === 1 ? "" : "n"}`;
+  const days = Math.round(hours / 24);
+  return `Vor ${days} Tag${days === 1 ? "" : "en"}`;
+}
+
+export async function recordProductEvent({ event, distinctId, path, url, properties = {} }) {
+  if (!event) return null;
+
+  return prisma.productEvent.create({
+    data: {
+      event: String(event),
+      distinctId: distinctId ? String(distinctId) : null,
+      path: path ? String(path) : null,
+      url: url ? String(url) : null,
+      properties,
+    },
+  });
+}
+
+export async function getPlatformInsights() {
+  try {
+    const today = startOfToday();
+
+    const [
+      activeAgencies,
+      activeAlerts,
+      searchesToday,
+      exportsToday,
+      alertsSentToday,
+      latestEvent,
+      latestDelivery,
+      latestSubscription,
+    ] = await Promise.all([
+      prisma.agency.count({ where: { isActive: true } }),
+      prisma.searchSubscription.count({ where: { isActive: true } }),
+      prisma.productEvent.count({
+        where: {
+          event: "search_completed",
+          createdAt: { gte: today },
+        },
+      }),
+      prisma.productEvent.count({
+        where: {
+          event: "csv_export_completed",
+          createdAt: { gte: today },
+        },
+      }),
+      prisma.emailDelivery.count({
+        where: {
+          status: "sent",
+          createdAt: { gte: today },
+        },
+      }),
+      prisma.productEvent.findFirst({
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      }),
+      prisma.emailDelivery.findFirst({
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      }),
+      prisma.searchSubscription.findFirst({
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      }),
+    ]);
+
+    const lastActivity = [latestEvent?.createdAt, latestDelivery?.createdAt, latestSubscription?.createdAt]
+      .filter(Boolean)
+      .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0];
+
+    return {
+      activeAgencies,
+      activeAlerts,
+      searchesToday,
+      exportsToday,
+      alertsSentToday,
+      lastActivityLabel: relativeFrom(lastActivity),
+    };
+  } catch {
+    return {
+      activeAgencies: 0,
+      activeAlerts: 0,
+      searchesToday: 0,
+      exportsToday: 0,
+      alertsSentToday: 0,
+      lastActivityLabel: "Noch keine Aktivitaet",
+    };
+  }
+}
