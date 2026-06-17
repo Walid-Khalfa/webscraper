@@ -492,7 +492,6 @@ export default function Home() {
                   setOpenSuggest("keyword");
                   setShowAllSuggestions(true);
                 }}
-                placeholder="Softwareentwickler"
                 autoComplete="off"
                 aria-expanded={openSuggest === "keyword"}
                 aria-controls="keyword-suggestion-list"
@@ -550,7 +549,6 @@ export default function Home() {
                   setOpenSuggest("location");
                   setShowAllSuggestions(true);
                 }}
-                placeholder="Berlin"
                 autoComplete="off"
                 aria-expanded={openSuggest === "location"}
                 aria-controls="location-suggestion-list"
@@ -709,11 +707,11 @@ export default function Home() {
                   </div>
                   <label>
                     <span>Agenturname</span>
-                    <input value={agencyForm.name} onChange={(event) => setAgencyForm({ ...agencyForm, name: event.target.value })} placeholder="KhalfaJobs" />
+                    <input value={agencyForm.name} onChange={(event) => setAgencyForm({ ...agencyForm, name: event.target.value })} />
                   </label>
                   <label>
                     <span>Rechnungs-E-Mail</span>
-                    <input type="email" value={agencyForm.email} onChange={(event) => setAgencyForm({ ...agencyForm, email: event.target.value })} placeholder="agentur@beispiel.de" />
+                    <input type="email" value={agencyForm.email} onChange={(event) => setAgencyForm({ ...agencyForm, email: event.target.value })} />
                   </label>
                   <button className="primary-action" type="submit" disabled={saasLoading}>
                     {saasLoading ? <LoaderCircle className="spin" size={19} /> : <Plus size={19} />}
@@ -765,11 +763,11 @@ export default function Home() {
                   </div>
                   <label>
                     <span>Suchbegriff</span>
-                    <input value={alertForm.keyword} onChange={(event) => setAlertForm({ ...alertForm, keyword: event.target.value })} placeholder="Pflegefachkraft" />
+                    <input value={alertForm.keyword} onChange={(event) => setAlertForm({ ...alertForm, keyword: event.target.value })} />
                   </label>
                   <label>
                     <span>Ort</span>
-                    <input value={alertForm.location} onChange={(event) => setAlertForm({ ...alertForm, location: event.target.value })} placeholder="Muenchen" />
+                    <input value={alertForm.location} onChange={(event) => setAlertForm({ ...alertForm, location: event.target.value })} />
                   </label>
                   <p className="form-hint">E-Mail-Agenten verwenden immer den exakten Ort, damit keine umliegenden Gemeinden in die Zusammenfassung geraten.</p>
                   <button className="secondary-action" type="submit" disabled={saasLoading || !agency}>
