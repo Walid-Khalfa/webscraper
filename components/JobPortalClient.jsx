@@ -173,6 +173,7 @@ export default function Home() {
   const [agentOpen, setAgentOpen] = useState(false);
   const [agency, setAgency] = useState(null);
   const [showAgencyKey, setShowAgencyKey] = useState(false);
+  const [showAgencyAdmin, setShowAgencyAdmin] = useState(false);
   const [agencyForm, setAgencyForm] = useState({ name: "", email: "", plan: "starter" });
   const [alertForm, setAlertForm] = useState({ keyword: "", location: "", frequency: "daily", max_results: 25 });
   const [subscriptions, setSubscriptions] = useState([]);
@@ -344,7 +345,7 @@ export default function Home() {
       });
       setAgency(created);
       localStorage.setItem("agencyProfile", JSON.stringify(created));
-      setSaasStatus("Agentur-Arbeitsbereich erstellt. Speichern Sie den Agentur-Schluessel, bevor Sie dieses Geraet verlassen.");
+      setSaasStatus("Agentur-Arbeitsbereich erstellt. Die Verwaltungsdetails koennen bei Bedarf im Bereich Details angezeigt werden.");
     } catch (err) {
       setSaasStatus(getErrorMessage(err, "Agentur-Erstellung"));
     } finally {
@@ -363,7 +364,16 @@ export default function Home() {
     setAgency(null);
     setSubscriptions([]);
     setShowAgencyKey(false);
+    setShowAgencyAdmin(false);
     setSaasStatus("Lokaler Agentur-Arbeitsbereich wurde aus diesem Browser entfernt.");
+  }
+
+  function normalizeSubscriptionText(value) {
+    const text = String(value || "").trim().replace(/\s+/g, " ");
+    if (!text) return "";
+    const half = Math.floor(text.length / 2);
+    if (text.length % 2 === 0 && text.slice(0, half) === text.slice(half)) return text.slice(0, half);
+    return text;
   }
 
   async function refreshSubscriptions(apiKey = agency?.api_key) {
@@ -688,32 +698,43 @@ export default function Home() {
                   </label>
                   <button className="primary-action" type="submit" disabled={saasLoading}>
                     {saasLoading ? <LoaderCircle className="spin" size={19} /> : <Plus size={19} />}
-                    Agentur erstellen
+                    {agency ? "Neue Agentur anlegen" : "Agentur erstellen"}
                   </button>
                   {agency ? (
-                    <div className="api-key-box">
+                    <div className="agency-summary-card">
                       <div>
-                        <span>Aktiver Arbeitsbereich</span>
+                        <span>Arbeitsbereich aktiv</span>
                         <strong>{agency.name}</strong>
+                        <p>{agency.email}</p>
                       </div>
-                      <div>
-                        <span>Agentur-Schluessel</span>
-                        <code>{showAgencyKey ? agency.api_key : "emp_********************************"}</code>
-                      </div>
-                      <div className="api-key-actions">
-                        <button className="secondary-action" type="button" onClick={() => setShowAgencyKey((visible) => !visible)}>
-                          {showAgencyKey ? <EyeOff size={17} /> : <Eye size={17} />}
-                          {showAgencyKey ? "Ausblenden" : "Anzeigen"}
-                        </button>
-                        <button className="secondary-action" type="button" onClick={handleCopyAgencyKey}>
-                          <Copy size={17} />
-                          Kopieren
-                        </button>
-                        <button className="secondary-action" type="button" onClick={handleForgetAgency}>
-                          <LogOut size={17} />
-                          Entfernen
+                      <div className="agency-summary-actions">
+                        <button className="secondary-action" type="button" onClick={() => setShowAgencyAdmin((visible) => !visible)}>
+                          {showAgencyAdmin ? <EyeOff size={17} /> : <Eye size={17} />}
+                          {showAgencyAdmin ? "Details ausblenden" : "Details anzeigen"}
                         </button>
                       </div>
+                      {showAgencyAdmin ? (
+                        <div className="api-key-box">
+                          <div>
+                            <span>Agentur-Schluessel</span>
+                            <code>{showAgencyKey ? agency.api_key : "emp_********************************"}</code>
+                          </div>
+                          <div className="api-key-actions">
+                            <button className="secondary-action" type="button" onClick={() => setShowAgencyKey((visible) => !visible)}>
+                              {showAgencyKey ? <EyeOff size={17} /> : <Eye size={17} />}
+                              {showAgencyKey ? "Ausblenden" : "Anzeigen"}
+                            </button>
+                            <button className="secondary-action" type="button" onClick={handleCopyAgencyKey}>
+                              <Copy size={17} />
+                              Kopieren
+                            </button>
+                            <button className="secondary-action" type="button" onClick={handleForgetAgency}>
+                              <LogOut size={17} />
+                              Entfernen
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   ) : null}
                 </form>
@@ -746,11 +767,12 @@ export default function Home() {
           <div className="subscription-list">
             {subscriptions.map((subscription) => (
               <article className="subscription-row" key={subscription.id}>
-                <div>
-                  <strong>{subscription.keyword}</strong>
-                  <span>{subscription.location}</span>
+                <div className="subscription-copy">
+                  <span className="subscription-kicker">Aktive Benachrichtigung</span>
+                  <strong>{normalizeSubscriptionText(subscription.keyword) || "Suchbegriff fehlt"}</strong>
+                  <span className="subscription-location">{normalizeSubscriptionText(subscription.location) || "Ort fehlt"}</span>
                 </div>
-                <span>{subscription.frequency}</span>
+                <span className="subscription-frequency">{subscription.frequency}</span>
                 <button className="secondary-action" type="button" onClick={() => handleSendNow(subscription.id)} disabled={saasLoading}>
                   <Send size={18} />
                   Jetzt senden

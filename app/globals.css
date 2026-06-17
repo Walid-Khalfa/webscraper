@@ -795,6 +795,29 @@ button:disabled {
   font-size: 0.82rem;
 }
 
+.agency-summary-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  background: var(--paper);
+  border: 2px solid var(--line);
+}
+
+.agency-summary-card p {
+  margin: 0;
+  color: var(--steel);
+  font-weight: 700;
+}
+
+.agency-summary-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.agency-summary-actions button {
+  min-height: 40px;
+}
+
 .status-banner {
   margin-top: 16px;
   padding: 13px 15px;
@@ -812,25 +835,48 @@ button:disabled {
 .subscription-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 12px;
+  gap: 16px;
   align-items: center;
-  padding: 12px;
+  padding: 16px 18px;
   background: var(--white);
   border: 2px solid var(--line);
 }
 
-.subscription-row div {
+.subscription-copy {
   display: grid;
-  gap: 4px;
+  gap: 6px;
 }
 
 .subscription-row strong,
-.subscription-row span {
+.subscription-row span,
+.subscription-copy {
   overflow-wrap: anywhere;
 }
 
-.subscription-row > span {
+.subscription-kicker {
+  color: var(--accent-dark);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.subscription-copy strong {
+  font-size: 1.15rem;
+  line-height: 1.15;
+}
+
+.subscription-location {
   color: var(--steel);
+  font-weight: 700;
+}
+
+.subscription-frequency {
+  align-self: center;
+  padding: 6px 10px;
+  color: var(--steel);
+  background: var(--paper);
+  border: 2px solid rgba(45, 42, 37, 0.2);
   font-family: "IBM Plex Mono", monospace;
   font-weight: 700;
   text-transform: uppercase;
