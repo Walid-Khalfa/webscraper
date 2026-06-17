@@ -172,7 +172,7 @@ function formatLastUpdated(value) {
   return `Vor ${hours} Stunde${hours === 1 ? "" : "n"} aktualisiert`;
 }
 
-export default function Home() {
+export default function Home({ initialShowcase }) {
   const [keyword, setKeyword] = useState("Softwareentwickler");
   const [location, setLocation] = useState("Berlin");
   const [openSuggest, setOpenSuggest] = useState(null);
@@ -301,6 +301,16 @@ export default function Home() {
     setExactLocation(true);
     setOpenSuggest(null);
     setShowAllSuggestions(true);
+  }
+
+  function runQuickSearch(nextKeyword, nextLocation) {
+    applyQuickSearch(nextKeyword, nextLocation);
+    window.setTimeout(() => {
+      const form = document.querySelector(".search-panel-prominent");
+      if (form) {
+        form.requestSubmit();
+      }
+    }, 0);
   }
 
   useEffect(() => {
@@ -784,13 +794,92 @@ export default function Home() {
             </ul>
           </div>
         ) : (
-          <div className="zero-state" aria-live="polite">
-            <div className="zero-illustration" aria-hidden="true">
-              <Search size={42} />
+          <section className="showcase-stack" aria-live="polite">
+            <div className="zero-state">
+              <div className="zero-illustration" aria-hidden="true">
+                <Search size={42} />
+              </div>
+              <h3>Aktuelle Stellenangebote</h3>
+              <p>Starten Sie eine Suche nach Beruf und Standort, um relevante Stellenangebote sofort zu pruefen, zu exportieren oder per Job-Alarm zu verfolgen.</p>
             </div>
-            <h3>Aktuelle Stellenangebote</h3>
-            <p>Starten Sie eine Suche nach Beruf und Standort, um relevante Stellenangebote sofort zu pruefen, zu exportieren oder per Job-Alarm zu verfolgen.</p>
-          </div>
+
+            <section className="insights-strip" aria-label="Live Recruiting Insights">
+              <article className="insight-card">
+                <span>Live Recruiting Insights</span>
+                <strong>{initialShowcase?.metrics?.sampleHits || 0} Beispiel-Treffer</strong>
+                <p>Live geladen aus beliebten Recruiting-Suchen.</p>
+              </article>
+              <article className="insight-card">
+                <span>Aktive Suchprofile</span>
+                <strong>{initialShowcase?.metrics?.activeProfiles || 0}</strong>
+                <p>Direkt als Einstieg fuer Ihr Team nutzbar.</p>
+              </article>
+              <article className="insight-card">
+                <span>Aktive Regionen</span>
+                <strong>{initialShowcase?.metrics?.activeRegions || 0}</strong>
+                <p>Beispiele aus stark nachgefragten Recruiting-Maerkten.</p>
+              </article>
+            </section>
+
+            <section className="showcase-grid" aria-label="Marktueberblick">
+              <div className="showcase-main">
+                <div className="showcase-header">
+                  <div>
+                    <p className="eyebrow">Neueste Beispiel-Treffer</p>
+                    <h3>Direkter Einblick in aktuelle Stellenangebote</h3>
+                  </div>
+                </div>
+                <div className="results-grid results-grid-showcase">
+                  {(initialShowcase?.jobs || []).map((job, index) => (
+                    <JobCard job={job} key={`${job.reference || job.title}-${index}`} />
+                  ))}
+                </div>
+              </div>
+
+              <aside className="showcase-side">
+                <article className="showcase-list-card">
+                  <p className="eyebrow">Beliebte Suchanfragen</p>
+                  <ul>
+                    {(initialShowcase?.positions || quickSearches.map((entry) => `${entry.keyword} in ${entry.location}`)).map((entry) => {
+                      const [nextKeyword, ...rest] = entry.split(" in ");
+                      const nextLocation = rest.join(" in ");
+                      return (
+                        <li key={entry}>
+                          <button type="button" onClick={() => runQuickSearch(nextKeyword, nextLocation)}>
+                            {entry}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </article>
+
+                <article className="showcase-list-card">
+                  <p className="eyebrow">Aktive Regionen</p>
+                  <ul>
+                    {(initialShowcase?.regions || []).map((entry) => (
+                      <li key={entry}>
+                        <button type="button" onClick={() => runQuickSearch(keyword || "Softwareentwickler", entry)}>
+                          {entry}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+
+                <article className="showcase-list-card">
+                  <p className="eyebrow">Trends</p>
+                  <ul>
+                    {(initialShowcase?.trends?.length ? initialShowcase.trends : ["Live-Daten stehen fuer Ihre Recruiting-Suche bereit."]).map((entry) => (
+                      <li key={entry}>
+                        <span>{entry}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              </aside>
+            </section>
+          </section>
         )}
 
         <section className="saas-section secondary-zone">

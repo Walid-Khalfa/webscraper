@@ -123,7 +123,7 @@ h1 {
 }
 
 .hero-layout {
-  align-items: end;
+  align-items: flex-end;
   margin-bottom: 20px;
 }
 
@@ -763,6 +763,116 @@ button:disabled {
   box-shadow: var(--shadow);
 }
 
+.showcase-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.insights-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.insight-card {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  background: var(--white);
+  border: 2px solid var(--line);
+}
+
+.insight-card span {
+  color: var(--accent-dark);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.insight-card strong {
+  font-size: 1.5rem;
+  line-height: 1.05;
+}
+
+.insight-card p {
+  margin: 0;
+  color: var(--steel);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.showcase-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+  gap: 16px;
+}
+
+.showcase-main,
+.showcase-side {
+  display: grid;
+  gap: 16px;
+}
+
+.showcase-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--line);
+}
+
+.showcase-header h3 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2vw, 1.9rem);
+}
+
+.results-grid-showcase .job-card {
+  min-height: 236px;
+}
+
+.showcase-list-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  background: var(--white);
+  border: 2px solid var(--line);
+}
+
+.showcase-list-card ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.showcase-list-card li {
+  margin: 0;
+}
+
+.showcase-list-card button,
+.showcase-list-card span {
+  width: 100%;
+  min-height: 40px;
+  padding: 10px 12px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid rgba(21, 21, 21, 0.16);
+  box-shadow: none;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.showcase-list-card button:hover:not(:disabled) {
+  background: var(--white);
+  border-color: var(--line);
+  box-shadow: none;
+}
+
 .pagination-row {
   display: flex;
   justify-content: center;
@@ -1176,6 +1286,11 @@ button:disabled {
 
   .trust-strip {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .insights-strip,
+  .showcase-grid {
+    grid-template-columns: 1fr;
   }
 
   .results-actions {

@@ -1,6 +1,13 @@
 import JobPortalClient from "../components/JobPortalClient";
+import { extractJobItems, normalizeJob, searchJobs } from "./api/_lib/ba";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://emploi-agences-next.vercel.app";
+const showcaseQueries = [
+  { keyword: "Softwareentwickler", location: "Berlin" },
+  { keyword: "Pflegefachkraft", location: "Hamburg" },
+  { keyword: "Elektriker", location: "Koeln" },
+  { keyword: "Projektmanager", location: "Frankfurt am Main" },
+];
 
 export const metadata = {
   title: "Deutsches Stellenregister | KhalfaJobs",
@@ -60,14 +67,81 @@ function structuredData() {
   };
 }
 
-export default function Page() {
+async function getShowcaseData() {
+  try {
+    const payloads = await Promise.all(
+      showcaseQueries.map((query) =>
+        searchJobs({
+          keyword: query.keyword,
+          location: query.location,
+          page: 1,
+          size: 6,
+        }),
+      ),
+    );
+
+    const grouped = payloads.map((payload, index) => ({
+      ...showcaseQueries[index],
+      count: extractJobItems(payload).length,
+    }));
+
+    const jobs = payloads
+      .flatMap(extractJobItems)
+      .map(normalizeJob)
+      .filter((job) => job.reference || job.title)
+      .filter((job, index, list) => list.findIndex((entry) => entry.reference === job.reference || entry.title === job.title) === index)
+      .slice(0, 6)
+      .map((job) => ({
+        reference: job.Referenz,
+        title: job.Titel || "Stellenprofil ohne Titel",
+        employer: job.Arbeitgeber || "Arbeitgeber nicht genannt",
+        location: job.Ort || "Standort nicht genannt",
+        occupation: job.Beruf || "",
+        salary: job.Gehalt || "Keine Verguetung angegeben",
+        url: job.URL || "",
+      }));
+
+    const regions = [...new Set(jobs.map((job) => job.location).filter(Boolean))].slice(0, 6);
+
+    return {
+      jobs,
+      positions: showcaseQueries.map((entry) => `${entry.keyword} in ${entry.location}`),
+      regions,
+      trends: grouped
+        .sort((left, right) => right.count - left.count)
+        .map((entry) => `${entry.keyword} in ${entry.location}: ${entry.count} Treffer`)
+        .slice(0, 4),
+      metrics: {
+        activeProfiles: showcaseQueries.length,
+        sampleHits: grouped.reduce((sum, entry) => sum + entry.count, 0),
+        activeRegions: regions.length,
+      },
+    };
+  } catch {
+    return {
+      jobs: [],
+      positions: showcaseQueries.map((entry) => `${entry.keyword} in ${entry.location}`),
+      regions: ["Berlin", "Hamburg", "Koeln", "Frankfurt am Main"],
+      trends: [],
+      metrics: {
+        activeProfiles: showcaseQueries.length,
+        sampleHits: 0,
+        activeRegions: 4,
+      },
+    };
+  }
+}
+
+export default async function Page() {
+  const showcase = await getShowcaseData();
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData()) }}
       />
-      <JobPortalClient />
+      <JobPortalClient initialShowcase={showcase} />
     </>
   );
 }
