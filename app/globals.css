@@ -142,6 +142,10 @@ label {
   gap: 8px;
 }
 
+.suggest-field {
+  position: relative;
+}
+
 label span {
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.76rem;
@@ -170,6 +174,55 @@ a:focus-visible {
 input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(245, 197, 66, 0.45);
+}
+
+.suggest-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  display: grid;
+  width: min(100%, 420px);
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 6px;
+  background: var(--white);
+  border: 2px solid var(--line);
+  box-shadow: 6px 6px 0 rgba(21, 21, 21, 0.18);
+}
+
+.suggest-menu::before {
+  position: absolute;
+  top: -8px;
+  left: 28px;
+  width: 14px;
+  height: 14px;
+  background: var(--white);
+  border-top: 2px solid var(--line);
+  border-left: 2px solid var(--line);
+  content: "";
+  transform: rotate(45deg);
+}
+
+.suggest-option {
+  position: relative;
+  justify-content: flex-start;
+  min-height: 42px;
+  padding: 0 12px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 800;
+  text-align: left;
+}
+
+.suggest-option:hover:not(:disabled),
+.suggest-option:focus-visible {
+  color: var(--white);
+  background: var(--accent);
+  box-shadow: none;
+  transform: none;
 }
 
 .exact-location-toggle {

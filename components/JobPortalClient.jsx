@@ -151,6 +151,7 @@ function getErrorMessage(error, action) {
 export default function Home() {
   const [keyword, setKeyword] = useState("Softwareentwickler");
   const [location, setLocation] = useState("Berlin");
+  const [openSuggest, setOpenSuggest] = useState(null);
   const [exactLocation, setExactLocation] = useState(true);
   const [payload, setPayload] = useState(null);
   const [page, setPage] = useState(1);
@@ -209,6 +210,20 @@ export default function Home() {
   }, [jobs]);
   const totalResults = payload?.exactLocation ? 0 : Number(payload?.maxErgebnisse || 0);
   const canLoadMore = hasSearched && !loading && jobs.length > 0 && (totalResults ? jobs.length < totalResults : true);
+  const visibleKeywordSuggestions = useMemo(
+    () =>
+      keywordSuggestions.filter((suggestion) =>
+        suggestion.toLocaleLowerCase("de-DE").includes(keyword.toLocaleLowerCase("de-DE")),
+      ),
+    [keyword],
+  );
+  const visibleLocationSuggestions = useMemo(
+    () =>
+      locationSuggestions.filter((suggestion) =>
+        suggestion.toLocaleLowerCase("de-DE").includes(location.toLocaleLowerCase("de-DE")),
+      ),
+    [location],
+  );
 
   function pushToast(type, message, persist = false) {
     const id = crypto.randomUUID();
@@ -424,25 +439,75 @@ export default function Home() {
           </div>
         </header>
 
-        <form className="search-panel" onSubmit={handleSearch}>
-          <label>
+        <form className="search-panel" onSubmit={handleSearch} onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) setOpenSuggest(null);
+        }}>
+          <label className="suggest-field">
             <span>Beruf oder Suchbegriff</span>
-            <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Softwareentwickler" list="keyword-suggestions" autoComplete="off" />
+            <input
+              value={keyword}
+              onChange={(event) => {
+                setKeyword(event.target.value);
+                setOpenSuggest("keyword");
+              }}
+              onFocus={() => setOpenSuggest("keyword")}
+              placeholder="Softwareentwickler"
+              autoComplete="off"
+              aria-expanded={openSuggest === "keyword"}
+              aria-controls="keyword-suggestion-list"
+            />
+            {openSuggest === "keyword" ? (
+              <div className="suggest-menu" id="keyword-suggestion-list" role="listbox">
+                {(visibleKeywordSuggestions.length ? visibleKeywordSuggestions : keywordSuggestions).map((suggestion) => (
+                  <button
+                    className="suggest-option"
+                    type="button"
+                    key={suggestion}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      setKeyword(suggestion);
+                      setOpenSuggest(null);
+                    }}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </label>
-          <label>
+          <label className="suggest-field">
             <span>Ort</span>
-            <input value={location} onChange={(event) => setLocation(event.target.value)} placeholder="Berlin" list="location-suggestions" autoComplete="off" />
+            <input
+              value={location}
+              onChange={(event) => {
+                setLocation(event.target.value);
+                setOpenSuggest("location");
+              }}
+              onFocus={() => setOpenSuggest("location")}
+              placeholder="Berlin"
+              autoComplete="off"
+              aria-expanded={openSuggest === "location"}
+              aria-controls="location-suggestion-list"
+            />
+            {openSuggest === "location" ? (
+              <div className="suggest-menu" id="location-suggestion-list" role="listbox">
+                {(visibleLocationSuggestions.length ? visibleLocationSuggestions : locationSuggestions).map((suggestion) => (
+                  <button
+                    className="suggest-option"
+                    type="button"
+                    key={suggestion}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      setLocation(suggestion);
+                      setOpenSuggest(null);
+                    }}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </label>
-          <datalist id="keyword-suggestions">
-            {keywordSuggestions.map((suggestion) => (
-              <option value={suggestion} key={suggestion} />
-            ))}
-          </datalist>
-          <datalist id="location-suggestions">
-            {locationSuggestions.map((suggestion) => (
-              <option value={suggestion} key={suggestion} />
-            ))}
-          </datalist>
           <label className="exact-location-toggle">
             <input type="checkbox" checked={exactLocation} onChange={(event) => setExactLocation(event.target.checked)} />
             <span>Nur exakter Ort</span>
