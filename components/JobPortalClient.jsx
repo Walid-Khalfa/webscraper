@@ -21,6 +21,17 @@ import JobCardSkeleton from "./JobCardSkeleton";
 import ToastStack from "./ToastStack";
 
 const preferredListKeys = ["ergebnisliste", "stellenangebote", "angebote", "jobs", "items", "results", "content", "data"];
+const keywordSuggestions = [
+  "Softwareentwickler",
+  "Pflegefachkraft",
+  "Elektriker",
+  "Mechatroniker",
+  "Buchhalter",
+  "Vertriebsmitarbeiter",
+  "Projektmanager",
+  "Fachinformatiker",
+];
+const locationSuggestions = ["Berlin", "Muenchen", "Hamburg", "Koeln", "Frankfurt am Main", "Stuttgart", "Duesseldorf", "Leipzig"];
 
 async function requestJson(url, options = {}) {
   const response = await fetch(url, options);
@@ -404,7 +415,8 @@ export default function Home() {
         <header className="masthead">
           <div>
             <p className="eyebrow">Oeffentliche Suche der Bundesagentur fuer Arbeit</p>
-            <h1>Deutsches Stellenregister</h1>
+            <h1>Finden Sie Ihren naechsten Job</h1>
+            <p className="hero-copy">Live-Stellenangebote der Bundesagentur fuer Arbeit durchsuchen, pruefen und bei Bedarf als CSV exportieren.</p>
           </div>
           <div className="sync-badge">
             <Clock size={18} aria-hidden="true" />
@@ -414,13 +426,23 @@ export default function Home() {
 
         <form className="search-panel" onSubmit={handleSearch}>
           <label>
-            <span>Suchbegriff</span>
-            <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Softwareentwickler" />
+            <span>Beruf oder Suchbegriff</span>
+            <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Softwareentwickler" list="keyword-suggestions" autoComplete="off" />
           </label>
           <label>
             <span>Ort</span>
-            <input value={location} onChange={(event) => setLocation(event.target.value)} placeholder="Berlin" />
+            <input value={location} onChange={(event) => setLocation(event.target.value)} placeholder="Berlin" list="location-suggestions" autoComplete="off" />
           </label>
+          <datalist id="keyword-suggestions">
+            {keywordSuggestions.map((suggestion) => (
+              <option value={suggestion} key={suggestion} />
+            ))}
+          </datalist>
+          <datalist id="location-suggestions">
+            {locationSuggestions.map((suggestion) => (
+              <option value={suggestion} key={suggestion} />
+            ))}
+          </datalist>
           <label className="exact-location-toggle">
             <input type="checkbox" checked={exactLocation} onChange={(event) => setExactLocation(event.target.checked)} />
             <span>Nur exakter Ort</span>
@@ -428,10 +450,6 @@ export default function Home() {
           <button className="primary-action" type="submit" disabled={loading}>
             {loading ? <LoaderCircle className="spin" size={19} /> : <Search size={19} />}
             Suchen
-          </button>
-          <button className="secondary-action" type="button" onClick={handleExport} disabled={exporting}>
-            {exporting ? <LoaderCircle className="spin" size={19} /> : <Download size={19} />}
-            CSV exportieren
           </button>
         </form>
 
@@ -445,23 +463,31 @@ export default function Home() {
           </div>
         ) : null}
 
-        <section className="results-header" aria-live="polite">
-          <div>
-            <p className="eyebrow">Ergebnisse</p>
-            <h2>
-              {loading
-                ? "Stellenangebote werden geladen..."
-                : hasSearched
-                  ? `${jobs.length} Angebote${totalResults ? ` von ${totalResults}` : ""}`
-                  : "Starten Sie Ihre Suche"}
-            </h2>
-          </div>
-          <p>{loading ? "Wir fragen die Bundesagentur-API ab." : "Der CSV-Export laedt bis zu 200 Live-Ergebnisse serverseitig."}</p>
-        </section>
+        {hasSearched || loading ? (
+          <>
+            <section className="results-header" aria-live="polite">
+              <div>
+                <p className="eyebrow">Ergebnisse</p>
+                <h2>
+                  {loading
+                    ? "Stellenangebote werden geladen..."
+                    : `${jobs.length} Angebote${totalResults ? ` von ${totalResults}` : ""}`}
+                </h2>
+              </div>
+              <div className="results-actions">
+                <p>{loading ? "Wir fragen die Bundesagentur-API ab." : "Export fuer Agenturen und Power User."}</p>
+                <button className="ghost-action" type="button" onClick={handleExport} disabled={exporting || loading}>
+                  {exporting ? <LoaderCircle className="spin" size={19} /> : <Download size={19} />}
+                  CSV exportieren
+                </button>
+              </div>
+            </section>
 
-        <div className="filter-note">
-          Die Bundesagentur-API kann Ergebnisse aus dem Umkreis liefern. Mit "Nur exakter Ort" werden nur Angebote aus dem eingegebenen Ort angezeigt und exportiert.
-        </div>
+            <div className="filter-note">
+              Die Bundesagentur-API kann Ergebnisse aus dem Umkreis liefern. Mit "Nur exakter Ort" werden nur Angebote aus dem eingegebenen Ort angezeigt und exportiert.
+            </div>
+          </>
+        ) : null}
 
         {loading ? (
           <section className="results-grid" aria-label="Stellenangebote werden geladen">
@@ -501,8 +527,8 @@ export default function Home() {
             <div className="zero-illustration" aria-hidden="true">
               <Search size={42} />
             </div>
-            <h3>Bereit fuer die erste Suche</h3>
-            <p>Geben Sie einen Beruf und einen Ort ein. Die Ergebnisse erscheinen hier als exportierbare Stellenkarten.</p>
+            <h3>Geben Sie Beruf und Ort ein</h3>
+            <p>Die passenden Stellenangebote erscheinen direkt hier. Der CSV-Export wird nach der Suche in den Ergebnissen angeboten.</p>
           </div>
         )}
 

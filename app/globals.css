@@ -100,6 +100,15 @@ h1 {
   line-height: 0.88;
 }
 
+.hero-copy {
+  max-width: 690px;
+  margin: 18px 0 0;
+  color: var(--steel);
+  font-size: clamp(1.02rem, 2vw, 1.22rem);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .sync-badge {
   display: inline-flex;
   align-items: center;
@@ -124,7 +133,7 @@ h1 {
 }
 
 .search-panel {
-  grid-template-columns: minmax(190px, 1fr) minmax(190px, 1fr) auto auto auto;
+  grid-template-columns: minmax(240px, 1.2fr) minmax(220px, 1fr) auto auto;
   align-items: flex-end;
 }
 
@@ -154,8 +163,13 @@ input {
 input:focus-visible,
 button:focus-visible,
 a:focus-visible {
-  outline: 3px solid var(--signal);
+  outline: 4px solid var(--signal);
   outline-offset: 3px;
+}
+
+input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(245, 197, 66, 0.45);
 }
 
 .exact-location-toggle {
@@ -252,6 +266,16 @@ button:disabled {
   background: var(--paper-deep);
 }
 
+.ghost-action {
+  color: var(--ink);
+  background: transparent;
+  box-shadow: none;
+}
+
+.ghost-action:hover:not(:disabled) {
+  background: var(--white);
+}
+
 .back-link,
 .job-card h3 a,
 .reference {
@@ -302,11 +326,18 @@ button:disabled {
   font-size: clamp(1.6rem, 3vw, 2.6rem);
 }
 
-.results-header p:last-child {
+.results-actions {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+
+.results-actions p {
   max-width: 360px;
   color: var(--steel);
   font-weight: 600;
   text-align: right;
+  margin: 0;
 }
 
 .results-grid {
@@ -553,7 +584,7 @@ button:disabled {
 }
 
 .saas-section {
-  margin-top: 54px;
+  margin-top: 88px;
   padding-top: 28px;
   border-top: 4px solid var(--line);
 }
@@ -597,8 +628,8 @@ button:disabled {
 .saas-header h2 {
   max-width: 760px;
   margin-bottom: 0;
-  font-size: clamp(1.9rem, 4vw, 3.8rem);
-  line-height: 0.94;
+  font-size: clamp(1.55rem, 3vw, 2.8rem);
+  line-height: 1;
 }
 
 .saas-grid {
@@ -848,7 +879,11 @@ button:disabled {
     display: grid;
   }
 
-  .results-header p:last-child {
+  .results-actions {
+    justify-items: start;
+  }
+
+  .results-actions p {
     max-width: none;
     text-align: left;
   }
