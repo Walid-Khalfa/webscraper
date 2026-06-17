@@ -750,51 +750,6 @@ button:disabled {
   line-height: 1.45;
 }
 
-.api-key-box {
-  display: grid;
-  gap: 12px;
-  max-width: 100%;
-  padding: 12px;
-  background: var(--paper);
-  border: 2px dashed var(--line);
-}
-
-.api-key-box div {
-  display: grid;
-  gap: 6px;
-}
-
-.api-key-box span {
-  color: var(--accent-dark);
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 0.74rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.api-key-box strong {
-  overflow-wrap: anywhere;
-}
-
-.api-key-box code {
-  max-width: 100%;
-  overflow-wrap: anywhere;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 0.82rem;
-}
-
-.api-key-actions {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.api-key-actions button {
-  min-height: 40px;
-  padding: 0 10px;
-  font-size: 0.82rem;
-}
-
 .agency-summary-card {
   display: grid;
   gap: 12px;
@@ -1046,10 +1001,6 @@ button:disabled {
 
   .subscription-actions button {
     width: 100%;
-  }
-
-  .api-key-actions {
-    grid-template-columns: 1fr;
   }
 
   .job-detail-grid {

@@ -5,10 +5,7 @@ import {
   AlertTriangle,
   ChevronDown,
   Clock,
-  Copy,
   Download,
-  Eye,
-  EyeOff,
   KeyRound,
   LoaderCircle,
   LogOut,
@@ -173,8 +170,6 @@ export default function Home() {
   const [hasSearched, setHasSearched] = useState(false);
   const [agentOpen, setAgentOpen] = useState(false);
   const [agency, setAgency] = useState(null);
-  const [showAgencyKey, setShowAgencyKey] = useState(false);
-  const [showAgencyAdmin, setShowAgencyAdmin] = useState(false);
   const [agencyForm, setAgencyForm] = useState({ name: "", email: "", plan: "starter" });
   const [alertForm, setAlertForm] = useState({ keyword: "", location: "", frequency: "daily", max_results: 25 });
   const [subscriptions, setSubscriptions] = useState([]);
@@ -346,7 +341,7 @@ export default function Home() {
       });
       setAgency(created);
       localStorage.setItem("agencyProfile", JSON.stringify(created));
-      setSaasStatus("Agentur-Arbeitsbereich erstellt. Die Verwaltungsdetails koennen bei Bedarf im Bereich Details angezeigt werden.");
+      setSaasStatus("Agentur-Arbeitsbereich erstellt.");
     } catch (err) {
       setSaasStatus(getErrorMessage(err, "Agentur-Erstellung"));
     } finally {
@@ -354,18 +349,10 @@ export default function Home() {
     }
   }
 
-  async function handleCopyAgencyKey() {
-    if (!agency?.api_key) return;
-    await navigator.clipboard.writeText(agency.api_key);
-    setSaasStatus("Agentur-Schluessel wurde in die Zwischenablage kopiert.");
-  }
-
   function handleForgetAgency() {
     localStorage.removeItem("agencyProfile");
     setAgency(null);
     setSubscriptions([]);
-    setShowAgencyKey(false);
-    setShowAgencyAdmin(false);
     setSaasStatus("Lokaler Agentur-Arbeitsbereich wurde aus diesem Browser entfernt.");
   }
 
@@ -725,33 +712,11 @@ export default function Home() {
                         <p>{agency.email}</p>
                       </div>
                       <div className="agency-summary-actions">
-                        <button className="secondary-action" type="button" onClick={() => setShowAgencyAdmin((visible) => !visible)}>
-                          {showAgencyAdmin ? <EyeOff size={17} /> : <Eye size={17} />}
-                          {showAgencyAdmin ? "Details ausblenden" : "Details anzeigen"}
+                        <button className="secondary-action" type="button" onClick={handleForgetAgency}>
+                          <LogOut size={17} />
+                          Entfernen
                         </button>
                       </div>
-                      {showAgencyAdmin ? (
-                        <div className="api-key-box">
-                          <div>
-                            <span>Agentur-Schluessel</span>
-                            <code>{showAgencyKey ? agency.api_key : "emp_********************************"}</code>
-                          </div>
-                          <div className="api-key-actions">
-                            <button className="secondary-action" type="button" onClick={() => setShowAgencyKey((visible) => !visible)}>
-                              {showAgencyKey ? <EyeOff size={17} /> : <Eye size={17} />}
-                              {showAgencyKey ? "Ausblenden" : "Anzeigen"}
-                            </button>
-                            <button className="secondary-action" type="button" onClick={handleCopyAgencyKey}>
-                              <Copy size={17} />
-                              Kopieren
-                            </button>
-                            <button className="secondary-action" type="button" onClick={handleForgetAgency}>
-                              <LogOut size={17} />
-                              Entfernen
-                            </button>
-                          </div>
-                        </div>
-                      ) : null}
                     </div>
                   ) : null}
                 </form>
