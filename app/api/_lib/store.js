@@ -101,7 +101,7 @@ export async function createSubscription(apiKey, payload) {
 export async function listSubscriptions(apiKey) {
   const agency = await getAgency(apiKey);
   const subs = await prisma.searchSubscription.findMany({
-    where: { agencyId: agency.id },
+    where: { agencyId: agency.id, isActive: true },
     orderBy: { id: "desc" },
   });
   return subs.map(mapSubscription);
@@ -155,6 +155,17 @@ export async function getSubscription(apiKey, id) {
     },
     subscription: mapSubscription(sub),
   };
+}
+
+export async function removeSubscription(apiKey, id) {
+  const { subscription } = await getSubscription(apiKey, id);
+
+  const updated = await prisma.searchSubscription.update({
+    where: { id: Number(subscription.id) },
+    data: { isActive: false },
+  });
+
+  return mapSubscription(updated);
 }
 
 export async function deactivateSubscription(id) {

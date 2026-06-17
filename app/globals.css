@@ -882,6 +882,17 @@ button:disabled {
   text-transform: uppercase;
 }
 
+.subscription-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.subscription-actions button {
+  min-width: 132px;
+}
+
 .job-detail-page {
   display: grid;
   gap: 24px;
@@ -1027,6 +1038,14 @@ button:disabled {
   .saas-grid,
   .subscription-row {
     grid-template-columns: 1fr;
+  }
+
+  .subscription-actions {
+    justify-content: stretch;
+  }
+
+  .subscription-actions button {
+    width: 100%;
   }
 
   .api-key-actions {

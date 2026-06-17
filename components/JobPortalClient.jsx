@@ -16,6 +16,7 @@ import {
   Plus,
   Search,
   Send,
+  Trash2,
 } from "lucide-react";
 import JobCard from "./JobCard";
 import JobCardSkeleton from "./JobCardSkeleton";
@@ -425,6 +426,24 @@ export default function Home() {
     }
   }
 
+  async function handleDeleteAlert(subscriptionId) {
+    if (!agency?.api_key) return;
+    setSaasLoading(true);
+    setSaasStatus("");
+    try {
+      await requestJson(`/api/alerts/subscriptions/${subscriptionId}`, {
+        method: "DELETE",
+        headers: { "X-Agency-Key": agency.api_key },
+      });
+      await refreshSubscriptions(agency.api_key);
+      setSaasStatus("Benachrichtigung wurde entfernt.");
+    } catch (err) {
+      setSaasStatus(getErrorMessage(err, "Loeschen der Benachrichtigung"));
+    } finally {
+      setSaasLoading(false);
+    }
+  }
+
   return (
     <main className="app-shell">
       {jobPostingJsonLd ? (
@@ -773,10 +792,16 @@ export default function Home() {
                   <span className="subscription-location">{normalizeSubscriptionText(subscription.location) || "Ort fehlt"}</span>
                 </div>
                 <span className="subscription-frequency">{subscription.frequency}</span>
-                <button className="secondary-action" type="button" onClick={() => handleSendNow(subscription.id)} disabled={saasLoading}>
-                  <Send size={18} />
-                  Jetzt senden
-                </button>
+                <div className="subscription-actions">
+                  <button className="secondary-action" type="button" onClick={() => handleDeleteAlert(subscription.id)} disabled={saasLoading}>
+                    <Trash2 size={18} />
+                    Loeschen
+                  </button>
+                  <button className="secondary-action" type="button" onClick={() => handleSendNow(subscription.id)} disabled={saasLoading}>
+                    <Send size={18} />
+                    Jetzt senden
+                  </button>
+                </div>
               </article>
             ))}
           </div>
