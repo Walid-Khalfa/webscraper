@@ -5,11 +5,11 @@ function normalizeUrl(value) {
 }
 
 async function sendToPostHog(event, distinctId, properties) {
-  const apiKey = process.env.POSTHOG_API_KEY;
-  if (!apiKey) return false;
+  const projectToken = process.env.POSTHOG_PROJECT_TOKEN || process.env.POSTHOG_API_KEY;
+  if (!projectToken) return false;
 
   const payload = {
-    api_key: apiKey,
+    api_key: projectToken,
     event,
     distinct_id: distinctId || "anonymous",
     properties,
