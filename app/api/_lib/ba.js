@@ -100,6 +100,14 @@ export async function searchJobs({ keyword, location, page = 1, size = 25 }) {
   return clonePayload(payload);
 }
 
+export async function findJobByReference(reference) {
+  const safeReference = String(reference || "").trim();
+  if (!safeReference) return null;
+
+  const payload = await searchJobs({ keyword: safeReference, page: 1, size: 10 });
+  return extractJobItems(payload).find((item) => normalizeJob(item).Referenz === safeReference) || null;
+}
+
 export function extractJobItems(payload) {
   if (Array.isArray(payload)) return payload.filter((item) => item && typeof item === "object");
   if (!payload || typeof payload !== "object") return [];
@@ -120,7 +128,7 @@ export function extractJobItems(payload) {
   }, []);
 }
 
-function valueAt(item, paths) {
+export function valueAt(item, paths) {
   for (const path of paths) {
     let current = item;
     for (const part of path.split(".")) {
@@ -138,7 +146,7 @@ function valueAt(item, paths) {
   return "";
 }
 
-function flatten(value) {
+export function flatten(value) {
   if (!value) return "";
   if (typeof value === "string") return value.trim();
   if (typeof value === "number") return String(value);
