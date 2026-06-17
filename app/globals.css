@@ -146,6 +146,10 @@ label {
   position: relative;
 }
 
+.suggest-input-wrap {
+  position: relative;
+}
+
 label span {
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.76rem;
@@ -174,6 +178,38 @@ a:focus-visible {
 input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(245, 197, 66, 0.45);
+}
+
+.suggest-input-wrap input {
+  padding-right: 48px;
+}
+
+.suggest-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  z-index: 2;
+  min-height: 34px;
+  width: 34px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  transform: translateY(-50%);
+}
+
+.suggest-toggle:hover:not(:disabled) {
+  background: transparent;
+  box-shadow: none;
+  transform: translateY(-50%);
+}
+
+.suggest-chevron {
+  transition: transform 120ms ease;
+}
+
+.suggest-chevron.open {
+  transform: rotate(180deg);
 }
 
 .suggest-menu {

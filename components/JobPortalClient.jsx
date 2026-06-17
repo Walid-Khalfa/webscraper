@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
+  ChevronDown,
   Clock,
   Copy,
   Download,
@@ -33,12 +34,10 @@ const keywordSuggestions = [
 ];
 const locationSuggestions = ["Berlin", "Muenchen", "Hamburg", "Koeln", "Frankfurt am Main", "Stuttgart", "Duesseldorf", "Leipzig"];
 
-function getVisibleSuggestions(query, suggestions) {
+function getVisibleSuggestions(query, suggestions, showAll) {
+  if (showAll) return suggestions;
   const normalizedQuery = query.trim().toLocaleLowerCase("de-DE");
   if (!normalizedQuery) return suggestions;
-
-  const hasExactMatch = suggestions.some((suggestion) => suggestion.toLocaleLowerCase("de-DE") === normalizedQuery);
-  if (hasExactMatch) return suggestions;
 
   return suggestions.filter((suggestion) => suggestion.toLocaleLowerCase("de-DE").includes(normalizedQuery));
 }
@@ -162,6 +161,7 @@ export default function Home() {
   const [keyword, setKeyword] = useState("Softwareentwickler");
   const [location, setLocation] = useState("Berlin");
   const [openSuggest, setOpenSuggest] = useState(null);
+  const [showAllSuggestions, setShowAllSuggestions] = useState(true);
   const [exactLocation, setExactLocation] = useState(true);
   const [payload, setPayload] = useState(null);
   const [page, setPage] = useState(1);
@@ -220,8 +220,14 @@ export default function Home() {
   }, [jobs]);
   const totalResults = payload?.exactLocation ? 0 : Number(payload?.maxErgebnisse || 0);
   const canLoadMore = hasSearched && !loading && jobs.length > 0 && (totalResults ? jobs.length < totalResults : true);
-  const visibleKeywordSuggestions = useMemo(() => getVisibleSuggestions(keyword, keywordSuggestions), [keyword]);
-  const visibleLocationSuggestions = useMemo(() => getVisibleSuggestions(location, locationSuggestions), [location]);
+  const visibleKeywordSuggestions = useMemo(
+    () => getVisibleSuggestions(keyword, keywordSuggestions, openSuggest === "keyword" && showAllSuggestions),
+    [keyword, openSuggest, showAllSuggestions],
+  );
+  const visibleLocationSuggestions = useMemo(
+    () => getVisibleSuggestions(location, locationSuggestions, openSuggest === "location" && showAllSuggestions),
+    [location, openSuggest, showAllSuggestions],
+  );
 
   function pushToast(type, message, persist = false) {
     const id = crypto.randomUUID();
@@ -438,22 +444,49 @@ export default function Home() {
         </header>
 
         <form className="search-panel" onSubmit={handleSearch} onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) setOpenSuggest(null);
+          if (!event.currentTarget.contains(event.relatedTarget)) {
+            setOpenSuggest(null);
+            setShowAllSuggestions(true);
+          }
         }}>
           <label className="suggest-field">
             <span>Beruf oder Suchbegriff</span>
-            <input
-              value={keyword}
-              onChange={(event) => {
-                setKeyword(event.target.value);
-                setOpenSuggest("keyword");
-              }}
-              onFocus={() => setOpenSuggest("keyword")}
-              placeholder="Softwareentwickler"
-              autoComplete="off"
-              aria-expanded={openSuggest === "keyword"}
-              aria-controls="keyword-suggestion-list"
-            />
+            <div className="suggest-input-wrap">
+              <input
+                value={keyword}
+                onChange={(event) => {
+                  setKeyword(event.target.value);
+                  setOpenSuggest("keyword");
+                  setShowAllSuggestions(false);
+                }}
+                onFocus={() => {
+                  setOpenSuggest("keyword");
+                  setShowAllSuggestions(true);
+                }}
+                placeholder="Softwareentwickler"
+                autoComplete="off"
+                aria-expanded={openSuggest === "keyword"}
+                aria-controls="keyword-suggestion-list"
+              />
+              <button
+                className="suggest-toggle"
+                type="button"
+                aria-label="Berufsvorschlaege anzeigen"
+                aria-expanded={openSuggest === "keyword"}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  if (openSuggest === "keyword") {
+                    setOpenSuggest(null);
+                    setShowAllSuggestions(true);
+                    return;
+                  }
+                  setOpenSuggest("keyword");
+                  setShowAllSuggestions(true);
+                }}
+              >
+                <ChevronDown size={18} className={openSuggest === "keyword" ? "suggest-chevron open" : "suggest-chevron"} />
+              </button>
+            </div>
             {openSuggest === "keyword" ? (
               <div className="suggest-menu" id="keyword-suggestion-list" role="listbox">
                 {(visibleKeywordSuggestions.length ? visibleKeywordSuggestions : keywordSuggestions).map((suggestion) => (
@@ -465,6 +498,7 @@ export default function Home() {
                     onClick={() => {
                       setKeyword(suggestion);
                       setOpenSuggest(null);
+                      setShowAllSuggestions(true);
                     }}
                   >
                     {suggestion}
@@ -475,18 +509,42 @@ export default function Home() {
           </label>
           <label className="suggest-field">
             <span>Ort</span>
-            <input
-              value={location}
-              onChange={(event) => {
-                setLocation(event.target.value);
-                setOpenSuggest("location");
-              }}
-              onFocus={() => setOpenSuggest("location")}
-              placeholder="Berlin"
-              autoComplete="off"
-              aria-expanded={openSuggest === "location"}
-              aria-controls="location-suggestion-list"
-            />
+            <div className="suggest-input-wrap">
+              <input
+                value={location}
+                onChange={(event) => {
+                  setLocation(event.target.value);
+                  setOpenSuggest("location");
+                  setShowAllSuggestions(false);
+                }}
+                onFocus={() => {
+                  setOpenSuggest("location");
+                  setShowAllSuggestions(true);
+                }}
+                placeholder="Berlin"
+                autoComplete="off"
+                aria-expanded={openSuggest === "location"}
+                aria-controls="location-suggestion-list"
+              />
+              <button
+                className="suggest-toggle"
+                type="button"
+                aria-label="Ortsvorschlaege anzeigen"
+                aria-expanded={openSuggest === "location"}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  if (openSuggest === "location") {
+                    setOpenSuggest(null);
+                    setShowAllSuggestions(true);
+                    return;
+                  }
+                  setOpenSuggest("location");
+                  setShowAllSuggestions(true);
+                }}
+              >
+                <ChevronDown size={18} className={openSuggest === "location" ? "suggest-chevron open" : "suggest-chevron"} />
+              </button>
+            </div>
             {openSuggest === "location" ? (
               <div className="suggest-menu" id="location-suggestion-list" role="listbox">
                 {(visibleLocationSuggestions.length ? visibleLocationSuggestions : locationSuggestions).map((suggestion) => (
@@ -498,6 +556,7 @@ export default function Home() {
                     onClick={() => {
                       setLocation(suggestion);
                       setOpenSuggest(null);
+                      setShowAllSuggestions(true);
                     }}
                   >
                     {suggestion}
