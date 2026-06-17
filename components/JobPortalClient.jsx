@@ -33,6 +33,16 @@ const keywordSuggestions = [
 ];
 const locationSuggestions = ["Berlin", "Muenchen", "Hamburg", "Koeln", "Frankfurt am Main", "Stuttgart", "Duesseldorf", "Leipzig"];
 
+function getVisibleSuggestions(query, suggestions) {
+  const normalizedQuery = query.trim().toLocaleLowerCase("de-DE");
+  if (!normalizedQuery) return suggestions;
+
+  const hasExactMatch = suggestions.some((suggestion) => suggestion.toLocaleLowerCase("de-DE") === normalizedQuery);
+  if (hasExactMatch) return suggestions;
+
+  return suggestions.filter((suggestion) => suggestion.toLocaleLowerCase("de-DE").includes(normalizedQuery));
+}
+
 async function requestJson(url, options = {}) {
   const response = await fetch(url, options);
   const contentType = response.headers.get("content-type") || "";
@@ -210,20 +220,8 @@ export default function Home() {
   }, [jobs]);
   const totalResults = payload?.exactLocation ? 0 : Number(payload?.maxErgebnisse || 0);
   const canLoadMore = hasSearched && !loading && jobs.length > 0 && (totalResults ? jobs.length < totalResults : true);
-  const visibleKeywordSuggestions = useMemo(
-    () =>
-      keywordSuggestions.filter((suggestion) =>
-        suggestion.toLocaleLowerCase("de-DE").includes(keyword.toLocaleLowerCase("de-DE")),
-      ),
-    [keyword],
-  );
-  const visibleLocationSuggestions = useMemo(
-    () =>
-      locationSuggestions.filter((suggestion) =>
-        suggestion.toLocaleLowerCase("de-DE").includes(location.toLocaleLowerCase("de-DE")),
-      ),
-    [location],
-  );
+  const visibleKeywordSuggestions = useMemo(() => getVisibleSuggestions(keyword, keywordSuggestions), [keyword]);
+  const visibleLocationSuggestions = useMemo(() => getVisibleSuggestions(location, locationSuggestions), [location]);
 
   function pushToast(type, message, persist = false) {
     const id = crypto.randomUUID();
