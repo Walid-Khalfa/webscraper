@@ -6,7 +6,7 @@ export default function JobCard({ job }) {
       <div className="job-card-top">
         <span className="reference">{job.reference}</span>
         {job.url ? (
-          <a className="icon-link" href={job.url} target="_blank" rel="noreferrer" aria-label="Stellendetail oeffnen">
+          <a className="icon-link" href={job.url} target="_blank" rel="noopener noreferrer" aria-label="Stellendetail oeffnen">
             <ExternalLink size={18} />
           </a>
         ) : null}
@@ -27,7 +27,7 @@ export default function JobCard({ job }) {
       <div className="job-card-footer">
         {job.occupation ? <p className="occupation">{job.occupation}</p> : <span />}
         {job.url ? (
-          <a className="apply-link" href={job.url} target="_blank" rel="noreferrer">
+          <a className="apply-link" href={job.url} target="_blank" rel="noopener noreferrer" aria-label={`${job.title} bewerben`}>
             Bewerben
           </a>
         ) : null}
