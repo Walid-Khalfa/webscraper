@@ -10,10 +10,41 @@ const BA_HEADERS = {
 };
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
+const BA_TIMEOUT_MS = Number(process.env.BA_TIMEOUT_MS || 12000);
 const responseCache = globalThis.__baSearchCache ?? new Map();
 globalThis.__baSearchCache = responseCache;
 
 let oauthToken = globalThis.__baOauthToken ?? null;
+
+function createAppError(message, status = 500, code = "BA_API_ERROR") {
+  const error = new Error(message);
+  error.status = status;
+  error.code = code;
+  return error;
+}
+
+async function fetchWithTimeout(url, options = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), BA_TIMEOUT_MS);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw createAppError(
+        "Die Bundesagentur-API hat nicht rechtzeitig geantwortet. Bitte versuchen Sie es in wenigen Sekunden erneut.",
+        504,
+        "BA_TIMEOUT",
+      );
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 async function getOAuthToken() {
   const clientId = process.env.BA_CLIENT_ID;
@@ -28,7 +59,7 @@ async function getOAuthToken() {
     client_id: clientId,
     client_secret: clientSecret,
   });
-  const response = await fetch(tokenUrl, {
+  const response = await fetchWithTimeout(tokenUrl, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
@@ -36,7 +67,7 @@ async function getOAuthToken() {
   });
 
   if (!response.ok) {
-    throw new Error(`BA OAuth token request failed with ${response.status}`);
+    throw createAppError(`BA OAuth token request failed with ${response.status}`, 502, "BA_OAUTH_FAILED");
   }
 
   const payload = await response.json();
@@ -76,7 +107,7 @@ export async function searchJobs({ keyword, location, page = 1, size = 25 }) {
   const cached = responseCache.get(url);
   if (cached && cached.expiresAt > Date.now()) return clonePayload(cached.payload);
 
-  let response = await fetch(url, {
+  let response = await fetchWithTimeout(url, {
     headers: await getBaHeaders(),
     cache: "no-store",
   });
@@ -84,7 +115,7 @@ export async function searchJobs({ keyword, location, page = 1, size = 25 }) {
   if (response.status === 401 && oauthToken) {
     oauthToken = null;
     globalThis.__baOauthToken = null;
-    response = await fetch(url, {
+    response = await fetchWithTimeout(url, {
       headers: await getBaHeaders(),
       cache: "no-store",
     });
@@ -92,7 +123,12 @@ export async function searchJobs({ keyword, location, page = 1, size = 25 }) {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Bundesagentur API returned ${response.status}: ${text.slice(0, 180)}`);
+    const status = [401, 403].includes(response.status) ? 502 : response.status >= 500 ? 503 : 502;
+    const message =
+      response.status >= 500
+        ? "Die Bundesagentur-API ist momentan nicht verfuegbar. Bitte versuchen Sie es spaeter erneut."
+        : "Die Bundesagentur-API konnte die Anfrage nicht erfolgreich verarbeiten.";
+    throw createAppError(`${message} (${response.status}) ${text.slice(0, 180)}`.trim(), status, "BA_UPSTREAM_ERROR");
   }
 
   const payload = await response.json();

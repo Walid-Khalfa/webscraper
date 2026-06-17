@@ -18,6 +18,7 @@ import {
 import JobCard from "./JobCard";
 import JobCardSkeleton from "./JobCardSkeleton";
 import ToastStack from "./ToastStack";
+import { trackEvent } from "./analytics";
 
 const preferredListKeys = ["ergebnisliste", "stellenangebote", "angebote", "jobs", "items", "results", "content", "data"];
 const keywordSuggestions = [
@@ -325,6 +326,11 @@ export default function Home() {
   async function handleExport() {
     setExporting(true);
     setError("");
+    trackEvent("csv_export_started", {
+      keyword,
+      location,
+      exactLocation,
+    });
     try {
       const params = new URLSearchParams({ keyword, location, exactLocation: String(exactLocation) });
       const response = await fetch(`/api/jobs/export/csv?${params.toString()}`);
@@ -332,8 +338,18 @@ export default function Home() {
       const safeKeyword = (keyword || "alle").trim().replace(/\s+/g, "-");
       const safeLocation = (location || "deutschland").trim().replace(/\s+/g, "-");
       downloadBlob(await response.blob(), `stellenangebote-${safeKeyword}-${safeLocation}.csv`);
+      trackEvent("csv_export_completed", {
+        keyword,
+        location,
+        exactLocation,
+      });
     } catch (err) {
       setError(getErrorMessage(err, "CSV-Export"));
+      trackEvent("csv_export_failed", {
+        keyword,
+        location,
+        exactLocation,
+      });
     } finally {
       setExporting(false);
     }
@@ -352,6 +368,9 @@ export default function Home() {
       setAgency(created);
       localStorage.setItem("agencyProfile", JSON.stringify(created));
       setSaasStatus("Agentur-Arbeitsbereich erstellt.");
+      trackEvent("agency_created", {
+        plan: created.plan,
+      });
     } catch (err) {
       setSaasStatus(getErrorMessage(err, "Agentur-Erstellung"));
     } finally {
@@ -395,6 +414,10 @@ export default function Home() {
       });
       await refreshSubscriptions(agency.api_key);
       setSaasStatus("E-Mail-Benachrichtigung erstellt. Sie kann jetzt manuell oder per geplantem Job ausgefuehrt werden.");
+      trackEvent("agency_alert_created", {
+        keyword: alertForm.keyword,
+        location: alertForm.location,
+      });
     } catch (err) {
       setSaasStatus(getErrorMessage(err, "Benachrichtigungserstellung"));
     } finally {
@@ -416,6 +439,11 @@ export default function Home() {
           ? `Zusammenfassung fuer ${result.recipient} vorbereitet. Konfigurieren Sie SMTP, um echte E-Mails zu versenden.`
           : `Zusammenfassung mit ${result.job_count} Stellenangeboten an ${result.recipient} gesendet.`,
       );
+      trackEvent("agency_alert_send_now", {
+        subscriptionId,
+        jobCount: result.job_count || 0,
+        dryRun: Boolean(result.dry_run),
+      });
     } catch (err) {
       setSaasStatus(getErrorMessage(err, "Versand der Zusammenfassung"));
     } finally {
@@ -434,6 +462,9 @@ export default function Home() {
       });
       await refreshSubscriptions(agency.api_key);
       setSaasStatus("Benachrichtigung wurde entfernt.");
+      trackEvent("agency_alert_deleted", {
+        subscriptionId,
+      });
     } catch (err) {
       setSaasStatus(getErrorMessage(err, "Loeschen der Benachrichtigung"));
     } finally {
@@ -684,7 +715,18 @@ export default function Home() {
               <p className="eyebrow">SaaS-Benachrichtigungen fuer Agenturen</p>
               <h2>Abonnierte Agenturen erhalten aktuelle Stellenangebote per E-Mail.</h2>
             </div>
-            <button className="secondary-action" type="button" onClick={() => setAgentOpen((open) => !open)} aria-expanded={agentOpen}>
+            <button
+              className="secondary-action"
+              type="button"
+              onClick={() =>
+                setAgentOpen((open) => {
+                  const next = !open;
+                  if (next) trackEvent("agent_configurator_opened");
+                  return next;
+                })
+              }
+              aria-expanded={agentOpen}
+            >
               <Mail size={18} aria-hidden="true" />
               {agentOpen ? "Agent ausblenden" : "Agent konfigurieren"}
             </button>
