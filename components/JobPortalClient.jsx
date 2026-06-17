@@ -32,6 +32,12 @@ const keywordSuggestions = [
   "Fachinformatiker",
 ];
 const locationSuggestions = ["Berlin", "Muenchen", "Hamburg", "Koeln", "Frankfurt am Main", "Stuttgart", "Duesseldorf", "Leipzig"];
+const quickSearches = [
+  { keyword: "Softwareentwickler", location: "Berlin" },
+  { keyword: "Pflegefachkraft", location: "Hamburg" },
+  { keyword: "Elektriker", location: "Koeln" },
+  { keyword: "Projektmanager", location: "Frankfurt am Main" },
+];
 
 function getVisibleSuggestions(query, suggestions, showAll) {
   if (showAll) return suggestions;
@@ -156,6 +162,16 @@ function getErrorMessage(error, action) {
   return error.message || `${action} fehlgeschlagen`;
 }
 
+function formatLastUpdated(value) {
+  if (!value) return "Noch keine Suche";
+  const diffMs = Date.now() - value;
+  const minutes = Math.max(0, Math.round(diffMs / 60000));
+  if (minutes <= 1) return "Gerade eben aktualisiert";
+  if (minutes < 60) return `Vor ${minutes} Minuten aktualisiert`;
+  const hours = Math.round(minutes / 60);
+  return `Vor ${hours} Stunde${hours === 1 ? "" : "n"} aktualisiert`;
+}
+
 export default function Home() {
   const [keyword, setKeyword] = useState("Softwareentwickler");
   const [location, setLocation] = useState("Berlin");
@@ -171,6 +187,7 @@ export default function Home() {
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
+  const [lastSearchAt, setLastSearchAt] = useState(null);
   const [agentOpen, setAgentOpen] = useState(false);
   const [agency, setAgency] = useState(null);
   const [agencyForm, setAgencyForm] = useState({ name: "", email: "", plan: "starter" });
@@ -236,6 +253,27 @@ export default function Home() {
     () => getVisibleSuggestions(alertForm.location, locationSuggestions, agentSuggest === "location" && showAllAgentSuggestions),
     [alertForm.location, agentSuggest, showAllAgentSuggestions],
   );
+  const trustItems = useMemo(
+    () => [
+      {
+        label: "Live-API",
+        value: "Bundesagentur fuer Arbeit",
+      },
+      {
+        label: "Aktuelle Treffer",
+        value: hasSearched ? `${totalResults || jobs.length} Ergebnisse` : "Suche starten",
+      },
+      {
+        label: "Aktualisierung",
+        value: formatLastUpdated(lastSearchAt),
+      },
+      {
+        label: "Fuer Recruiting-Teams",
+        value: "CSV-Export und Job-Alarm",
+      },
+    ],
+    [hasSearched, jobs.length, lastSearchAt, totalResults],
+  );
 
   function pushToast(type, message, persist = false) {
     const id = crypto.randomUUID();
@@ -255,6 +293,14 @@ export default function Home() {
       ...nextPayload,
       ergebnisliste: [...currentItems, ...nextItems],
     };
+  }
+
+  function applyQuickSearch(nextKeyword, nextLocation) {
+    setKeyword(nextKeyword);
+    setLocation(nextLocation);
+    setExactLocation(true);
+    setOpenSuggest(null);
+    setShowAllSuggestions(true);
   }
 
   useEffect(() => {
@@ -290,6 +336,7 @@ export default function Home() {
       window.history.replaceState(null, "", `?${shareParams.toString()}`);
       const result = await requestJson(`/api/jobs/search?${params.toString()}`);
       setPayload(result);
+      setLastSearchAt(Date.now());
       const count = extractJobs(result).length;
       pushToast(count ? "success" : "success", count ? `${count} Stellenangebote gefunden` : "Keine passenden Stellenangebote gefunden");
     } catch (err) {
@@ -313,6 +360,7 @@ export default function Home() {
       const nextCount = extractJobs(result).length;
       setPayload((current) => mergePayload(current, result));
       setPage(nextPage);
+      setLastSearchAt(Date.now());
       pushToast(nextCount ? "success" : "success", nextCount ? `${nextCount} weitere Stellenangebote geladen` : "Keine weiteren Stellenangebote gefunden");
     } catch (err) {
       const message = getErrorMessage(err, "Suche");
@@ -488,147 +536,183 @@ export default function Home() {
       </aside>
 
       <section className="workspace">
-        <header className="masthead">
-          <div>
-            <p className="eyebrow">Oeffentliche Suche der Bundesagentur fuer Arbeit</p>
-            <h1>Finden Sie Ihren naechsten Job</h1>
-            <p className="hero-copy">Live-Stellenangebote der Bundesagentur fuer Arbeit durchsuchen, pruefen und bei Bedarf als CSV exportieren.</p>
+        <div className="product-topbar">
+          <span>KhalfaJobs fuer Recruiting-Teams</span>
+          <span>Datenquelle: Bundesagentur fuer Arbeit</span>
+          <span>Live-Suche, CSV-Export und Job-Alarme</span>
+        </div>
+
+        <header className="masthead hero-layout">
+          <div className="hero-primary">
+            <p className="eyebrow">Live-Stellensuche fuer Agenturen, Recruiter und Personalberater</p>
+            <h1>Finden Sie passende Fachkraefte schneller.</h1>
+            <p className="hero-copy">
+              Durchsuchen Sie aktuelle Stellenangebote der Bundesagentur fuer Arbeit in Echtzeit und exportieren Sie passende Ergebnisse als CSV.
+            </p>
           </div>
-          <div className="sync-badge">
-            <Clock size={18} aria-hidden="true" />
-            Live-API
+          <div className="hero-proof">
+            <div className="sync-badge">
+              <Clock size={18} aria-hidden="true" />
+              Live-API
+            </div>
+            <p>Fuer Arbeitsvermittlungen, Personalberater, Headhunter und mittelstaendische Recruiting-Teams.</p>
           </div>
         </header>
 
-        <form className="search-panel" onSubmit={handleSearch} onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) {
-            setOpenSuggest(null);
-            setShowAllSuggestions(true);
-          }
-        }}>
-          <label className="suggest-field">
-            <span>Beruf oder Suchbegriff</span>
-            <div className="suggest-input-wrap">
-              <input
-                value={keyword}
-                onChange={(event) => {
-                  setKeyword(event.target.value);
-                  setOpenSuggest("keyword");
-                  setShowAllSuggestions(false);
-                }}
-                onFocus={() => {
-                  setOpenSuggest("keyword");
-                  setShowAllSuggestions(true);
-                }}
-                autoComplete="off"
-                aria-expanded={openSuggest === "keyword"}
-                aria-controls="keyword-suggestion-list"
-              />
-              <button
-                className="suggest-toggle"
-                type="button"
-                aria-label="Berufsvorschlaege anzeigen"
-                aria-expanded={openSuggest === "keyword"}
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => {
-                  if (openSuggest === "keyword") {
-                    setOpenSuggest(null);
+        <section className="search-stage">
+          <form className="search-panel search-panel-prominent" onSubmit={handleSearch} onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) {
+              setOpenSuggest(null);
+              setShowAllSuggestions(true);
+            }
+          }}>
+            <label className="suggest-field">
+              <span>Beruf oder Suchbegriff</span>
+              <div className="suggest-input-wrap">
+                <input
+                  value={keyword}
+                  onChange={(event) => {
+                    setKeyword(event.target.value);
+                    setOpenSuggest("keyword");
+                    setShowAllSuggestions(false);
+                  }}
+                  onFocus={() => {
+                    setOpenSuggest("keyword");
                     setShowAllSuggestions(true);
-                    return;
-                  }
-                  setOpenSuggest("keyword");
-                  setShowAllSuggestions(true);
-                }}
-              >
-                <ChevronDown size={18} className={openSuggest === "keyword" ? "suggest-chevron open" : "suggest-chevron"} />
-              </button>
-            </div>
-            {openSuggest === "keyword" ? (
-              <div className="suggest-menu" id="keyword-suggestion-list" role="listbox">
-                {(visibleKeywordSuggestions.length ? visibleKeywordSuggestions : keywordSuggestions).map((suggestion) => (
-                  <button
-                    className="suggest-option"
-                    type="button"
-                    key={suggestion}
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => {
-                      setKeyword(suggestion);
+                  }}
+                  autoComplete="off"
+                  aria-expanded={openSuggest === "keyword"}
+                  aria-controls="keyword-suggestion-list"
+                />
+                <button
+                  className="suggest-toggle"
+                  type="button"
+                  aria-label="Berufsvorschlaege anzeigen"
+                  aria-expanded={openSuggest === "keyword"}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => {
+                    if (openSuggest === "keyword") {
                       setOpenSuggest(null);
                       setShowAllSuggestions(true);
-                    }}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </label>
-          <label className="suggest-field">
-            <span>Ort</span>
-            <div className="suggest-input-wrap">
-              <input
-                value={location}
-                onChange={(event) => {
-                  setLocation(event.target.value);
-                  setOpenSuggest("location");
-                  setShowAllSuggestions(false);
-                }}
-                onFocus={() => {
-                  setOpenSuggest("location");
-                  setShowAllSuggestions(true);
-                }}
-                autoComplete="off"
-                aria-expanded={openSuggest === "location"}
-                aria-controls="location-suggestion-list"
-              />
-              <button
-                className="suggest-toggle"
-                type="button"
-                aria-label="Ortsvorschlaege anzeigen"
-                aria-expanded={openSuggest === "location"}
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => {
-                  if (openSuggest === "location") {
-                    setOpenSuggest(null);
+                      return;
+                    }
+                    setOpenSuggest("keyword");
                     setShowAllSuggestions(true);
-                    return;
-                  }
-                  setOpenSuggest("location");
-                  setShowAllSuggestions(true);
-                }}
-              >
-                <ChevronDown size={18} className={openSuggest === "location" ? "suggest-chevron open" : "suggest-chevron"} />
-              </button>
-            </div>
-            {openSuggest === "location" ? (
-              <div className="suggest-menu" id="location-suggestion-list" role="listbox">
-                {(visibleLocationSuggestions.length ? visibleLocationSuggestions : locationSuggestions).map((suggestion) => (
-                  <button
-                    className="suggest-option"
-                    type="button"
-                    key={suggestion}
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => {
-                      setLocation(suggestion);
+                  }}
+                >
+                  <ChevronDown size={18} className={openSuggest === "keyword" ? "suggest-chevron open" : "suggest-chevron"} />
+                </button>
+              </div>
+              {openSuggest === "keyword" ? (
+                <div className="suggest-menu" id="keyword-suggestion-list" role="listbox">
+                  {(visibleKeywordSuggestions.length ? visibleKeywordSuggestions : keywordSuggestions).map((suggestion) => (
+                    <button
+                      className="suggest-option"
+                      type="button"
+                      key={suggestion}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => {
+                        setKeyword(suggestion);
+                        setOpenSuggest(null);
+                        setShowAllSuggestions(true);
+                      }}
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </label>
+            <label className="suggest-field">
+              <span>Ort</span>
+              <div className="suggest-input-wrap">
+                <input
+                  value={location}
+                  onChange={(event) => {
+                    setLocation(event.target.value);
+                    setOpenSuggest("location");
+                    setShowAllSuggestions(false);
+                  }}
+                  onFocus={() => {
+                    setOpenSuggest("location");
+                    setShowAllSuggestions(true);
+                  }}
+                  autoComplete="off"
+                  aria-expanded={openSuggest === "location"}
+                  aria-controls="location-suggestion-list"
+                />
+                <button
+                  className="suggest-toggle"
+                  type="button"
+                  aria-label="Ortsvorschlaege anzeigen"
+                  aria-expanded={openSuggest === "location"}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => {
+                    if (openSuggest === "location") {
                       setOpenSuggest(null);
                       setShowAllSuggestions(true);
-                    }}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
+                      return;
+                    }
+                    setOpenSuggest("location");
+                    setShowAllSuggestions(true);
+                  }}
+                >
+                  <ChevronDown size={18} className={openSuggest === "location" ? "suggest-chevron open" : "suggest-chevron"} />
+                </button>
               </div>
-            ) : null}
-          </label>
-          <label className="exact-location-toggle">
-            <input type="checkbox" checked={exactLocation} onChange={(event) => setExactLocation(event.target.checked)} />
-            <span>Nur exakter Ort</span>
-          </label>
-          <button className="primary-action" type="submit" disabled={loading}>
-            {loading ? <LoaderCircle className="spin" size={19} /> : <Search size={19} />}
-            Suchen
-          </button>
-        </form>
+              {openSuggest === "location" ? (
+                <div className="suggest-menu" id="location-suggestion-list" role="listbox">
+                  {(visibleLocationSuggestions.length ? visibleLocationSuggestions : locationSuggestions).map((suggestion) => (
+                    <button
+                      className="suggest-option"
+                      type="button"
+                      key={suggestion}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => {
+                        setLocation(suggestion);
+                        setOpenSuggest(null);
+                        setShowAllSuggestions(true);
+                      }}
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </label>
+            <label className="exact-location-toggle">
+              <input type="checkbox" checked={exactLocation} onChange={(event) => setExactLocation(event.target.checked)} />
+              <span>Nur exakte Treffer</span>
+            </label>
+            <button className="primary-action" type="submit" disabled={loading}>
+              {loading ? <LoaderCircle className="spin" size={19} /> : <Search size={19} />}
+              Suchen
+            </button>
+          </form>
+
+          <div className="trust-strip" aria-label="Produkt- und API-Informationen">
+            {trustItems.map((item) => (
+              <div className="trust-item" key={item.label}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </div>
+            ))}
+          </div>
+
+          <div className="quick-searches">
+            <span className="quick-search-label">Beliebte Einstiege</span>
+            {quickSearches.map((entry) => (
+              <button
+                key={`${entry.keyword}-${entry.location}`}
+                className="quick-search-chip"
+                type="button"
+                onClick={() => applyQuickSearch(entry.keyword, entry.location)}
+              >
+                {entry.keyword} in {entry.location}
+              </button>
+            ))}
+          </div>
+        </section>
 
         {error ? (
           <div className="error-banner error-panel" role="alert">
@@ -647,12 +731,12 @@ export default function Home() {
                 <p className="eyebrow">Ergebnisse</p>
                 <h2>
                   {loading
-                    ? "Stellenangebote werden geladen..."
+                    ? "Aktuelle Stellenangebote werden geladen..."
                     : `${jobs.length} Angebote${totalResults ? ` von ${totalResults}` : ""}`}
                 </h2>
               </div>
               <div className="results-actions">
-                <p>{loading ? "Wir fragen die Bundesagentur-API ab." : "Export fuer Agenturen und Power User."}</p>
+                <p>{loading ? "Wir fragen die Bundesagentur-API live ab." : "Exportieren Sie passende Treffer direkt als CSV fuer Ihr Recruiting-Team."}</p>
                 <button className="ghost-action" type="button" onClick={handleExport} disabled={exporting || loading}>
                   {exporting ? <LoaderCircle className="spin" size={19} /> : <Download size={19} />}
                   CSV exportieren
@@ -704,16 +788,16 @@ export default function Home() {
             <div className="zero-illustration" aria-hidden="true">
               <Search size={42} />
             </div>
-            <h3>Geben Sie Beruf und Ort ein</h3>
-            <p>Die passenden Stellenangebote erscheinen direkt hier. Der CSV-Export wird nach der Suche in den Ergebnissen angeboten.</p>
+            <h3>Aktuelle Stellenangebote</h3>
+            <p>Geben Sie einen Beruf und einen Ort ein, um passende Stellenangebote zu finden. Danach stehen CSV-Export und Job-Alarm sofort zur Verfuegung.</p>
           </div>
         )}
 
         <section className="saas-section secondary-zone">
           <div className="saas-header">
             <div>
-              <p className="eyebrow">SaaS-Benachrichtigungen fuer Agenturen</p>
-              <h2>Abonnierte Agenturen erhalten aktuelle Stellenangebote per E-Mail.</h2>
+              <p className="eyebrow">Job-Alarm per E-Mail</p>
+              <h2>Erhalten Sie neue passende Stellenangebote automatisch jeden Morgen.</h2>
             </div>
             <button
               className="secondary-action"
@@ -735,26 +819,26 @@ export default function Home() {
           {agentOpen ? (
             <div className="agent-body">
               <div className="agent-summary">
-                <strong>Taegliche Zusammenfassung um 06:00 Uhr</strong>
-                <span>Der Cron-Endpunkt bereitet passende BA-Stellenangebote fuer jede gespeicherte Benachrichtigung vor.</span>
+                <strong>Einrichtung in zwei Schritten</strong>
+                <span>Legen Sie zuerst den Agentur-Zugang an und erstellen Sie danach einen Job-Alarm fuer Beruf und Ort.</span>
               </div>
               <div className="saas-grid">
-                <form className="saas-panel" onSubmit={handleCreateAgency}>
+                <form className="saas-panel saas-panel-secondary" onSubmit={handleCreateAgency}>
                   <div className="panel-title">
                     <KeyRound size={19} aria-hidden="true" />
-                    <h3>Agentur-Arbeitsbereich</h3>
+                    <h3>1. Agentur-Zugang</h3>
                   </div>
                   <label>
-                    <span>Agenturname</span>
+                    <span>Name der Agentur</span>
                     <input value={agencyForm.name} onChange={(event) => setAgencyForm({ ...agencyForm, name: event.target.value })} />
                   </label>
                   <label>
-                    <span>Rechnungs-E-Mail</span>
+                    <span>E-Mail-Adresse</span>
                     <input type="email" value={agencyForm.email} onChange={(event) => setAgencyForm({ ...agencyForm, email: event.target.value })} />
                   </label>
                   <button className="primary-action" type="submit" disabled={saasLoading}>
                     {saasLoading ? <LoaderCircle className="spin" size={19} /> : <Plus size={19} />}
-                    {agency ? "Neue Agentur anlegen" : "Agentur erstellen"}
+                    {agency ? "Neue Agentur anlegen" : "Agentur-Zugang erstellen"}
                   </button>
                   {agency ? (
                     <div className="agency-summary-card">
@@ -773,7 +857,7 @@ export default function Home() {
                   ) : null}
                 </form>
 
-                <form className="saas-panel" onSubmit={handleCreateAlert} onBlur={(event) => {
+                <form className="saas-panel saas-panel-primary" onSubmit={handleCreateAlert} onBlur={(event) => {
                   if (!event.currentTarget.contains(event.relatedTarget)) {
                     setAgentSuggest(null);
                     setShowAllAgentSuggestions(true);
@@ -781,10 +865,10 @@ export default function Home() {
                 }}>
                   <div className="panel-title">
                     <Mail size={19} aria-hidden="true" />
-                    <h3>E-Mail-Benachrichtigung</h3>
+                    <h3>2. Job-Alarm erstellen</h3>
                   </div>
                   <label className="suggest-field">
-                    <span>Suchbegriff</span>
+                    <span>Beruf</span>
                     <div className="suggest-input-wrap">
                       <input
                         value={alertForm.keyword}
@@ -897,11 +981,12 @@ export default function Home() {
                       </div>
                     ) : null}
                   </label>
-                  <p className="form-hint">E-Mail-Agenten verwenden immer den exakten Ort, damit keine umliegenden Gemeinden in die Zusammenfassung geraten.</p>
+                  <p className="form-hint">Der Job-Alarm nutzt immer den exakten Ort, damit nur wirklich passende Treffer in Ihrer taeglichen Zusammenfassung landen.</p>
                   <button className="secondary-action" type="submit" disabled={saasLoading || !agency}>
                     <Plus size={19} />
-                    Benachrichtigung anlegen
+                    Job-Alarm erstellen
                   </button>
+                  <div className="alarm-trust-line">Datenquelle: Bundesagentur fuer Arbeit</div>
                 </form>
               </div>
             </div>
