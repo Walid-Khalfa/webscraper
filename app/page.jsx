@@ -414,10 +414,15 @@ export default function Home() {
         ) : hasSearched && !error ? (
           <div className="zero-state" aria-live="polite">
             <div className="zero-illustration" aria-hidden="true">
-              <Search size={42} />
+              <AlertTriangle size={42} />
             </div>
             <h3>Keine passenden Stellenangebote gefunden</h3>
-            <p>Versuchen Sie einen allgemeineren Suchbegriff, entfernen Sie "Nur exakter Ort" oder suchen Sie in einem groesseren Ort.</p>
+            <p>Die Suche war erfolgreich, aber die aktuellen Filter liefern keine Treffer.</p>
+            <ul className="zero-actions">
+              <li>Pruefen Sie die Schreibweise des Ortes.</li>
+              <li>Entfernen Sie "Nur exakter Ort", wenn auch umliegende Orte relevant sind.</li>
+              <li>Verwenden Sie einen allgemeineren Suchbegriff.</li>
+            </ul>
           </div>
         ) : (
           <div className="zero-state" aria-live="polite">
@@ -455,11 +460,11 @@ export default function Home() {
                   </div>
                   <label>
                     <span>Agenturname</span>
-                    <input value={agencyForm.name} onChange={(event) => setAgencyForm({ ...agencyForm, name: event.target.value })} />
+                    <input value={agencyForm.name} onChange={(event) => setAgencyForm({ ...agencyForm, name: event.target.value })} placeholder="KhalfaJobs" />
                   </label>
                   <label>
                     <span>Rechnungs-E-Mail</span>
-                    <input type="email" value={agencyForm.email} onChange={(event) => setAgencyForm({ ...agencyForm, email: event.target.value })} />
+                    <input type="email" value={agencyForm.email} onChange={(event) => setAgencyForm({ ...agencyForm, email: event.target.value })} placeholder="agentur@beispiel.de" />
                   </label>
                   <button className="primary-action" type="submit" disabled={saasLoading}>
                     {saasLoading ? <LoaderCircle className="spin" size={19} /> : <Plus size={19} />}
@@ -480,11 +485,11 @@ export default function Home() {
                   </div>
                   <label>
                     <span>Suchbegriff</span>
-                    <input value={alertForm.keyword} onChange={(event) => setAlertForm({ ...alertForm, keyword: event.target.value })} />
+                    <input value={alertForm.keyword} onChange={(event) => setAlertForm({ ...alertForm, keyword: event.target.value })} placeholder="Pflegefachkraft" />
                   </label>
                   <label>
                     <span>Ort</span>
-                    <input value={alertForm.location} onChange={(event) => setAlertForm({ ...alertForm, location: event.target.value })} />
+                    <input value={alertForm.location} onChange={(event) => setAlertForm({ ...alertForm, location: event.target.value })} placeholder="Muenchen" />
                   </label>
                   <p className="form-hint">E-Mail-Agenten verwenden immer den exakten Ort, damit keine umliegenden Gemeinden in die Zusammenfassung geraten.</p>
                   <button className="secondary-action" type="submit" disabled={saasLoading || !agency}>
