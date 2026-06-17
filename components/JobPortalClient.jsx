@@ -160,6 +160,8 @@ export default function Home() {
   const [location, setLocation] = useState("Berlin");
   const [openSuggest, setOpenSuggest] = useState(null);
   const [showAllSuggestions, setShowAllSuggestions] = useState(true);
+  const [agentSuggest, setAgentSuggest] = useState(null);
+  const [showAllAgentSuggestions, setShowAllAgentSuggestions] = useState(true);
   const [exactLocation, setExactLocation] = useState(true);
   const [payload, setPayload] = useState(null);
   const [page, setPage] = useState(1);
@@ -224,6 +226,14 @@ export default function Home() {
   const visibleLocationSuggestions = useMemo(
     () => getVisibleSuggestions(location, locationSuggestions, openSuggest === "location" && showAllSuggestions),
     [location, openSuggest, showAllSuggestions],
+  );
+  const visibleAgentKeywordSuggestions = useMemo(
+    () => getVisibleSuggestions(alertForm.keyword, keywordSuggestions, agentSuggest === "keyword" && showAllAgentSuggestions),
+    [alertForm.keyword, agentSuggest, showAllAgentSuggestions],
+  );
+  const visibleAgentLocationSuggestions = useMemo(
+    () => getVisibleSuggestions(alertForm.location, locationSuggestions, agentSuggest === "location" && showAllAgentSuggestions),
+    [alertForm.location, agentSuggest, showAllAgentSuggestions],
   );
 
   function pushToast(type, message, persist = false) {
@@ -721,18 +731,129 @@ export default function Home() {
                   ) : null}
                 </form>
 
-                <form className="saas-panel" onSubmit={handleCreateAlert}>
+                <form className="saas-panel" onSubmit={handleCreateAlert} onBlur={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget)) {
+                    setAgentSuggest(null);
+                    setShowAllAgentSuggestions(true);
+                  }
+                }}>
                   <div className="panel-title">
                     <Mail size={19} aria-hidden="true" />
                     <h3>E-Mail-Benachrichtigung</h3>
                   </div>
-                  <label>
+                  <label className="suggest-field">
                     <span>Suchbegriff</span>
-                    <input value={alertForm.keyword} onChange={(event) => setAlertForm({ ...alertForm, keyword: event.target.value })} />
+                    <div className="suggest-input-wrap">
+                      <input
+                        value={alertForm.keyword}
+                        onChange={(event) => {
+                          setAlertForm({ ...alertForm, keyword: event.target.value });
+                          setAgentSuggest("keyword");
+                          setShowAllAgentSuggestions(false);
+                        }}
+                        onFocus={() => {
+                          setAgentSuggest("keyword");
+                          setShowAllAgentSuggestions(true);
+                        }}
+                        autoComplete="off"
+                        aria-expanded={agentSuggest === "keyword"}
+                        aria-controls="agent-keyword-suggestion-list"
+                      />
+                      <button
+                        className="suggest-toggle"
+                        type="button"
+                        aria-label="Suchbegriffe anzeigen"
+                        aria-expanded={agentSuggest === "keyword"}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => {
+                          if (agentSuggest === "keyword") {
+                            setAgentSuggest(null);
+                            setShowAllAgentSuggestions(true);
+                            return;
+                          }
+                          setAgentSuggest("keyword");
+                          setShowAllAgentSuggestions(true);
+                        }}
+                      >
+                        <ChevronDown size={18} className={agentSuggest === "keyword" ? "suggest-chevron open" : "suggest-chevron"} />
+                      </button>
+                    </div>
+                    {agentSuggest === "keyword" ? (
+                      <div className="suggest-menu" id="agent-keyword-suggestion-list" role="listbox">
+                        {(visibleAgentKeywordSuggestions.length ? visibleAgentKeywordSuggestions : keywordSuggestions).map((suggestion) => (
+                          <button
+                            className="suggest-option"
+                            type="button"
+                            key={suggestion}
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={() => {
+                              setAlertForm({ ...alertForm, keyword: suggestion });
+                              setAgentSuggest(null);
+                              setShowAllAgentSuggestions(true);
+                            }}
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
                   </label>
-                  <label>
+                  <label className="suggest-field">
                     <span>Ort</span>
-                    <input value={alertForm.location} onChange={(event) => setAlertForm({ ...alertForm, location: event.target.value })} />
+                    <div className="suggest-input-wrap">
+                      <input
+                        value={alertForm.location}
+                        onChange={(event) => {
+                          setAlertForm({ ...alertForm, location: event.target.value });
+                          setAgentSuggest("location");
+                          setShowAllAgentSuggestions(false);
+                        }}
+                        onFocus={() => {
+                          setAgentSuggest("location");
+                          setShowAllAgentSuggestions(true);
+                        }}
+                        autoComplete="off"
+                        aria-expanded={agentSuggest === "location"}
+                        aria-controls="agent-location-suggestion-list"
+                      />
+                      <button
+                        className="suggest-toggle"
+                        type="button"
+                        aria-label="Orte anzeigen"
+                        aria-expanded={agentSuggest === "location"}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => {
+                          if (agentSuggest === "location") {
+                            setAgentSuggest(null);
+                            setShowAllAgentSuggestions(true);
+                            return;
+                          }
+                          setAgentSuggest("location");
+                          setShowAllAgentSuggestions(true);
+                        }}
+                      >
+                        <ChevronDown size={18} className={agentSuggest === "location" ? "suggest-chevron open" : "suggest-chevron"} />
+                      </button>
+                    </div>
+                    {agentSuggest === "location" ? (
+                      <div className="suggest-menu" id="agent-location-suggestion-list" role="listbox">
+                        {(visibleAgentLocationSuggestions.length ? visibleAgentLocationSuggestions : locationSuggestions).map((suggestion) => (
+                          <button
+                            className="suggest-option"
+                            type="button"
+                            key={suggestion}
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={() => {
+                              setAlertForm({ ...alertForm, location: suggestion });
+                              setAgentSuggest(null);
+                              setShowAllAgentSuggestions(true);
+                            }}
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
                   </label>
                   <p className="form-hint">E-Mail-Agenten verwenden immer den exakten Ort, damit keine umliegenden Gemeinden in die Zusammenfassung geraten.</p>
                   <button className="secondary-action" type="submit" disabled={saasLoading || !agency}>
