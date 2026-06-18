@@ -13,14 +13,14 @@ const showcaseQueries = [
 export const metadata = {
   title: "Deutsches Stellenregister | KhalfaJobs",
   description:
-    "Durchsuchen Sie Live-Stellenangebote der Bundesagentur fuer Arbeit, exportieren Sie CSV-Dateien und abonnieren Sie taegliche Job Alerts fuer Agenturen.",
+    "Durchsuchen Sie aktuelle Stellenangebote der Bundesagentur fuer Arbeit in Echtzeit, exportieren Sie passende Treffer als CSV und aktivieren Sie Job-Alarme fuer Recruiting-Teams.",
   alternates: {
     canonical: appUrl,
   },
   openGraph: {
     title: "Deutsches Stellenregister | KhalfaJobs",
     description:
-      "Live-Suche, CSV-Export und E-Mail-Agenten fuer Stellenangebote der Bundesagentur fuer Arbeit.",
+      "Live-Suche, CSV-Export und Job-Alarme fuer Stellenangebote der Bundesagentur fuer Arbeit.",
     url: appUrl,
     siteName: "KhalfaJobs",
     locale: "de_DE",

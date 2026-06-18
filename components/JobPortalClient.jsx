@@ -172,6 +172,14 @@ function formatLastUpdated(value) {
   return `Vor ${hours} Stunde${hours === 1 ? "" : "n"} aktualisiert`;
 }
 
+function formatFrequencyLabel(value) {
+  const normalized = String(value || "").toLocaleLowerCase("de-DE");
+  if (normalized === "daily") return "Taeglich";
+  if (normalized === "weekly") return "Woechentlich";
+  if (normalized === "monthly") return "Monatlich";
+  return value || "Individuell";
+}
+
 export default function Home({ initialShowcase, platformInsights }) {
   const [keyword, setKeyword] = useState("Softwareentwickler");
   const [location, setLocation] = useState("Berlin");
@@ -809,9 +817,9 @@ export default function Home({ initialShowcase, platformInsights }) {
               <p>Starten Sie eine Suche nach Beruf und Standort, um relevante Stellenangebote sofort zu pruefen, zu exportieren oder per Job-Alarm zu verfolgen.</p>
             </div>
 
-            <section className="insights-strip" aria-label="Live Recruiting Insights">
+            <section className="insights-strip" aria-label="Live-Recruiting-Kennzahlen">
               <article className="insight-card">
-                <span>Live Recruiting Insights</span>
+                <span>Live-Recruiting-Kennzahlen</span>
                 <strong>{platformInsights?.searchesToday || 0} Suchen heute</strong>
                 <p>Persistierte Suchaktivitaet aus Ihrer Plattform.</p>
               </article>
@@ -1112,7 +1120,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                   <strong>{normalizeSubscriptionText(subscription.keyword) || "Suchprofil fehlt"}</strong>
                   <span className="subscription-location">{normalizeSubscriptionText(subscription.location) || "Standort fehlt"}</span>
                 </div>
-                <span className="subscription-frequency">{subscription.frequency}</span>
+                <span className="subscription-frequency">{formatFrequencyLabel(subscription.frequency)}</span>
                 <div className="subscription-actions">
                   <button className="secondary-action" type="button" onClick={() => handleDeleteAlert(subscription.id)} disabled={saasLoading}>
                     <Trash2 size={18} />

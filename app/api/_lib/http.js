@@ -16,7 +16,7 @@ export class AppError extends Error {
 export function errorResponse(error) {
   return NextResponse.json(
     {
-      detail: error.message || "Unexpected server error",
+      detail: error.message || "Unerwarteter Serverfehler",
       code: error.code || "UNEXPECTED_ERROR",
     },
     { status: error.status || 500 },

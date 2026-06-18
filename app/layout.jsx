@@ -9,7 +9,7 @@ export const metadata = {
     default: "Deutsches Stellenregister | KhalfaJobs",
     template: "%s | KhalfaJobs",
   },
-  description: "SaaS-Suche fuer Stellenangebote und E-Mail-Benachrichtigungen fuer Arbeitsvermittlungen.",
+  description: "Professionelle Live-Suche fuer Stellenangebote mit CSV-Export und Job-Alarmen fuer Arbeitsvermittlungen und Recruiting-Teams.",
   manifest: "/manifest.webmanifest",
   robots: {
     index: true,

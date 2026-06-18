@@ -5,7 +5,7 @@ export default function GlobalError({ error, reset }) {
     <main className="app-shell">
       <aside className="registry-rail" aria-label="Anwendungsidentitaet">
         <span>BA</span>
-        <span>ERROR</span>
+        <span>FEHLER</span>
         <span>APP</span>
       </aside>
       <section className="workspace">
