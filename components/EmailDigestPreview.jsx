@@ -1,4 +1,4 @@
-import { ArrowRight, Clock3, MailCheck, MapPin, WalletCards } from "lucide-react";
+import { ArrowRight, Clock3, MailCheck, MapPin, SendHorizontal, ToggleLeft, WalletCards } from "lucide-react";
 
 function previewRows(jobs) {
   return (jobs || []).slice(0, 3).map((job, index) => ({
@@ -10,33 +10,86 @@ function previewRows(jobs) {
   }));
 }
 
-export default function EmailDigestPreview({ keyword, location, agencyName, jobs }) {
+export default function EmailDigestPreview({
+  keyword,
+  location,
+  agencyName,
+  jobs,
+  options,
+  onChange,
+  onSimulateSend,
+  simulating,
+}) {
   const rows = previewRows(jobs);
   const resolvedKeyword = keyword || "Softwareentwickler";
   const resolvedLocation = location || "Berlin";
-  const resolvedAgency = agencyName || "Ihre Agentur";
+  const resolvedAgency = options.agencyName || agencyName || "Ihre Agentur";
+  const greeting = options.greeting || "Guten Morgen";
+  const subject = options.subject || `Neue Stellenangebote fuer ${resolvedKeyword} in ${resolvedLocation}`;
+
+  function update(field, value) {
+    onChange?.({ ...options, [field]: value });
+  }
+
+  function toggle(field) {
+    onChange?.({ ...options, [field]: !options[field] });
+  }
 
   return (
     <section className="email-preview-band" aria-label="Vorschau des taeglichen Job-Alarms">
       <div className="email-preview-copy">
-        <p className="eyebrow">Vorschau des E-Mail-Digests</p>
-        <h3>So sieht der taegliche Job-Alarm fuer Ihr Team aus.</h3>
+        <div>
+          <p className="eyebrow">WYSIWYG E-Mail-Digest</p>
+          <h3>Job-Alarm live anpassen und sofort als Digest-Vorschau sehen.</h3>
+        </div>
         <p>
-          Zeigen Sie Ihrem Recruiting-Team vorab, welche Treffer morgens im Postfach landen. Suchbegriff, Ort und
-          Gehaltsangaben werden fuer eine schnelle Sichtung aufbereitet.
+          Passen Sie Betreff, Begruessung und sichtbare Informationsbausteine an. Die Vorschau aktualisiert sich direkt
+          neben den Eingaben.
         </p>
-        <ul className="preview-points">
-          <li>Versand taeglich um 06:00 Uhr</li>
-          <li>Nur Treffer fuer den exakt definierten Standort</li>
-          <li>Direktlink zur Quelle pro Stellenangebot</li>
-        </ul>
+
+        <div className="email-editor-grid">
+          <label>
+            <span>Betreffzeile</span>
+            <input value={options.subject} onChange={(event) => update("subject", event.target.value)} />
+          </label>
+          <label>
+            <span>Agenturname im Digest</span>
+            <input value={options.agencyName} onChange={(event) => update("agencyName", event.target.value)} />
+          </label>
+          <label>
+            <span>Begruessung</span>
+            <input value={options.greeting} onChange={(event) => update("greeting", event.target.value)} />
+          </label>
+          <label>
+            <span>Einleitung</span>
+            <textarea value={options.intro} onChange={(event) => update("intro", event.target.value)} rows={4} />
+          </label>
+        </div>
+
+        <div className="email-toggle-group">
+          {[
+            ["showSalary", "Gehaltsangabe anzeigen"],
+            ["showLocation", "Standort anzeigen"],
+            ["showApplyLink", "Bewerbungslink anzeigen"],
+          ].map(([field, label]) => (
+            <button className="toggle-chip" type="button" key={field} onClick={() => toggle(field)}>
+              <ToggleLeft size={18} className={options[field] ? "toggle-on" : ""} />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <button className="primary-action" type="button" onClick={onSimulateSend} disabled={simulating}>
+          <SendHorizontal size={18} />
+          {simulating ? "Versand wird simuliert..." : "Versand simulieren"}
+        </button>
       </div>
 
       <div className="digest-mockup" role="presentation">
         <div className="digest-mockup-header">
           <div>
             <span>KhalfaJobs Job-Alarm</span>
-            <strong>{resolvedKeyword} in {resolvedLocation}</strong>
+            <strong>{subject}</strong>
           </div>
           <div className="digest-mockup-badge">
             <Clock3 size={16} aria-hidden="true" />
@@ -47,7 +100,7 @@ export default function EmailDigestPreview({ keyword, location, agencyName, jobs
         <div className="digest-mockup-intro">
           <MailCheck size={18} aria-hidden="true" />
           <p>
-            Guten Morgen <strong>{resolvedAgency}</strong>, hier sind Ihre neuesten Treffer fuer heute.
+            {greeting} <strong>{resolvedAgency}</strong>, {options.intro}
           </p>
         </div>
 
@@ -57,21 +110,25 @@ export default function EmailDigestPreview({ keyword, location, agencyName, jobs
               <div className="digest-mockup-item-copy">
                 <strong>{row.title}</strong>
                 <span>{row.employer}</span>
-                <span className="digest-location">
-                  <MapPin size={14} aria-hidden="true" />
-                  {row.location}
-                </span>
-                {row.salary !== "Keine Verguetung angegeben" ? (
+                {options.showLocation ? (
+                  <span className="digest-location">
+                    <MapPin size={14} aria-hidden="true" />
+                    {row.location}
+                  </span>
+                ) : null}
+                {options.showSalary && row.salary !== "Keine Verguetung angegeben" ? (
                   <span className="digest-salary">
                     <WalletCards size={14} aria-hidden="true" />
                     {row.salary}
                   </span>
                 ) : null}
               </div>
-              <span className="digest-open-link">
-                Zur Stelle
-                <ArrowRight size={14} aria-hidden="true" />
-              </span>
+              {options.showApplyLink ? (
+                <span className="digest-open-link">
+                  Zur Stelle
+                  <ArrowRight size={14} aria-hidden="true" />
+                </span>
+              ) : null}
             </article>
           ))}
         </div>
