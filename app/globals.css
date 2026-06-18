@@ -868,10 +868,13 @@ button:disabled {
 
 .showcase-list-card li {
   margin: 0;
+  display: block;
 }
 
-.showcase-list-card button,
-.showcase-list-card span {
+.showcase-list-card li > button,
+.showcase-list-card li > span {
+  display: flex;
+  align-items: flex-start;
   width: 100%;
   min-height: 40px;
   padding: 10px 12px;
@@ -881,8 +884,12 @@ button:disabled {
   box-shadow: none;
   font-family: "Space Grotesk", sans-serif;
   font-size: 0.95rem;
+  line-height: 1.35;
   font-weight: 700;
   text-align: left;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .showcase-list-card button:hover:not(:disabled) {
