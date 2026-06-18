@@ -83,7 +83,10 @@ export function buildDigestHtml({ agency, subscription, rows }) {
         <strong>KhalfaJobs</strong><br />
         Automatisierte Stellenangebote aus der Bundesagentur fuer Arbeit fuer registrierte Agenturen.<br />
         Sie erhalten diese E-Mail, weil fuer Ihre Agentur ein Job-Alarm aktiv ist.
-        <a href="${unsubscribeUrl}" style="color: #b5361f; text-decoration: underline;">Job-Alarm abbestellen</a>.
+        <a href="${unsubscribeUrl}" style="color: #b5361f; text-decoration: underline;">Job-Alarm abbestellen</a>.<br /><br />
+        <a href="${appBaseUrl}" style="display:inline-block; background:#f5c542; color:#1f1d1a; font:700 13px Arial, sans-serif; text-decoration:none; padding:10px 14px; border:2px solid #1f1d1a;">
+          Eigenen Recruiting-Job-Alarm einrichten
+        </a>
       </td>
     </tr>
   `;

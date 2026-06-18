@@ -19,6 +19,7 @@ import JobCard from "./JobCard";
 import JobCardSkeleton from "./JobCardSkeleton";
 import ToastStack from "./ToastStack";
 import { trackEvent } from "./analytics";
+import EmailDigestPreview from "./EmailDigestPreview";
 
 const preferredListKeys = ["ergebnisliste", "stellenangebote", "angebote", "jobs", "items", "results", "content", "data"];
 const keywordSuggestions = [
@@ -279,8 +280,12 @@ export default function Home({ initialShowcase, platformInsights }) {
         label: "Recruiting-Tools",
         value: "CSV-Export und Job-Alarme",
       },
+      {
+        label: "Synchronisierte Treffer diese Woche",
+        value: `${platformInsights?.searchHitsWeek || 0} Treffer erfasst`,
+      },
     ],
-    [hasSearched, jobs.length, lastSearchAt, totalResults, platformInsights?.lastActivityLabel],
+    [hasSearched, jobs.length, lastSearchAt, totalResults, platformInsights?.lastActivityLabel, platformInsights?.searchHitsWeek],
   );
 
   function pushToast(type, message, persist = false) {
@@ -405,11 +410,21 @@ export default function Home({ initialShowcase, platformInsights }) {
     });
     try {
       const params = new URLSearchParams({ keyword, location, exactLocation: String(exactLocation) });
-      const response = await fetch(`/api/jobs/export/csv?${params.toString()}`);
+      const response = await fetch(`/api/jobs/export/csv?${params.toString()}`, {
+        headers: agency?.api_key ? { "X-Agency-Key": agency.api_key } : undefined,
+      });
       if (!response.ok) throw new Error((await response.json()).detail || "CSV-Export konnte nicht erstellt werden");
+      const exportTier = response.headers.get("X-KhalfaJobs-Export-Tier");
+      const exportLimit = Number(response.headers.get("X-KhalfaJobs-Export-Limit") || 25);
       const safeKeyword = (keyword || "alle").trim().replace(/\s+/g, "-");
       const safeLocation = (location || "deutschland").trim().replace(/\s+/g, "-");
       downloadBlob(await response.blob(), `stellenangebote-${safeKeyword}-${safeLocation}.csv`);
+      pushToast(
+        "success",
+        exportTier === "agentur"
+          ? `CSV-Export heruntergeladen. Ihr Agentur-Zugang enthaelt bis zu ${exportLimit} Treffer pro Export.`
+          : `Starter-Export heruntergeladen. Ohne Agentur-Zugang sind bis zu ${exportLimit} Treffer enthalten.`,
+      );
       trackEvent("csv_export_completed", {
         keyword,
         location,
@@ -474,6 +489,11 @@ export default function Home({ initialShowcase, platformInsights }) {
     event.preventDefault();
     if (!agency?.api_key) {
       setSaasStatus("Richten Sie zuerst einen Agentur-Zugang ein, bevor Sie einen Job-Alarm anlegen.");
+      trackEvent("alert_creation_failed", {
+        reason: "missing_agency_access",
+        keyword: alertForm.keyword,
+        location: alertForm.location,
+      });
       return;
     }
     setSaasLoading(true);
@@ -492,6 +512,11 @@ export default function Home({ initialShowcase, platformInsights }) {
       });
     } catch (err) {
       setSaasStatus(getErrorMessage(err, "Einrichtung des Job-Alarms"));
+      trackEvent("alert_creation_failed", {
+        reason: getErrorMessage(err, "Einrichtung des Job-Alarms"),
+        keyword: alertForm.keyword,
+        location: alertForm.location,
+      });
     } finally {
       setSaasLoading(false);
     }
@@ -938,7 +963,7 @@ export default function Home({ initialShowcase, platformInsights }) {
             <div className="agent-body">
               <div className="agent-summary">
                 <strong>Einrichtung in zwei Schritten</strong>
-                <span>Legen Sie zuerst Ihren Agentur-Zugang an und definieren Sie anschliessend Beruf und Standort fuer den Job-Alarm.</span>
+                <span>Legen Sie zuerst Ihren Agentur-Zugang an, definieren Sie anschliessend Beruf und Standort und pruefen Sie direkt die Vorschau Ihres taeglichen E-Mail-Digests.</span>
               </div>
               <div className="saas-grid">
                 <form className="saas-panel saas-panel-secondary" onSubmit={handleCreateAgency}>
@@ -1104,9 +1129,16 @@ export default function Home({ initialShowcase, platformInsights }) {
                     <Plus size={19} />
                     Job-Alarm erstellen
                   </button>
-                  <div className="alarm-trust-line">Datenquelle: Bundesagentur fuer Arbeit · Versand auf Basis Ihres gespeicherten Suchprofils</div>
+                  <div className="alarm-trust-line">Datenquelle: Bundesagentur fuer Arbeit · Versand auf Basis Ihres gespeicherten Suchprofils · Starter = 1 Alarm, Agentur-Zugang = bis zu 200 CSV-Treffer</div>
                 </form>
               </div>
+
+              <EmailDigestPreview
+                agencyName={agency?.name}
+                keyword={alertForm.keyword || keyword}
+                location={alertForm.location || location}
+                jobs={jobs.length ? jobs : initialShowcase?.jobs}
+              />
             </div>
           ) : null}
 

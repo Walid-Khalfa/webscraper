@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { agencyKey } from "../../../_lib/http";
 import { errorResponse } from "../../../_lib/http";
 import { extractJobItems, filterJobsByExactLocation, normalizeJob, searchJobs, toCsv } from "../../../_lib/ba";
+import { getAgency } from "../../../_lib/store";
 
 export const runtime = "nodejs";
 
@@ -10,13 +12,25 @@ export async function GET(request) {
     const keyword = params.get("keyword") || "";
     const location = params.get("location") || "";
     const exactLocation = params.get("exactLocation") === "true";
+    let exportLimit = 25;
+    let exportTier = "starter";
+
+    const rawAgencyKey = agencyKey(request);
+    if (rawAgencyKey) {
+      try {
+        await getAgency(rawAgencyKey);
+        exportLimit = 200;
+        exportTier = "agentur";
+      } catch {}
+    }
+
     const pages = await Promise.all([
       searchJobs({ keyword, location, page: 1, size: 100 }),
       searchJobs({ keyword, location, page: 2, size: 100 }),
     ]);
     const items = pages.flatMap(extractJobItems).slice(0, 200);
     const filteredItems = exactLocation ? filterJobsByExactLocation(items, location) : items;
-    const rows = filteredItems.map(normalizeJob);
+    const rows = filteredItems.map(normalizeJob).slice(0, exportLimit);
     const exactSuffix = exactLocation ? "-exakter-ort" : "";
     const filename = `stellenangebote-${(keyword || "alle").replaceAll(" ", "-")}-${(location || "deutschland").replaceAll(" ", "-")}${exactSuffix}.csv`;
 
@@ -25,6 +39,8 @@ export async function GET(request) {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
         "Content-Disposition": `attachment; filename="${filename}"`,
+        "X-KhalfaJobs-Export-Limit": String(exportLimit),
+        "X-KhalfaJobs-Export-Tier": exportTier,
       },
     });
   } catch (error) {

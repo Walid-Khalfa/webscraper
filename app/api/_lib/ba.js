@@ -215,7 +215,7 @@ function normalizeSalary(item) {
 
   if (from || to) return `${from ? formatEuro(from) : ""}${from && to ? " - " : ""}${to ? formatEuro(to) : ""} ${suffix}`.trim();
   if (fixed) return `${formatEuro(fixed)} ${suffix}`.trim();
-  return "Keine Gehaltsangabe";
+  return "Keine Verguetung angegeben";
 }
 
 export function normalizeJob(item) {

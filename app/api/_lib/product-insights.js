@@ -5,6 +5,14 @@ function startOfToday() {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
+function startOfWeek() {
+  const now = new Date();
+  const currentDay = now.getDay() || 7;
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - currentDay + 1);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
 function relativeFrom(date) {
   if (!date) return "Noch keine Aktivitaet";
   const diffMs = Date.now() - new Date(date).getTime();
@@ -34,6 +42,7 @@ export async function recordProductEvent({ event, distinctId, path, url, propert
 export async function getPlatformInsights() {
   try {
     const today = startOfToday();
+    const weekStart = startOfWeek();
 
     const [
       activeAgencies,
@@ -41,6 +50,7 @@ export async function getPlatformInsights() {
       searchesToday,
       exportsToday,
       alertsSentToday,
+      weeklySearchEvents,
       latestEvent,
       latestDelivery,
       latestSubscription,
@@ -65,6 +75,13 @@ export async function getPlatformInsights() {
           createdAt: { gte: today },
         },
       }),
+      prisma.productEvent.findMany({
+        where: {
+          event: "search_completed",
+          createdAt: { gte: weekStart },
+        },
+        select: { properties: true },
+      }),
       prisma.productEvent.findFirst({
         orderBy: { createdAt: "desc" },
         select: { createdAt: true },
@@ -82,6 +99,10 @@ export async function getPlatformInsights() {
     const lastActivity = [latestEvent?.createdAt, latestDelivery?.createdAt, latestSubscription?.createdAt]
       .filter(Boolean)
       .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0];
+    const searchHitsWeek = weeklySearchEvents.reduce((sum, entry) => {
+      const resultCount = Number(entry?.properties?.resultCount || 0);
+      return sum + (Number.isFinite(resultCount) ? resultCount : 0);
+    }, 0);
 
     return {
       activeAgencies,
@@ -89,6 +110,7 @@ export async function getPlatformInsights() {
       searchesToday,
       exportsToday,
       alertsSentToday,
+      searchHitsWeek,
       lastActivityLabel: relativeFrom(lastActivity),
     };
   } catch {
@@ -98,6 +120,7 @@ export async function getPlatformInsights() {
       searchesToday: 0,
       exportsToday: 0,
       alertsSentToday: 0,
+      searchHitsWeek: 0,
       lastActivityLabel: "Noch keine Aktivitaet",
     };
   }

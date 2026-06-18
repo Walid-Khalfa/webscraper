@@ -9,6 +9,7 @@
   --accent-dark: #9d321d;
   --signal: #f5c542;
   --steel: #536a73;
+  --muted: #667781;
   --white: #fffaf0;
   --shadow: 10px 10px 0 rgba(21, 21, 21, 0.18);
 }
@@ -338,7 +339,7 @@ input:focus {
 
 .trust-strip {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -604,6 +605,23 @@ button:disabled {
 
 .salary-line {
   color: var(--accent-dark);
+}
+
+.salary-stack {
+  display: grid;
+  gap: 6px;
+}
+
+.salary-badge {
+  width: max-content;
+  padding: 4px 8px;
+  color: var(--accent-dark);
+  background: rgba(245, 197, 66, 0.32);
+  border: 1px solid rgba(181, 54, 31, 0.34);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .muted-salary {
@@ -1016,6 +1034,182 @@ button:disabled {
   font-weight: 700;
 }
 
+.email-preview-band {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr);
+  gap: 18px;
+  padding: 18px;
+  background: var(--white);
+  border: 2px solid var(--line);
+  box-shadow: 4px 4px 0 rgba(21, 21, 21, 0.14);
+}
+
+.email-preview-copy {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.email-preview-copy h3 {
+  margin: 0;
+  font-size: clamp(1.3rem, 2vw, 1.8rem);
+}
+
+.email-preview-copy p {
+  margin: 0;
+  color: var(--steel);
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.preview-points {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 700;
+}
+
+.preview-points li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-points li::before {
+  width: 8px;
+  height: 8px;
+  background: var(--signal);
+  border: 1px solid var(--line);
+  content: "";
+}
+
+.digest-mockup {
+  display: grid;
+  gap: 0;
+  background: #fffdf7;
+  border: 2px solid var(--line);
+}
+
+.digest-mockup-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  color: var(--white);
+  background: var(--ink);
+}
+
+.digest-mockup-header span,
+.digest-mockup-footer span {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.digest-mockup-header strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.2rem;
+  line-height: 1.15;
+}
+
+.digest-mockup-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  color: var(--ink);
+  background: var(--signal);
+  border: 2px solid var(--line);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.digest-mockup-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(21, 21, 21, 0.14);
+  color: var(--steel);
+  font-weight: 700;
+}
+
+.digest-mockup-intro p {
+  margin: 0;
+}
+
+.digest-mockup-list {
+  display: grid;
+}
+
+.digest-mockup-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(21, 21, 21, 0.14);
+}
+
+.digest-mockup-item-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.digest-mockup-item-copy strong {
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.digest-mockup-item-copy span {
+  color: var(--steel);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.digest-location,
+.digest-salary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.digest-salary {
+  color: var(--accent-dark) !important;
+}
+
+.digest-open-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 12px;
+  color: var(--white);
+  background: var(--accent);
+  border: 2px solid var(--line);
+  box-shadow: 3px 3px 0 var(--line);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.digest-mockup-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 18px;
+  color: var(--steel);
+  background: var(--paper);
+}
+
 .subscription-list {
   display: grid;
   gap: 10px;
@@ -1289,7 +1483,8 @@ button:disabled {
   }
 
   .insights-strip,
-  .showcase-grid {
+  .showcase-grid,
+  .email-preview-band {
     grid-template-columns: 1fr;
   }
 
@@ -1325,6 +1520,20 @@ button:disabled {
   }
 
   .job-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .digest-mockup-item {
+    grid-template-columns: 1fr;
+  }
+
+  .digest-open-link {
+    width: max-content;
+  }
+}
+
+@media (max-width: 560px) {
+  .trust-strip {
     grid-template-columns: 1fr;
   }
 }
