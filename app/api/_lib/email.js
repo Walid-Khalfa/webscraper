@@ -82,8 +82,8 @@ export function buildDigestHtml({ agency, subscription, rows }) {
       <td style="padding: 24px 32px 32px; color: #6b665c; font: 13px Arial, sans-serif; line-height: 1.6; border-top: 1px solid #e3ded3;">
         <strong>KhalfaJobs</strong><br />
         Automatisierte Stellenangebote aus der Bundesagentur fuer Arbeit fuer registrierte Agenturen.<br />
-        Sie erhalten diese E-Mail, weil fuer Ihre Agentur eine Benachrichtigung aktiv ist.
-        <a href="${unsubscribeUrl}" style="color: #b5361f; text-decoration: underline;">Benachrichtigung abbestellen</a>.
+        Sie erhalten diese E-Mail, weil fuer Ihre Agentur ein Job-Alarm aktiv ist.
+        <a href="${unsubscribeUrl}" style="color: #b5361f; text-decoration: underline;">Job-Alarm abbestellen</a>.
       </td>
     </tr>
   `;
@@ -97,7 +97,7 @@ export function buildDigestHtml({ agency, subscription, rows }) {
             <table role="presentation" width="640" cellspacing="0" cellpadding="0" style="width:640px; max-width:100%; background:#fffaf1; border:2px solid #1f1d1a;">
               <tr>
                 <td style="padding: 28px 32px 18px; background:#1f1d1a; color:#fffaf1;">
-                  <div style="font: 700 13px Arial, sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#ffce45;">KhalfaJobs Alert</div>
+                  <div style="font: 700 13px Arial, sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#ffce45;">KhalfaJobs Job-Alarm</div>
                   <h1 style="margin:10px 0 0; font: 700 28px Arial, sans-serif;">Keine neuen Treffer heute</h1>
                 </td>
               </tr>
@@ -125,15 +125,15 @@ export function buildDigestHtml({ agency, subscription, rows }) {
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
               <tr>
                 <td style="padding-right:16px; vertical-align:top;">
-                  <div style="font:700 18px Arial, sans-serif; color:#1f1d1a; line-height:1.25;">${escapeHtml(row.Titel || "Stellenangebot")}</div>
-                  <div style="margin-top:8px; font:14px Arial, sans-serif; color:#4d6570;">${escapeHtml(row.Arbeitgeber || "Arbeitgeber nicht angegeben")} · ${escapeHtml(row.Ort || "Ort nicht angegeben")}</div>
-                  <div style="margin-top:6px; font:13px Arial, sans-serif; color:#6b665c;">${escapeHtml(row.Beruf || "Beruf nicht angegeben")}</div>
-                  ${row.Gehalt && row.Gehalt !== "Keine Gehaltsangabe" ? `<div style="margin-top:8px; font:700 14px Arial, sans-serif; color:#b5361f;">${escapeHtml(row.Gehalt)}</div>` : ""}
+                  <div style="font:700 18px Arial, sans-serif; color:#1f1d1a; line-height:1.25;">${escapeHtml(row.Titel || "Stellenprofil")}</div>
+                  <div style="margin-top:8px; font:14px Arial, sans-serif; color:#4d6570;">${escapeHtml(row.Arbeitgeber || "Arbeitgeber nicht genannt")} · ${escapeHtml(row.Ort || "Standort nicht genannt")}</div>
+                  <div style="margin-top:6px; font:13px Arial, sans-serif; color:#6b665c;">${escapeHtml(row.Beruf || "Beruf nicht genannt")}</div>
+                  ${row.Gehalt && row.Gehalt !== "Keine Verguetung angegeben" ? `<div style="margin-top:8px; font:700 14px Arial, sans-serif; color:#b5361f;">${escapeHtml(row.Gehalt)}</div>` : ""}
                 </td>
                 <td align="right" style="width:140px; vertical-align:middle;">
                   ${
                     row.URL
-                      ? `<a href="${escapeHtml(row.URL)}" style="display:inline-block; background:#df4829; color:#ffffff; font:700 14px Arial, sans-serif; text-decoration:none; padding:12px 16px; border:2px solid #1f1d1a;">Voir l'offre</a>`
+                      ? `<a href="${escapeHtml(row.URL)}" style="display:inline-block; background:#df4829; color:#ffffff; font:700 14px Arial, sans-serif; text-decoration:none; padding:12px 16px; border:2px solid #1f1d1a;">Zur Stelle</a>`
                       : ""
                   }
                 </td>
@@ -153,7 +153,7 @@ export function buildDigestHtml({ agency, subscription, rows }) {
           <table role="presentation" width="640" cellspacing="0" cellpadding="0" style="width:640px; max-width:100%; background:#fffaf1; border:2px solid #1f1d1a;">
             <tr>
               <td style="padding: 28px 32px 18px; background:#1f1d1a; color:#fffaf1;">
-                <div style="font: 700 13px Arial, sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#ffce45;">KhalfaJobs Alert</div>
+                <div style="font: 700 13px Arial, sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#ffce45;">KhalfaJobs Job-Alarm</div>
                 <h1 style="margin:10px 0 0; font: 700 30px Arial, sans-serif;">${rows.length} neue Stellenangebote</h1>
                 <p style="margin:12px 0 0; font:16px Arial, sans-serif; color:#f4f1ea;">${escapedKeyword} in ${escapedLocation}</p>
               </td>
