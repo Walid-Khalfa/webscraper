@@ -911,7 +911,7 @@ export default function Home({ initialShowcase, platformInsights }) {
   }
 
   return (
-    <main className="app-shell theme-shell" data-theme={theme}>
+    <main className="app-shell theme-shell" data-theme={theme} id="top">
       {jobPostingJsonLd ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jobPostingJsonLd) }} /> : null}
       <ToastStack toasts={toasts} />
 
@@ -971,9 +971,16 @@ export default function Home({ initialShowcase, platformInsights }) {
 
       <section className="workspace">
         <div className="product-topbar">
-          <span>KhalfaJobs fuer Personalvermittlungen</span>
-          <span>Datenquelle: Bundesagentur fuer Arbeit</span>
-          <span>Live-Recherche, CSV-Export, Job-Tracker und Job-Alarme</span>
+          <a href="#top" className="product-brand">
+            KhalfaJobs fuer Personalvermittlungen
+          </a>
+          <nav className="product-nav" aria-label="Primaere Navigation">
+            <a href="#suche" className="topbar-link">Suche</a>
+            <a href="#ergebnisse" className="topbar-link">Ergebnisse</a>
+            <a href="#job-alarm" className="topbar-link">Job-Alarm</a>
+            <a href="#datenquelle" className="topbar-link">Datenquelle</a>
+            <a href="/health" className="topbar-link">API-Status</a>
+          </nav>
           <div className="theme-switcher">
             {themes.map((entry) => (
               <button key={entry.id} type="button" className={`theme-chip${theme === entry.id ? " active" : ""}`} onClick={() => setTheme(entry.id)}>
@@ -1000,7 +1007,7 @@ export default function Home({ initialShowcase, platformInsights }) {
           </div>
         </header>
 
-        <section className="search-stage">
+        <section className="search-stage" id="suche">
           <form className="search-panel search-panel-prominent" onSubmit={handleSearch} onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget)) {
               setOpenSuggest(null);
@@ -1107,7 +1114,7 @@ export default function Home({ initialShowcase, platformInsights }) {
             </button>
           </form>
 
-          <div className="trust-strip" aria-label="Produkt- und API-Informationen">
+          <div className="trust-strip" id="datenquelle" aria-label="Produkt- und API-Informationen">
             {trustItems.map((item) => (
               <div className="trust-item" key={item.label}>
                 <span>{item.label}</span>
@@ -1164,7 +1171,7 @@ export default function Home({ initialShowcase, platformInsights }) {
 
         {hasSearched || loading ? (
           <>
-            <section className="results-header" aria-live="polite">
+            <section className="results-header" id="ergebnisse" aria-live="polite">
               <div>
                 <p className="eyebrow">Ergebnisse</p>
                 <h2>{loading ? "Aktuelle Stellenangebote werden geladen..." : `${jobsWithClientFilters.length} Stellenangebote${totalResults ? ` von ${totalResults}` : ""}`}</h2>
@@ -1400,7 +1407,7 @@ export default function Home({ initialShowcase, platformInsights }) {
           </section>
         )}
 
-        <section className="saas-section secondary-zone">
+        <section className="saas-section secondary-zone" id="job-alarm">
           <div className="saas-header">
             <div>
               <p className="eyebrow">Job-Alarm fuer Recruiting-Teams</p>
