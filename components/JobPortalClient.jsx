@@ -1094,7 +1094,7 @@ export default function Home({ initialShowcase, platformInsights }) {
             </button>
           </div>
 
-          {(isConsoleOpen || loading || consoleLogs.length) && (
+          {Boolean(isConsoleOpen || loading || consoleLogs.length) && (
             <section className="search-status-panel" aria-label="Live-Suchstatus">
               <div className="search-status-header">
                 <div className="search-status-heading">
