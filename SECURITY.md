@@ -15,6 +15,8 @@ Mindestens diese Werte gehoeren in einen Secret-Store:
 - `DATABASE_URL`
 - `RESEND_API_KEY`
 - `CRON_SECRET`
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
 - `BA_CLIENT_ID`
 - `BA_CLIENT_SECRET`
 
@@ -25,7 +27,17 @@ Mindestens diese Werte gehoeren in einen Secret-Store:
 Die Route-Handler nutzen jetzt:
 
 - Runtime-Input-Validierung mit `zod`
-- einfaches In-Memory-Rate-Limiting pro Request-Typ
+- Rate-Limiting pro Request-Typ
 
-Hinweis: Das aktuelle Rate-Limiting ist fuer lokale Entwicklung und eine einfache Einzelinstanz geeignet. Fuer eine echte SaaS-Produktion sollte es durch einen zentralen Store ersetzt werden, z. B. Upstash Redis oder Vercel KV.
+## Rate-Limiting Backend
 
+Produktionsziel:
+
+- `Upstash Redis` als geteilter Rate-Limit-Store fuer Multi-Instance-Deployments
+
+Aktuelles Verhalten:
+
+- wenn `UPSTASH_REDIS_REST_URL` und `UPSTASH_REDIS_REST_TOKEN` gesetzt sind, wird Redis verwendet
+- ohne diese Variablen faellt die App lokal auf In-Memory-Rate-Limiting zurueck
+
+Hinweis: Der In-Memory-Fallback ist nur fuer lokale Entwicklung oder einfache Einzelinstanzen geeignet.

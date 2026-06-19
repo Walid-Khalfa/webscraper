@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 
 export async function POST(request) {
   try {
-    assertRateLimit(request, "analytics-capture", { max: 120, windowMs: 60_000 });
+    await assertRateLimit(request, "analytics-capture", { max: 120, windowMs: 60_000 });
     const payload = parseWithSchema(analyticsPayloadSchema, await request.json());
     const forwardedFor = request.headers.get("x-forwarded-for");
     const forwardedHost = request.headers.get("x-forwarded-host");

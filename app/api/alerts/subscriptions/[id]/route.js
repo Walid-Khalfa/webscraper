@@ -9,7 +9,7 @@ export async function DELETE(request, { params }) {
   try {
     const { id } = await params;
     const parsedId = parseWithSchema(numericIdSchema, id);
-    assertRateLimit(request, "subscription-delete", { max: 10, windowMs: 60_000, keySuffix: agencyKey(request) || "" });
+    await assertRateLimit(request, "subscription-delete", { max: 10, windowMs: 60_000, keySuffix: agencyKey(request) || "" });
     return json(await removeSubscription(agencyKey(request), parsedId));
   } catch (error) {
     return errorResponse(error);

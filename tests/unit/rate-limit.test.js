@@ -17,16 +17,15 @@ describe("assertRateLimit", () => {
     globalThis.__khalfaRateLimitBuckets?.clear();
   });
 
-  it("allows requests under the configured limit", () => {
+  it("allows requests under the configured limit", async () => {
     const request = makeRequest();
-    expect(() => assertRateLimit(request, "search", { max: 2, windowMs: 60_000 })).not.toThrow();
-    expect(() => assertRateLimit(request, "search", { max: 2, windowMs: 60_000 })).not.toThrow();
+    await expect(assertRateLimit(request, "search", { max: 2, windowMs: 60_000 })).resolves.toBeUndefined();
+    await expect(assertRateLimit(request, "search", { max: 2, windowMs: 60_000 })).resolves.toBeUndefined();
   });
 
-  it("blocks requests above the configured limit", () => {
+  it("blocks requests above the configured limit", async () => {
     const request = makeRequest();
-    assertRateLimit(request, "search", { max: 1, windowMs: 60_000 });
-    expect(() => assertRateLimit(request, "search", { max: 1, windowMs: 60_000 })).toThrow(/Zu viele Anfragen/i);
+    await assertRateLimit(request, "search", { max: 1, windowMs: 60_000 });
+    await expect(assertRateLimit(request, "search", { max: 1, windowMs: 60_000 })).rejects.toThrow(/Zu viele Anfragen/i);
   });
 });
-

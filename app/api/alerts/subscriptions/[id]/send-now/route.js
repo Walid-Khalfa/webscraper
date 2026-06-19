@@ -11,7 +11,7 @@ export async function POST(request, { params }) {
   try {
     const { id } = await params;
     const parsedId = parseWithSchema(numericIdSchema, id);
-    assertRateLimit(request, "subscription-send-now", { max: 5, windowMs: 10 * 60_000, keySuffix: `${agencyKey(request) || ""}:${parsedId}` });
+    await assertRateLimit(request, "subscription-send-now", { max: 5, windowMs: 10 * 60_000, keySuffix: `${agencyKey(request) || ""}:${parsedId}` });
     const { agency, subscription } = await getSubscription(agencyKey(request), parsedId, { requireVerified: true });
     const payload = await searchJobs({
       keyword: subscription.keyword,

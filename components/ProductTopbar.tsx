@@ -22,10 +22,8 @@ export default function ProductTopbar({ themes, activeTheme, onThemeChange }: Pr
         <a href="#ergebnisse" className="topbar-link">Ergebnisse</a>
         <a href="#job-alarm" className="topbar-link">Job-Alarm</a>
         <a href="#datenquelle" className="topbar-link">Datenquelle</a>
-        <a href="/health" className="topbar-link">API-Status</a>
       </nav>
       <ThemeSwitcher themes={themes} activeTheme={activeTheme} onChange={onThemeChange} />
     </div>
   );
 }
-

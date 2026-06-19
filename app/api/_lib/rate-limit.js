@@ -27,13 +27,57 @@ function cleanupExpiredBuckets(limit = 200) {
   }
 }
 
-export function assertRateLimit(request, scope, { max, windowMs, keySuffix = "" }) {
+function getRedisConfig() {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (!url || !token) return null;
+  return { url: url.replace(/\/+$/, ""), token };
+}
+
+async function upstashRequest(path, init = {}) {
+  const config = getRedisConfig();
+  if (!config) return null;
+
+  const response = await fetch(`${config.url}${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${config.token}`,
+      "Content-Type": "application/json",
+      ...(init.headers || {}),
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new AppError("Der zentrale Rate-Limit-Dienst ist momentan nicht verfuegbar.", 503, "RATE_LIMIT_BACKEND_ERROR");
+  }
+
+  return response.json();
+}
+
+async function incrementRedisBucket(scope, key, windowMs) {
+  const config = getRedisConfig();
+  if (!config) return null;
+
+  const bucketKey = `rl:${scope}:${key}`;
+  const incrementResult = await upstashRequest(`/incr/${encodeURIComponent(bucketKey)}`, { method: "POST" });
+  await upstashRequest(`/pexpire/${encodeURIComponent(bucketKey)}/${windowMs}/NX`, { method: "POST" });
+  return Number(incrementResult?.result || 0);
+}
+
+function incrementMemoryBucket(scope, key, windowMs) {
   cleanupExpiredBuckets();
-  const key = `${getClientIp(request)}:${keySuffix}`;
   const bucket = getBucket(scope, key, windowMs);
   bucket.count += 1;
+  return bucket.count;
+}
 
-  if (bucket.count > max) {
+export async function assertRateLimit(request, scope, { max, windowMs, keySuffix = "" }) {
+  const key = `${getClientIp(request)}:${keySuffix}`;
+  const count = (await incrementRedisBucket(scope, key, windowMs)) ?? incrementMemoryBucket(scope, key, windowMs);
+
+  if (count > max) {
     throw new AppError("Zu viele Anfragen. Bitte versuchen Sie es in wenigen Sekunden erneut.", 429, "RATE_LIMITED");
   }
 }

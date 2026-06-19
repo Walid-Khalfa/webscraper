@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 
 export async function GET(request) {
   try {
-    assertRateLimit(request, "jobs-export", { max: 20, windowMs: 10 * 60_000, keySuffix: agencyKey(request) || "" });
+    await assertRateLimit(request, "jobs-export", { max: 20, windowMs: 10 * 60_000, keySuffix: agencyKey(request) || "" });
     const params = parseWithSchema(searchQuerySchema, Object.fromEntries(request.nextUrl.searchParams.entries()));
     const { keyword, location, exactLocation } = params;
     let exportLimit = 25;
