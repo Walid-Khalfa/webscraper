@@ -404,6 +404,38 @@ export default function Home({ initialShowcase, platformInsights }) {
     ],
     [hasSearched, rawJobs.length, lastSearchAt, totalResults, platformInsights?.lastActivityLabel, platformInsights?.searchHitsWeek],
   );
+  const liveSearchStatus = useMemo(() => {
+    if (loading) {
+      return {
+        badge: "Aktiv",
+        title: "Live-Suchstatus",
+        summary: "Die Anfrage wird verarbeitet und die BA-Daten werden geladen.",
+      };
+    }
+
+    if (error) {
+      return {
+        badge: "Stoerung",
+        title: "Live-Suchstatus",
+        summary: "Die letzte Suchanfrage konnte nicht abgeschlossen werden.",
+      };
+    }
+
+    if (hasSearched) {
+      const resultCount = jobsWithClientFilters.length || rawJobs.length;
+      return {
+        badge: "Abgeschlossen",
+        title: "Live-Suchstatus",
+        summary: `${resultCount} Stellenangebote stehen fuer die aktuelle Suche bereit.`,
+      };
+    }
+
+    return {
+      badge: "Bereit",
+      title: "Live-Suchstatus",
+      summary: "Starten Sie eine Suche, um aktuelle Stellenangebote und den Verarbeitungsstatus anzuzeigen.",
+    };
+  }, [loading, error, hasSearched, jobsWithClientFilters.length, rawJobs.length]);
 
   function pushToast(type, message, persist = false) {
     const id = crypto.randomUUID();
@@ -1058,20 +1090,25 @@ export default function Home({ initialShowcase, platformInsights }) {
             ))}
             <button className="quick-search-chip terminal-toggle" type="button" onClick={() => setIsConsoleOpen((value) => !value)}>
               <TerminalSquare size={16} />
-              {isConsoleOpen ? "Konsole ausblenden" : "Konsole einblenden"}
+              {isConsoleOpen ? "Suchstatus ausblenden" : "Suchstatus einblenden"}
             </button>
           </div>
 
           {(isConsoleOpen || loading || consoleLogs.length) && (
-            <section className="scraper-console" aria-label="Live-Konsole der Suche">
-              <div className="scraper-console-header">
-                <strong>Scraping-Konsole</strong>
-                <span>{loading ? "Aktiv" : "Bereit"}</span>
+            <section className="search-status-panel" aria-label="Live-Suchstatus">
+              <div className="search-status-header">
+                <div className="search-status-heading">
+                  <strong>{liveSearchStatus.title}</strong>
+                  <p>{liveSearchStatus.summary}</p>
+                </div>
+                <span className={`search-status-badge search-status-badge-${liveSearchStatus.badge.toLowerCase("de-DE")}`}>
+                  {liveSearchStatus.badge}
+                </span>
               </div>
-              <div className="scraper-console-body">
-                {(consoleLogs.length ? consoleLogs : ["Warten auf die naechste Suche..."]).map((line, index) => (
-                  <div key={`${line}-${index}`} className="console-line">
-                    <span className="console-prompt">&gt;</span>
+              <div className="search-status-body">
+                {(consoleLogs.length ? consoleLogs : ["Keine laufende Suche. Die naechste Abfrage erscheint hier automatisch."]).map((line, index) => (
+                  <div key={`${line}-${index}`} className="status-line">
+                    <span className="status-dot" aria-hidden="true" />
                     <span>{line}</span>
                   </div>
                 ))}

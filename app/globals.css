@@ -1635,48 +1635,99 @@ textarea {
   margin-left: auto;
 }
 
-.scraper-console {
+.search-status-panel {
   display: grid;
   gap: 0;
-  background: #050505;
   border: 2px solid var(--line);
-  box-shadow: 4px 4px 0 rgba(21, 21, 21, 0.18);
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: 4px 4px 0 rgba(21, 21, 21, 0.12);
   overflow: hidden;
 }
 
-.scraper-console-header {
+.search-status-header {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
-  color: #9cff72;
-  background: #101010;
-  border-bottom: 1px solid rgba(156, 255, 114, 0.18);
+  align-items: flex-start;
+  gap: 18px;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.74);
+  border-bottom: 1px solid rgba(33, 39, 33, 0.12);
+}
+
+.search-status-heading {
+  display: grid;
+  gap: 6px;
+}
+
+.search-status-heading strong {
+  font-size: 0.98rem;
+}
+
+.search-status-heading p {
+  margin: 0;
+  max-width: 64ch;
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.search-status-badge {
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  background: var(--paper);
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.78rem;
   font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.scraper-console-body {
+.search-status-badge-aktiv {
+  color: var(--accent-dark);
+  background: rgba(255, 208, 68, 0.22);
+}
+
+.search-status-badge-abgeschlossen {
+  color: #1a5f2f;
+  background: rgba(91, 196, 125, 0.2);
+}
+
+.search-status-badge-bereit {
+  color: var(--muted);
+}
+
+.search-status-badge-stoerung {
+  color: #8b2618;
+  background: rgba(226, 83, 55, 0.16);
+}
+
+.search-status-body {
   display: grid;
-  gap: 6px;
-  min-height: 96px;
+  gap: 10px;
+  min-height: 88px;
   max-height: 220px;
   overflow-y: auto;
-  padding: 14px;
-  color: #9cff72;
+  padding: 16px 18px;
+  color: var(--ink);
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.84rem;
+  background: rgba(255, 255, 255, 0.38);
 }
 
-.console-line {
+.status-line {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: flex-start;
+  line-height: 1.55;
 }
 
-.console-prompt {
-  color: var(--accent-dark);
+.status-dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 0.42rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(226, 83, 55, 0.12);
 }
 
 .results-toolbar {
@@ -1886,9 +1937,21 @@ textarea {
   .terminal-toggle {
     margin-left: 0;
   }
+
+  .search-status-header {
+    display: grid;
+  }
 }
 
 @media (max-width: 560px) {
+  .search-status-header {
+    display: grid;
+  }
+
+  .search-status-badge {
+    justify-self: start;
+  }
+
   .favorite-drawer {
     top: 8px;
     right: 8px;
