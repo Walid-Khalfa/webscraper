@@ -278,6 +278,7 @@ export default function Home({ initialShowcase, platformInsights }) {
   const [subscriptions, setSubscriptions] = useState([]);
   const [saasStatus, setSaasStatus] = useState("");
   const [saasLoading, setSaasLoading] = useState(false);
+  const [verificationSending, setVerificationSending] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [theme, setTheme] = useState("brutalist");
   const [viewMode, setViewMode] = useState("grid");
@@ -529,6 +530,16 @@ export default function Home({ initialShowcase, platformInsights }) {
   }, [theme]);
 
   useEffect(() => {
+    if (!agency?.api_key) return;
+    requestJson("/api/agencies/me", { headers: { "X-Agency-Key": agency.api_key } })
+      .then((freshAgency) => {
+        setAgency(freshAgency);
+        localStorage.setItem("agencyProfile", JSON.stringify(freshAgency));
+      })
+      .catch(() => {});
+  }, [agency?.api_key]);
+
+  useEffect(() => {
     localStorage.setItem("jobViewMode", viewMode);
   }, [viewMode]);
 
@@ -663,7 +674,7 @@ export default function Home({ initialShowcase, platformInsights }) {
       setAgency(created);
       localStorage.setItem("agencyProfile", JSON.stringify(created));
       setEmailTemplateOpts((current) => ({ ...current, agencyName: current.agencyName || created.name }));
-      setSaasStatus("Der Agentur-Zugang wurde erfolgreich eingerichtet.");
+      setSaasStatus("Der Agentur-Zugang wurde eingerichtet. Bitte bestaetigen Sie jetzt zuerst die E-Mail-Adresse, bevor Job-Alarme aktiviert werden.");
       trackEvent("agency_created", { plan: created.plan });
     } catch (err) {
       setSaasStatus(getErrorMessage(err, "Agentur-Erstellung"));
@@ -699,6 +710,11 @@ export default function Home({ initialShowcase, platformInsights }) {
       trackEvent("alert_creation_failed", { reason: "missing_agency_access", keyword: alertForm.keyword, location: alertForm.location });
       return;
     }
+    if (!agency?.email_verified) {
+      setSaasStatus("Bitte bestaetigen Sie zuerst die E-Mail-Adresse Ihrer Agentur. Erst danach koennen Job-Alarme aktiviert werden.");
+      trackEvent("alert_creation_failed", { reason: "agency_email_not_verified", keyword: alertForm.keyword, location: alertForm.location });
+      return;
+    }
     setSaasLoading(true);
     setSaasStatus("");
     try {
@@ -719,6 +735,10 @@ export default function Home({ initialShowcase, platformInsights }) {
   }
 
   async function handleSendNow(subscriptionId) {
+    if (!agency?.email_verified) {
+      setSaasStatus("Der manuelle Versand ist erst nach bestaetigter E-Mail-Adresse verfuegbar.");
+      return;
+    }
     setSaasLoading(true);
     setSaasStatus("");
     try {
@@ -737,6 +757,23 @@ export default function Home({ initialShowcase, platformInsights }) {
       setSaasStatus(getErrorMessage(err, "Versand des Job-Alarms"));
     } finally {
       setSaasLoading(false);
+    }
+  }
+
+  async function handleResendVerification() {
+    if (!agency?.api_key || agency?.email_verified) return;
+    setVerificationSending(true);
+    try {
+      const result = await requestJson("/api/agencies/resend-verification", {
+        method: "POST",
+        headers: { "X-Agency-Key": agency.api_key },
+      });
+      setSaasStatus(result.message || "Die Verifizierungs-E-Mail wurde erneut versendet.");
+      pushToast("success", result.message || "Die Verifizierungs-E-Mail wurde erneut versendet.");
+    } catch (err) {
+      setSaasStatus(getErrorMessage(err, "Versand der Verifizierungs-E-Mail"));
+    } finally {
+      setVerificationSending(false);
     }
   }
 
@@ -1363,8 +1400,15 @@ export default function Home({ initialShowcase, platformInsights }) {
                         <span>Aktiver Agentur-Zugang</span>
                         <strong>{agency.name}</strong>
                         <p>{agency.email}</p>
+                        <p>{agency.email_verified ? "E-Mail-Adresse bestaetigt" : "E-Mail-Adresse noch nicht bestaetigt"}</p>
                       </div>
                       <div className="agency-summary-actions">
+                        {!agency.email_verified ? (
+                          <button className="secondary-action" type="button" onClick={handleResendVerification} disabled={verificationSending}>
+                            {verificationSending ? <LoaderCircle className="spin" size={17} /> : <Mail size={17} />}
+                            Verifizierung erneut senden
+                          </button>
+                        ) : null}
                         <button className="secondary-action" type="button" onClick={handleForgetAgency}>
                           <LogOut size={17} />
                           Zugang entfernen
@@ -1473,11 +1517,11 @@ export default function Home({ initialShowcase, platformInsights }) {
                     ) : null}
                   </label>
                   <p className="form-hint">Der Job-Alarm arbeitet mit exakten Standorten, damit nur wirklich relevante Treffer in Ihrer taeglichen Zusammenfassung erscheinen.</p>
-                  <button className="secondary-action" type="submit" disabled={saasLoading || !agency}>
+                  <button className="secondary-action" type="submit" disabled={saasLoading || !agency || !agency.email_verified}>
                     <Plus size={19} />
                     Job-Alarm erstellen
                   </button>
-                  <div className="alarm-trust-line">Datenquelle: Bundesagentur fuer Arbeit · Versand auf Basis Ihres gespeicherten Suchprofils · Starter = 1 Alarm, Agentur-Zugang = bis zu 200 CSV-Treffer</div>
+                  <div className="alarm-trust-line">Datenquelle: Bundesagentur fuer Arbeit · Versand nur nach bestaetigter Agentur-E-Mail · Starter = 1 Alarm, Agentur-Zugang = bis zu 200 CSV-Treffer</div>
                 </form>
               </div>
 

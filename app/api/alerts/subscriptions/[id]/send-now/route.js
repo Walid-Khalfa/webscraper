@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 export async function POST(request, { params }) {
   try {
     const { id } = await params;
-    const { agency, subscription } = await getSubscription(agencyKey(request), id);
+    const { agency, subscription } = await getSubscription(agencyKey(request), id, { requireVerified: true });
     const payload = await searchJobs({
       keyword: subscription.keyword,
       location: subscription.location,

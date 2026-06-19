@@ -26,11 +26,28 @@ export function createUnsubscribeToken(subscriptionId) {
   return `${id}.${signature}`;
 }
 
+export function createAgencyVerificationToken(agencyId) {
+  const id = String(agencyId);
+  const signature = crypto.createHmac("sha256", getEmailSecret()).update(`verify:${id}`).digest("base64url");
+  return `${id}.${signature}`;
+}
+
 export function verifyUnsubscribeToken(token) {
   const [id, signature] = String(token || "").split(".");
   if (!id || !signature || !/^\d+$/.test(id)) return null;
 
   const expected = crypto.createHmac("sha256", getEmailSecret()).update(id).digest("base64url");
+  const actualBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expected);
+  if (actualBuffer.length !== expectedBuffer.length) return null;
+  return crypto.timingSafeEqual(actualBuffer, expectedBuffer) ? Number(id) : null;
+}
+
+export function verifyAgencyVerificationToken(token) {
+  const [id, signature] = String(token || "").split(".");
+  if (!id || !signature || !/^\d+$/.test(id)) return null;
+
+  const expected = crypto.createHmac("sha256", getEmailSecret()).update(`verify:${id}`).digest("base64url");
   const actualBuffer = Buffer.from(signature);
   const expectedBuffer = Buffer.from(expected);
   if (actualBuffer.length !== expectedBuffer.length) return null;
@@ -65,6 +82,41 @@ export async function sendEmail({ to, subject, html }) {
   }
 
   return { status: "sent", providerId: payload?.id || null };
+}
+
+export function buildAgencyVerificationHtml({ agency }) {
+  const appBaseUrl = getAppBaseUrl();
+  const verificationUrl = `${appBaseUrl}/api/agencies/verify?token=${encodeURIComponent(createAgencyVerificationToken(agency.id))}`;
+  const escapedAgency = escapeHtml(agency.name);
+
+  return `
+    <div style="display:none; max-height:0; overflow:hidden;">Bestaetigen Sie Ihre E-Mail-Adresse fuer KhalfaJobs.</div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f1ea; margin:0; padding:28px 0;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="640" cellspacing="0" cellpadding="0" style="width:640px; max-width:100%; background:#fffaf1; border:2px solid #1f1d1a;">
+            <tr>
+              <td style="padding: 28px 32px 18px; background:#1f1d1a; color:#fffaf1;">
+                <div style="font: 700 13px Arial, sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#ffce45;">KhalfaJobs Verifizierung</div>
+                <h1 style="margin:10px 0 0; font: 700 30px Arial, sans-serif;">E-Mail-Adresse bestaetigen</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 26px 32px 32px; color:#1f1d1a; font:16px Arial, sans-serif; line-height:1.6;">
+                <p style="margin:0 0 16px;">Guten Tag ${escapedAgency},</p>
+                <p style="margin:0 0 16px;">bitte bestaetigen Sie zuerst Ihre E-Mail-Adresse, bevor fuer Ihre Agentur automatische Job-Alarme aktiviert werden.</p>
+                <p style="margin:0 0 24px;">Ohne diese Verifizierung werden keine Recruiting-Digests von KhalfaJobs versendet.</p>
+                <a href="${verificationUrl}" style="display:inline-block; background:#df4829; color:#ffffff; font:700 15px Arial, sans-serif; text-decoration:none; padding:14px 18px; border:2px solid #1f1d1a;">
+                  E-Mail-Adresse bestaetigen
+                </a>
+                <p style="margin:24px 0 0; color:#6b665c; font-size:13px;">Falls Sie diese Registrierung nicht gestartet haben, koennen Sie diese E-Mail ignorieren.</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  `;
 }
 
 export function buildDigestHtml({ agency, subscription, rows }) {

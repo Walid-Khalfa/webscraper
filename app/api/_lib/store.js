@@ -21,6 +21,22 @@ function mapSubscription(sub) {
   };
 }
 
+function mapAgency(agency, apiKey = null) {
+  if (!agency) return null;
+  return {
+    id: agency.id,
+    name: agency.name,
+    email: agency.email,
+    plan: agency.plan,
+    is_active: agency.isActive,
+    email_verified: Boolean(agency.emailVerifiedAt),
+    email_verified_at: agency.emailVerifiedAt ? agency.emailVerifiedAt.toISOString() : null,
+    verification_email_sent_at: agency.verificationEmailSentAt ? agency.verificationEmailSentAt.toISOString() : null,
+    api_key: apiKey,
+    created_at: agency.createdAt.toISOString(),
+  };
+}
+
 export async function createAgency({ name, email, plan = "starter" }) {
   const existing = await prisma.agency.findUnique({
     where: { email },
@@ -43,18 +59,11 @@ export async function createAgency({ name, email, plan = "starter" }) {
     },
   });
 
-  return {
-    id: agency.id,
-    name: agency.name,
-    email: agency.email,
-    plan: agency.plan,
-    is_active: agency.isActive,
-    api_key: rawKey,
-    created_at: agency.createdAt.toISOString(),
-  };
+  return mapAgency(agency, rawKey);
 }
 
-export async function getAgency(apiKey) {
+export async function getAgency(apiKey, options = {}) {
+  const { requireVerified = false } = options;
   if (!apiKey) {
     const error = new Error("Ungueltiger Agentur-Schluessel");
     error.status = 401;
@@ -72,19 +81,17 @@ export async function getAgency(apiKey) {
     throw error;
   }
 
-  return {
-    id: agency.id,
-    name: agency.name,
-    email: agency.email,
-    plan: agency.plan,
-    is_active: agency.isActive,
-    api_key: apiKey,
-    created_at: agency.createdAt.toISOString(),
-  };
+  if (requireVerified && !agency.emailVerifiedAt) {
+    const error = new Error("Bitte bestaetigen Sie zuerst die E-Mail-Adresse Ihrer Agentur.");
+    error.status = 403;
+    throw error;
+  }
+
+  return mapAgency(agency, apiKey);
 }
 
 export async function createSubscription(apiKey, payload) {
-  const agency = await getAgency(apiKey);
+  const agency = await getAgency(apiKey, { requireVerified: true });
   const subscription = await prisma.searchSubscription.create({
     data: {
       agencyId: agency.id,
@@ -115,24 +122,18 @@ export async function listAllAgencySubscriptions() {
 
   return subs
     .map((sub) => {
-      if (!sub.agency || !sub.agency.isActive) return null;
+      if (!sub.agency || !sub.agency.isActive || !sub.agency.emailVerifiedAt) return null;
       return {
-        agency: {
-          id: sub.agency.id,
-          name: sub.agency.name,
-          email: sub.agency.email,
-          plan: sub.agency.plan,
-          is_active: sub.agency.isActive,
-          created_at: sub.agency.createdAt.toISOString(),
-        },
+        agency: mapAgency(sub.agency),
         subscription: mapSubscription(sub),
       };
     })
     .filter(Boolean);
 }
 
-export async function getSubscription(apiKey, id) {
-  const agency = await getAgency(apiKey);
+export async function getSubscription(apiKey, id, options = {}) {
+  const { requireVerified = false } = options;
+  const agency = await getAgency(apiKey, { requireVerified });
   const sub = await prisma.searchSubscription.findUnique({
     where: { id: Number(id) },
     include: { agency: true },
@@ -145,14 +146,7 @@ export async function getSubscription(apiKey, id) {
   }
 
   return {
-    agency: {
-      id: sub.agency.id,
-      name: sub.agency.name,
-      email: sub.agency.email,
-      plan: sub.agency.plan,
-      is_active: sub.agency.isActive,
-      created_at: sub.agency.createdAt.toISOString(),
-    },
+    agency: mapAgency(sub.agency),
     subscription: mapSubscription(sub),
   };
 }
@@ -205,4 +199,20 @@ export async function recordDelivery(subscription, recipient, subject, status, e
     error_message: delivery.errorMessage,
     created_at: delivery.createdAt.toISOString(),
   };
+}
+
+export async function markAgencyVerificationEmailSent(id) {
+  const agency = await prisma.agency.update({
+    where: { id: Number(id) },
+    data: { verificationEmailSentAt: new Date() },
+  });
+  return mapAgency(agency);
+}
+
+export async function verifyAgencyEmail(id) {
+  const agency = await prisma.agency.update({
+    where: { id: Number(id) },
+    data: { emailVerifiedAt: new Date() },
+  });
+  return mapAgency(agency);
 }
