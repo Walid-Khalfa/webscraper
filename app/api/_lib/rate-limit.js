@@ -50,7 +50,9 @@ async function upstashRequest(path, init = {}) {
   });
 
   if (!response.ok) {
-    throw new AppError("Der zentrale Rate-Limit-Dienst ist momentan nicht verfuegbar.", 503, "RATE_LIMIT_BACKEND_ERROR");
+    const details = await response.text().catch(() => "");
+    console.warn("Upstash rate limit fallback triggered:", response.status, details.slice(0, 200));
+    return null;
   }
 
   return response.json();
@@ -61,9 +63,15 @@ async function incrementRedisBucket(scope, key, windowMs) {
   if (!config) return null;
 
   const bucketKey = `rl:${scope}:${key}`;
-  const incrementResult = await upstashRequest(`/incr/${encodeURIComponent(bucketKey)}`, { method: "POST" });
-  await upstashRequest(`/pexpire/${encodeURIComponent(bucketKey)}/${windowMs}/NX`, { method: "POST" });
-  return Number(incrementResult?.result || 0);
+  try {
+    const incrementResult = await upstashRequest(`/incr/${encodeURIComponent(bucketKey)}`, { method: "POST" });
+    if (!incrementResult) return null;
+    await upstashRequest(`/pexpire/${encodeURIComponent(bucketKey)}/${windowMs}/NX`, { method: "POST" });
+    return Number(incrementResult?.result || 0);
+  } catch (error) {
+    console.warn("Upstash rate limit unavailable, using in-memory fallback.", error?.message || error);
+    return null;
+  }
 }
 
 function incrementMemoryBucket(scope, key, windowMs) {
@@ -81,4 +89,3 @@ export async function assertRateLimit(request, scope, { max, windowMs, keySuffix
     throw new AppError("Zu viele Anfragen. Bitte versuchen Sie es in wenigen Sekunden erneut.", 429, "RATE_LIMITED");
   }
 }
-
