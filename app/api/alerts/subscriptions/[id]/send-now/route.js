@@ -1,6 +1,8 @@
 import { agencyKey, errorResponse, json } from "../../../../_lib/http";
 import { extractJobItems, filterJobsByExactLocation, normalizeJob, searchJobs } from "../../../../_lib/ba";
+import { assertRateLimit } from "../../../../_lib/rate-limit";
 import { getSubscription, recordDelivery } from "../../../../_lib/store";
+import { numericIdSchema, parseWithSchema } from "../../../../_lib/validation";
 import { buildDigestHtml, sendEmail } from "../../../../_lib/email";
 
 export const runtime = "nodejs";
@@ -8,7 +10,9 @@ export const runtime = "nodejs";
 export async function POST(request, { params }) {
   try {
     const { id } = await params;
-    const { agency, subscription } = await getSubscription(agencyKey(request), id, { requireVerified: true });
+    const parsedId = parseWithSchema(numericIdSchema, id);
+    assertRateLimit(request, "subscription-send-now", { max: 5, windowMs: 10 * 60_000, keySuffix: `${agencyKey(request) || ""}:${parsedId}` });
+    const { agency, subscription } = await getSubscription(agencyKey(request), parsedId, { requireVerified: true });
     const payload = await searchJobs({
       keyword: subscription.keyword,
       location: subscription.location,

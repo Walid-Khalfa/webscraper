@@ -1,11 +1,13 @@
 import { buildAgencyVerificationHtml, sendEmail } from "../../_lib/email";
 import { agencyKey, errorResponse, json } from "../../_lib/http";
+import { assertRateLimit } from "../../_lib/rate-limit";
 import { getAgency, markAgencyVerificationEmailSent } from "../../_lib/store";
 
 export const runtime = "nodejs";
 
 export async function POST(request) {
   try {
+    assertRateLimit(request, "agency-resend-verification", { max: 5, windowMs: 10 * 60_000, keySuffix: agencyKey(request) || "" });
     const agency = await getAgency(agencyKey(request));
     if (agency.email_verified) {
       return json({ already_verified: true, message: "Die E-Mail-Adresse ist bereits bestaetigt." });

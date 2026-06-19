@@ -17,12 +17,16 @@ import {
   Search,
   Send,
   Sparkles,
-  TerminalSquare,
   Trash2,
   Columns3,
 } from "lucide-react";
+import AlertManager from "./AlertManager";
+import Dashboard from "./Dashboard";
 import JobCard from "./JobCard";
 import JobCardSkeleton from "./JobCardSkeleton";
+import KanbanBoard from "./KanbanBoard";
+import ProductTopbar from "./ProductTopbar";
+import SearchPanel from "./SearchPanel";
 import ToastStack from "./ToastStack";
 import { trackEvent } from "./analytics";
 import EmailDigestPreview from "./EmailDigestPreview";
@@ -970,25 +974,7 @@ export default function Home({ initialShowcase, platformInsights }) {
       </aside>
 
       <section className="workspace">
-        <div className="product-topbar">
-          <a href="#top" className="product-brand">
-            KhalfaJobs fuer Personalvermittlungen
-          </a>
-          <nav className="product-nav" aria-label="Primaere Navigation">
-            <a href="#suche" className="topbar-link">Suche</a>
-            <a href="#ergebnisse" className="topbar-link">Ergebnisse</a>
-            <a href="#job-alarm" className="topbar-link">Job-Alarm</a>
-            <a href="#datenquelle" className="topbar-link">Datenquelle</a>
-            <a href="/health" className="topbar-link">API-Status</a>
-          </nav>
-          <div className="theme-switcher">
-            {themes.map((entry) => (
-              <button key={entry.id} type="button" className={`theme-chip${theme === entry.id ? " active" : ""}`} onClick={() => setTheme(entry.id)}>
-                {entry.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <ProductTopbar themes={themes} activeTheme={theme} onThemeChange={setTheme} />
 
         <header className="masthead hero-layout">
           <div className="hero-primary">
@@ -1007,157 +993,123 @@ export default function Home({ initialShowcase, platformInsights }) {
           </div>
         </header>
 
-        <section className="search-stage" id="suche">
-          <form className="search-panel search-panel-prominent" onSubmit={handleSearch} onBlur={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget)) {
-              setOpenSuggest(null);
-              setShowAllSuggestions(true);
-            }
-          }}>
-            <label className="suggest-field">
-              <span>Gesuchte Position oder Suchbegriff</span>
-              <div className="suggest-input-wrap">
-                <input
-                  value={keyword}
-                  onChange={(event) => {
-                    setKeyword(event.target.value);
-                    setOpenSuggest("keyword");
-                    setShowAllSuggestions(false);
-                  }}
-                  onFocus={() => {
-                    setOpenSuggest("keyword");
-                    setShowAllSuggestions(true);
-                  }}
-                  autoComplete="off"
-                  aria-expanded={openSuggest === "keyword"}
-                  aria-controls="keyword-suggestion-list"
-                />
-                <button className="suggest-toggle" type="button" aria-label="Berufsvorschlaege anzeigen" aria-expanded={openSuggest === "keyword"} onMouseDown={(event) => event.preventDefault()} onClick={() => {
-                  if (openSuggest === "keyword") {
-                    setOpenSuggest(null);
-                    setShowAllSuggestions(true);
-                    return;
-                  }
-                  setOpenSuggest("keyword");
-                  setShowAllSuggestions(true);
-                }}>
-                  <ChevronDown size={18} className={openSuggest === "keyword" ? "suggest-chevron open" : "suggest-chevron"} />
-                </button>
-              </div>
-              {openSuggest === "keyword" ? (
-                <div className="suggest-menu" id="keyword-suggestion-list" role="listbox">
-                  {(visibleKeywordSuggestions.length ? visibleKeywordSuggestions : keywordSuggestions).map((suggestion) => (
-                    <button className="suggest-option" type="button" key={suggestion} onMouseDown={(event) => event.preventDefault()} onClick={() => {
-                      setKeyword(suggestion);
+        <SearchPanel
+          form={(
+            <form className="search-panel search-panel-prominent" onSubmit={handleSearch} onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) {
+                setOpenSuggest(null);
+                setShowAllSuggestions(true);
+              }
+            }}>
+              <label className="suggest-field">
+                <span>Gesuchte Position oder Suchbegriff</span>
+                <div className="suggest-input-wrap">
+                  <input
+                    value={keyword}
+                    onChange={(event) => {
+                      setKeyword(event.target.value);
+                      setOpenSuggest("keyword");
+                      setShowAllSuggestions(false);
+                    }}
+                    onFocus={() => {
+                      setOpenSuggest("keyword");
+                      setShowAllSuggestions(true);
+                    }}
+                    autoComplete="off"
+                    aria-expanded={openSuggest === "keyword"}
+                    aria-controls="keyword-suggestion-list"
+                  />
+                  <button className="suggest-toggle" type="button" aria-label="Berufsvorschlaege anzeigen" aria-expanded={openSuggest === "keyword"} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+                    if (openSuggest === "keyword") {
                       setOpenSuggest(null);
                       setShowAllSuggestions(true);
-                    }}>
-                      {suggestion}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </label>
-
-            <label className="suggest-field">
-              <span>Standort</span>
-              <div className="suggest-input-wrap">
-                <input
-                  value={location}
-                  onChange={(event) => {
-                    setLocation(event.target.value);
-                    setOpenSuggest("location");
-                    setShowAllSuggestions(false);
-                  }}
-                  onFocus={() => {
-                    setOpenSuggest("location");
+                      return;
+                    }
+                    setOpenSuggest("keyword");
                     setShowAllSuggestions(true);
-                  }}
-                  autoComplete="off"
-                  aria-expanded={openSuggest === "location"}
-                  aria-controls="location-suggestion-list"
-                />
-                <button className="suggest-toggle" type="button" aria-label="Standortvorschlaege anzeigen" aria-expanded={openSuggest === "location"} onMouseDown={(event) => event.preventDefault()} onClick={() => {
-                  if (openSuggest === "location") {
-                    setOpenSuggest(null);
-                    setShowAllSuggestions(true);
-                    return;
-                  }
-                  setOpenSuggest("location");
-                  setShowAllSuggestions(true);
-                }}>
-                  <ChevronDown size={18} className={openSuggest === "location" ? "suggest-chevron open" : "suggest-chevron"} />
-                </button>
-              </div>
-              {openSuggest === "location" ? (
-                <div className="suggest-menu" id="location-suggestion-list" role="listbox">
-                  {(visibleLocationSuggestions.length ? visibleLocationSuggestions : locationSuggestions).map((suggestion) => (
-                    <button className="suggest-option" type="button" key={suggestion} onMouseDown={(event) => event.preventDefault()} onClick={() => {
-                      setLocation(suggestion);
-                      setOpenSuggest(null);
-                      setShowAllSuggestions(true);
-                    }}>
-                      {suggestion}
-                    </button>
-                  ))}
+                  }}>
+                    <ChevronDown size={18} className={openSuggest === "keyword" ? "suggest-chevron open" : "suggest-chevron"} />
+                  </button>
                 </div>
-              ) : null}
-            </label>
-
-            <label className="exact-location-toggle">
-              <input type="checkbox" checked={exactLocation} onChange={(event) => setExactLocation(event.target.checked)} />
-              <span>Nur exakte Standorte</span>
-            </label>
-            <button className="primary-action" type="submit" disabled={loading}>
-              {loading ? <LoaderCircle className="spin" size={19} /> : <Search size={19} />}
-              Stellen finden
-            </button>
-          </form>
-
-          <div className="trust-strip" id="datenquelle" aria-label="Produkt- und API-Informationen">
-            {trustItems.map((item) => (
-              <div className="trust-item" key={item.label}>
-                <span>{item.label}</span>
-                <strong>{item.value}</strong>
-              </div>
-            ))}
-          </div>
-
-          <div className="quick-searches">
-            <span className="quick-search-label">Beliebte Suchanfragen</span>
-            {quickSearches.map((entry) => (
-              <button key={`${entry.keyword}-${entry.location}`} className="quick-search-chip" type="button" onClick={() => applyQuickSearch(entry.keyword, entry.location)}>
-                {entry.keyword} in {entry.location}
-              </button>
-            ))}
-            <button className="quick-search-chip terminal-toggle" type="button" onClick={() => setIsConsoleOpen((value) => !value)}>
-              <TerminalSquare size={16} />
-              {isConsoleOpen ? "Suchstatus ausblenden" : "Suchstatus einblenden"}
-            </button>
-          </div>
-
-          {Boolean(isConsoleOpen || loading || consoleLogs.length) && (
-            <section className="search-status-panel" aria-label="Live-Suchstatus">
-              <div className="search-status-header">
-                <div className="search-status-heading">
-                  <strong>{liveSearchStatus.title}</strong>
-                  <p>{liveSearchStatus.summary}</p>
-                </div>
-                <span className={`search-status-badge search-status-badge-${liveSearchStatus.badge.toLowerCase("de-DE")}`}>
-                  {liveSearchStatus.badge}
-                </span>
-              </div>
-              <div className="search-status-body">
-                {(consoleLogs.length ? consoleLogs : ["Keine laufende Suche. Die naechste Abfrage erscheint hier automatisch."]).map((line, index) => (
-                  <div key={`${line}-${index}`} className="status-line">
-                    <span className="status-dot" aria-hidden="true" />
-                    <span>{line}</span>
+                {openSuggest === "keyword" ? (
+                  <div className="suggest-menu" id="keyword-suggestion-list" role="listbox">
+                    {(visibleKeywordSuggestions.length ? visibleKeywordSuggestions : keywordSuggestions).map((suggestion) => (
+                      <button className="suggest-option" type="button" key={suggestion} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+                        setKeyword(suggestion);
+                        setOpenSuggest(null);
+                        setShowAllSuggestions(true);
+                      }}>
+                        {suggestion}
+                      </button>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </section>
+                ) : null}
+              </label>
+
+              <label className="suggest-field">
+                <span>Standort</span>
+                <div className="suggest-input-wrap">
+                  <input
+                    value={location}
+                    onChange={(event) => {
+                      setLocation(event.target.value);
+                      setOpenSuggest("location");
+                      setShowAllSuggestions(false);
+                    }}
+                    onFocus={() => {
+                      setOpenSuggest("location");
+                      setShowAllSuggestions(true);
+                    }}
+                    autoComplete="off"
+                    aria-expanded={openSuggest === "location"}
+                    aria-controls="location-suggestion-list"
+                  />
+                  <button className="suggest-toggle" type="button" aria-label="Standortvorschlaege anzeigen" aria-expanded={openSuggest === "location"} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+                    if (openSuggest === "location") {
+                      setOpenSuggest(null);
+                      setShowAllSuggestions(true);
+                      return;
+                    }
+                    setOpenSuggest("location");
+                    setShowAllSuggestions(true);
+                  }}>
+                    <ChevronDown size={18} className={openSuggest === "location" ? "suggest-chevron open" : "suggest-chevron"} />
+                  </button>
+                </div>
+                {openSuggest === "location" ? (
+                  <div className="suggest-menu" id="location-suggestion-list" role="listbox">
+                    {(visibleLocationSuggestions.length ? visibleLocationSuggestions : locationSuggestions).map((suggestion) => (
+                      <button className="suggest-option" type="button" key={suggestion} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+                        setLocation(suggestion);
+                        setOpenSuggest(null);
+                        setShowAllSuggestions(true);
+                      }}>
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </label>
+
+              <label className="exact-location-toggle">
+                <input type="checkbox" checked={exactLocation} onChange={(event) => setExactLocation(event.target.checked)} />
+                <span>Nur exakte Standorte</span>
+              </label>
+              <button className="primary-action" type="submit" disabled={loading}>
+                {loading ? <LoaderCircle className="spin" size={19} /> : <Search size={19} />}
+                Stellen finden
+              </button>
+            </form>
           )}
-        </section>
+          trustItems={trustItems}
+          quickSearches={quickSearches}
+          onQuickSearch={applyQuickSearch}
+          isStatusOpen={isConsoleOpen}
+          loading={loading}
+          consoleLogs={consoleLogs}
+          liveSearchStatus={liveSearchStatus}
+          onToggleStatus={() => setIsConsoleOpen((value) => !value)}
+        />
 
         {error ? (
           <div className="error-banner error-panel" role="alert">
@@ -1220,7 +1172,7 @@ export default function Home({ initialShowcase, platformInsights }) {
             </div>
 
             {rawJobs.length ? (
-              <section className="interactive-dashboard" aria-label="Interaktiver Recruiting-Dashboard">
+              <Dashboard>
                 <article className="dashboard-card">
                   <div className="dashboard-card-header">
                     <div>
@@ -1241,7 +1193,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                   </div>
                   {renderEmployerChart()}
                 </article>
-              </section>
+              </Dashboard>
             ) : null}
           </>
         ) : null}
@@ -1255,38 +1207,17 @@ export default function Home({ initialShowcase, platformInsights }) {
         ) : jobsWithClientFilters.length > 0 ? (
           <>
             {viewMode === "kanban" ? (
-              <section className="kanban-board" aria-label="Job-Tracker Kanban">
-                {kanbanJobs.map((column) => (
-                  <article key={column.status} className="kanban-column" onDragOver={(event) => event.preventDefault()} onDrop={() => {
-                    if (draggingRef) moveFavoriteToStatus(draggingRef, column.status);
-                    setDraggingRef(null);
-                  }}>
-                    <div className="kanban-column-header">
-                      <strong>{statusLabels[column.status]}</strong>
-                      <span>{column.jobs.length}</span>
-                    </div>
-                    <div className="kanban-column-body">
-                      {column.jobs.length ? (
-                        column.jobs.map((entry) => (
-                          <div key={entry.job.reference} draggable onDragStart={() => setDraggingRef(entry.job.reference)}>
-                            <JobCard
-                              job={entry.job}
-                              viewMode="kanban"
-                              isFavorite
-                              favoriteData={entry}
-                              onToggleFavorite={toggleFavorite}
-                              onOpenFavorite={setActiveFavoriteRef}
-                              onCycleStatus={cycleFavoriteStatus}
-                            />
-                          </div>
-                        ))
-                      ) : (
-                        <p className="kanban-empty">Noch keine gespeicherten Treffer in dieser Spalte.</p>
-                      )}
-                    </div>
-                  </article>
-                ))}
-              </section>
+              <KanbanBoard
+                columns={kanbanJobs}
+                statusLabels={statusLabels}
+                draggingRef={draggingRef}
+                onDropCard={(status) => moveFavoriteToStatus(draggingRef, status)}
+                onStartDrag={setDraggingRef}
+                onEndDrag={() => setDraggingRef(null)}
+                onToggleFavorite={toggleFavorite}
+                onOpenFavorite={setActiveFavoriteRef}
+                onCycleStatus={cycleFavoriteStatus}
+              />
             ) : (
               <section className={`results-grid${viewMode === "list" ? " results-list" : ""}`}>
                 {jobsWithClientFilters.map((job, index) => (
@@ -1407,24 +1338,41 @@ export default function Home({ initialShowcase, platformInsights }) {
           </section>
         )}
 
-        <section className="saas-section secondary-zone" id="job-alarm">
-          <div className="saas-header">
-            <div>
-              <p className="eyebrow">Job-Alarm fuer Recruiting-Teams</p>
-              <h2>Neue passende Stellenangebote automatisch per E-Mail erhalten.</h2>
+        <AlertManager
+          agentOpen={agentOpen}
+          onToggle={() => {
+            setAgentOpen((open) => {
+              const next = !open;
+              if (next) trackEvent("agent_configurator_opened");
+              return next;
+            });
+          }}
+          statusBanner={saasStatus ? <div className="status-banner">{saasStatus}</div> : null}
+          subscriptions={(
+            <div className="subscription-list">
+              {subscriptions.map((subscription) => (
+                <article className="subscription-row" key={subscription.id}>
+                  <div className="subscription-copy">
+                    <span className="subscription-kicker">Aktiver Job-Alarm</span>
+                    <strong>{normalizeSubscriptionText(subscription.keyword) || "Suchprofil fehlt"}</strong>
+                    <span className="subscription-location">{normalizeSubscriptionText(subscription.location) || "Standort fehlt"}</span>
+                  </div>
+                  <span className="subscription-frequency">{formatFrequencyLabel(subscription.frequency)}</span>
+                  <div className="subscription-actions">
+                    <button className="secondary-action" type="button" onClick={() => handleDeleteAlert(subscription.id)} disabled={saasLoading}>
+                      <Trash2 size={18} />
+                      Loeschen
+                    </button>
+                    <button className="secondary-action" type="button" onClick={() => handleSendNow(subscription.id)} disabled={saasLoading}>
+                      <Send size={18} />
+                      Jetzt versenden
+                    </button>
+                  </div>
+                </article>
+              ))}
             </div>
-            <button className="secondary-action" type="button" onClick={() => {
-              setAgentOpen((open) => {
-                const next = !open;
-                if (next) trackEvent("agent_configurator_opened");
-                return next;
-              });
-            }} aria-expanded={agentOpen}>
-              <Mail size={18} aria-hidden="true" />
-              {agentOpen ? "Job-Alarm ausblenden" : "Job-Alarm einrichten"}
-            </button>
-          </div>
-
+          )}
+        >
           {agentOpen ? (
             <div className="agent-body">
               <div className="agent-summary">
@@ -1593,32 +1541,7 @@ export default function Home({ initialShowcase, platformInsights }) {
               />
             </div>
           ) : null}
-
-          {saasStatus ? <div className="status-banner">{saasStatus}</div> : null}
-
-          <div className="subscription-list">
-            {subscriptions.map((subscription) => (
-              <article className="subscription-row" key={subscription.id}>
-                <div className="subscription-copy">
-                  <span className="subscription-kicker">Aktiver Job-Alarm</span>
-                  <strong>{normalizeSubscriptionText(subscription.keyword) || "Suchprofil fehlt"}</strong>
-                  <span className="subscription-location">{normalizeSubscriptionText(subscription.location) || "Standort fehlt"}</span>
-                </div>
-                <span className="subscription-frequency">{formatFrequencyLabel(subscription.frequency)}</span>
-                <div className="subscription-actions">
-                  <button className="secondary-action" type="button" onClick={() => handleDeleteAlert(subscription.id)} disabled={saasLoading}>
-                    <Trash2 size={18} />
-                    Loeschen
-                  </button>
-                  <button className="secondary-action" type="button" onClick={() => handleSendNow(subscription.id)} disabled={saasLoading}>
-                    <Send size={18} />
-                    Jetzt versenden
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
+        </AlertManager>
 
         <footer className="site-footer" aria-label="KhalfaJobs Branding">
           <p className="site-footer-title">KhalfaJobs fuer professionelle Personalvermittlung</p>

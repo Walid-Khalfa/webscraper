@@ -2,16 +2,17 @@ import { NextResponse } from "next/server";
 import { agencyKey } from "../../../_lib/http";
 import { errorResponse } from "../../../_lib/http";
 import { extractJobItems, filterJobsByExactLocation, normalizeJob, searchJobs, toCsv } from "../../../_lib/ba";
+import { assertRateLimit } from "../../../_lib/rate-limit";
 import { getAgency } from "../../../_lib/store";
+import { parseWithSchema, searchQuerySchema } from "../../../_lib/validation";
 
 export const runtime = "nodejs";
 
 export async function GET(request) {
   try {
-    const params = request.nextUrl.searchParams;
-    const keyword = params.get("keyword") || "";
-    const location = params.get("location") || "";
-    const exactLocation = params.get("exactLocation") === "true";
+    assertRateLimit(request, "jobs-export", { max: 20, windowMs: 10 * 60_000, keySuffix: agencyKey(request) || "" });
+    const params = parseWithSchema(searchQuerySchema, Object.fromEntries(request.nextUrl.searchParams.entries()));
+    const { keyword, location, exactLocation } = params;
     let exportLimit = 25;
     let exportTier = "starter";
 

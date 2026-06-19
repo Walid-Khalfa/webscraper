@@ -1,18 +1,20 @@
 import { errorResponse, json } from "../../_lib/http";
+import { assertRateLimit } from "../../_lib/rate-limit";
+import { parseWithSchema, searchQuerySchema } from "../../_lib/validation";
 import { extractJobItems, filterJobsByExactLocation, searchJobs } from "../../_lib/ba";
 
 export const runtime = "nodejs";
 
 export async function GET(request) {
   try {
-    const params = request.nextUrl.searchParams;
-    const exactLocation = params.get("exactLocation") === "true";
-    const location = params.get("location") || "";
+    assertRateLimit(request, "jobs-search", { max: 60, windowMs: 60_000 });
+    const params = parseWithSchema(searchQuerySchema, Object.fromEntries(request.nextUrl.searchParams.entries()));
+    const { exactLocation, location, keyword, page, size } = params;
     const payload = await searchJobs({
-      keyword: params.get("keyword") || "",
+      keyword,
       location,
-      page: params.get("page") || 1,
-      size: params.get("size") || 25,
+      page,
+      size,
     });
     if (!exactLocation) return json(payload);
 

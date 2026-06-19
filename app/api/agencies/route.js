@@ -1,17 +1,15 @@
 import { createAgency, markAgencyVerificationEmailSent } from "../_lib/store";
 import { buildAgencyVerificationHtml, sendEmail } from "../_lib/email";
 import { errorResponse, json } from "../_lib/http";
+import { assertRateLimit } from "../_lib/rate-limit";
+import { agencyCreateSchema, parseWithSchema } from "../_lib/validation";
 
 export const runtime = "nodejs";
 
 export async function POST(request) {
   try {
-    const payload = await request.json();
-    if (!payload.name || !payload.email) {
-      const error = new Error("Agenturname und E-Mail sind erforderlich");
-      error.status = 400;
-      throw error;
-    }
+    assertRateLimit(request, "agency-create", { max: 10, windowMs: 60_000 });
+    const payload = parseWithSchema(agencyCreateSchema, await request.json());
     const agency = await createAgency(payload);
     const subject = "Bitte bestaetigen Sie Ihre E-Mail-Adresse fuer KhalfaJobs";
     const delivery = await sendEmail({

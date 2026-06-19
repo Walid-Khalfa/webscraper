@@ -1,5 +1,6 @@
 import { errorResponse, json } from "../../_lib/http";
 import { extractJobItems, filterJobsByExactLocation, normalizeJob, searchJobs } from "../../_lib/ba";
+import { mapWithConcurrency } from "../../_lib/concurrency";
 import { listAllAgencySubscriptions, recordDelivery } from "../../_lib/store";
 import { buildDigestHtml, sendEmail } from "../../_lib/email";
 
@@ -16,10 +17,8 @@ export async function GET(request) {
     }
 
     const jobs = await listAllAgencySubscriptions();
-    const results = [];
-
-    for (const { agency, subscription } of jobs) {
-      try {
+    const concurrency = Number(process.env.CRON_AGENT_CONCURRENCY || 4);
+    const settled = await mapWithConcurrency(jobs, concurrency, async ({ agency, subscription }) => {
         const payload = await searchJobs({
           keyword: subscription.keyword,
           location: subscription.location,
@@ -36,16 +35,22 @@ export async function GET(request) {
           html: buildDigestHtml({ agency, subscription, rows }),
         });
         await recordDelivery(subscription, agency.email, subject, delivery.status);
-        results.push({
+        return {
           subscription_id: subscription.id,
           status: delivery.status,
           provider_id: delivery.providerId,
           job_count: rows.length,
-        });
-      } catch (error) {
-        results.push({ subscription_id: subscription.id, status: "failed", error: error.message });
-      }
-    }
+        };
+    });
+
+    const results = settled.map((entry, index) => {
+      if (entry.status === "fulfilled") return entry.value;
+      return {
+        subscription_id: jobs[index]?.subscription?.id,
+        status: "failed",
+        error: entry.reason?.message || "Unbekannter Fehler",
+      };
+    });
 
     return json({ processed: results.length, results });
   } catch (error) {
