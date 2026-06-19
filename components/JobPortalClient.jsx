@@ -436,6 +436,41 @@ export default function Home({ initialShowcase, platformInsights }) {
       summary: "Starten Sie eine Suche, um aktuelle Stellenangebote und den Verarbeitungsstatus anzuzeigen.",
     };
   }, [loading, error, hasSearched, jobsWithClientFilters.length, rawJobs.length]);
+  const commercialInsights = useMemo(
+    () => [
+      {
+        label: "Datenquelle",
+        value: "Bundesagentur fuer Arbeit",
+        description: "Offizielle Stellenangebote als Basis fuer professionelle Recruiting-Recherchen.",
+      },
+      {
+        label: "API-Status",
+        value: "Live verbunden",
+        description: "Suchanfragen werden direkt gegen die aktuelle BA-Datenquelle verarbeitet.",
+      },
+      {
+        label: "Aktive Job-Alarme",
+        value: platformInsights?.activeAlerts ? `${platformInsights.activeAlerts} aktiv` : "Sofort einrichtbar",
+        description: "Passende Stellenangebote koennen taeglich automatisiert per E-Mail zugestellt werden.",
+      },
+      {
+        label: "Agentur-Zugaenge",
+        value: platformInsights?.activeAgencies ? `${platformInsights.activeAgencies} aktiv` : "SaaS-bereit",
+        description: "Mehrere Recruiting-Arbeitsbereiche lassen sich zentral verwalten und absichern.",
+      },
+      {
+        label: "Standortfilter",
+        value: "Nur exakte Treffer",
+        description: "Recruiting-Teams koennen Ergebnisse strikt auf den gewuenschten Ort begrenzen.",
+      },
+      {
+        label: "CSV-Export",
+        value: "Bis zu 200 Treffer",
+        description: "Serverseitiger Export fuer Outreach, Shortlists und interne Recruiting-Workflows.",
+      },
+    ],
+    [platformInsights?.activeAlerts, platformInsights?.activeAgencies],
+  );
 
   function pushToast(type, message, persist = false) {
     const id = crypto.randomUUID();
@@ -1291,37 +1326,14 @@ export default function Home({ initialShowcase, platformInsights }) {
               <p>Starten Sie eine Suche nach Beruf und Standort, um relevante Stellenangebote sofort zu pruefen, zu exportieren, als Favorit zu speichern oder per Job-Alarm zu verfolgen.</p>
             </div>
 
-            <section className="insights-strip" aria-label="Live-Recruiting-Kennzahlen">
-              <article className="insight-card">
-                <span>Live-Recruiting-Kennzahlen</span>
-                <strong>{platformInsights?.searchesToday || 0} Suchen heute</strong>
-                <p>Persistierte Suchaktivitaet aus Ihrer Plattform.</p>
-              </article>
-              <article className="insight-card">
-                <span>Aktive Job-Alarme</span>
-                <strong>{platformInsights?.activeAlerts || 0}</strong>
-                <p>Gespeicherte Suchprofile fuer wiederkehrende Recruiting-Suchen.</p>
-              </article>
-              <article className="insight-card">
-                <span>CSV-Exporte heute</span>
-                <strong>{platformInsights?.exportsToday || 0}</strong>
-                <p>Direkt aus Live-Treffern fuer Recruiting-Workflows erstellt.</p>
-              </article>
-              <article className="insight-card">
-                <span>Aktive Agentur-Zugaenge</span>
-                <strong>{platformInsights?.activeAgencies || 0}</strong>
-                <p>Aktive Arbeitsbereiche auf Ihrer Plattform.</p>
-              </article>
-              <article className="insight-card">
-                <span>Gespeicherte Favoriten</span>
-                <strong>{Object.keys(favorites).length}</strong>
-                <p>Persoenliche Shortlist fuer Ihren Job-Tracker.</p>
-              </article>
-              <article className="insight-card">
-                <span>Letzte Plattform-Aktivitaet</span>
-                <strong>{platformInsights?.lastActivityLabel || "Noch keine Aktivitaet"}</strong>
-                <p>Basierend auf Such-, Export- und Alarm-Ereignissen.</p>
-              </article>
+            <section className="insights-strip" aria-label="Produkt- und Vertrauensmerkmale">
+              {commercialInsights.map((item) => (
+                <article className="insight-card" key={item.label}>
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                  <p>{item.description}</p>
+                </article>
+              ))}
             </section>
 
             <section className="showcase-grid" aria-label="Marktueberblick">
