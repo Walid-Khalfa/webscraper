@@ -491,6 +491,7 @@ export default function Home({ initialShowcase, platformInsights }) {
         badge: "Aktiv",
         title: "Suchstatus",
         summary: "Die Suche laeuft. Aktuelle BA-Stellenangebote werden gerade geladen.",
+        meta: "Live-Aktualisierung laeuft",
       };
     }
 
@@ -499,6 +500,7 @@ export default function Home({ initialShowcase, platformInsights }) {
         badge: "Stoerung",
         title: "Suchstatus",
         summary: "Die letzte Suche konnte nicht vollstaendig geladen werden.",
+        meta: "Bitte erneut versuchen",
       };
     }
 
@@ -507,7 +509,8 @@ export default function Home({ initialShowcase, platformInsights }) {
       return {
         badge: "Abgeschlossen",
         title: "Suchstatus",
-        summary: `${resultCount} passende Stellenangebote stehen fuer die aktuelle Suche bereit.`,
+        summary: `${resultCount} passende Stellenangebote gefunden.`,
+        meta: `Zuletzt aktualisiert: ${formatLastUpdated(lastSearchAt)}`,
       };
     }
 
@@ -515,6 +518,7 @@ export default function Home({ initialShowcase, platformInsights }) {
       badge: "Bereit",
       title: "Suchstatus",
       summary: "Starten Sie eine Suche, um passende Stellenangebote direkt anzuzeigen.",
+      meta: "Bereit fuer die naechste Suche",
     };
   }, [loading, error, hasSearched, jobsWithClientFilters.length, rawJobs.length]);
   const commercialInsights = useMemo(
@@ -751,6 +755,17 @@ export default function Home({ initialShowcase, platformInsights }) {
       .then(setSubscriptions)
       .catch(() => setSubscriptions([]));
   }, [agency?.api_key]);
+
+  useEffect(() => {
+    if (loading) {
+      setIsConsoleOpen(false);
+      return;
+    }
+
+    if (hasSearched && !error) {
+      setIsConsoleOpen(false);
+    }
+  }, [loading, hasSearched, error]);
 
   async function simulateConsoleBeforeFetch(pageNumber = 1) {
     setIsConsoleOpen(true);

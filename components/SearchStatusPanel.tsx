@@ -2,6 +2,7 @@ type SearchStatus = {
   badge: string;
   title: string;
   summary: string;
+  meta?: string;
 };
 
 type SearchStatusPanelProps = {
@@ -14,6 +15,9 @@ type SearchStatusPanelProps = {
 
 export default function SearchStatusPanel({ isOpen, loading, logs, status, onToggle }: SearchStatusPanelProps) {
   const hasTechnicalDetails = Boolean(logs.length);
+  const shouldHide = status.badge === "Bereit" && !loading && !hasTechnicalDetails;
+
+  if (shouldHide) return null;
 
   return (
     <section className="search-status-panel search-status-panel-compact" aria-label={status.title}>
@@ -26,10 +30,10 @@ export default function SearchStatusPanel({ isOpen, loading, logs, status, onTog
       </div>
 
       <div className="search-status-meta">
-        <span>{loading ? "Live-Aktualisierung laeuft" : "Status fuer Recruiter aufbereitet"}</span>
+        <span>{status.meta || (loading ? "Live-Aktualisierung laeuft" : "Zuletzt aktualisiert")}</span>
         {hasTechnicalDetails ? (
           <button className="search-status-details-toggle" type="button" onClick={onToggle} aria-expanded={isOpen}>
-            {isOpen ? "Technische Details ausblenden" : "Technische Details anzeigen"}
+            {isOpen ? "Details schliessen" : "Technische Details"}
           </button>
         ) : null}
       </div>
