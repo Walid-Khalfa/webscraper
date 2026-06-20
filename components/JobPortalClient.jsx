@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   ChevronDown,
@@ -104,7 +104,6 @@ const keywordSuggestions = [
   "Verkaeufer",
   "Filialleiter",
 ];
-const locationSuggestions = ["Berlin", "Muenchen", "Hamburg", "Koeln", "Frankfurt am Main", "Stuttgart", "Duesseldorf", "Leipzig"];
 const quickSearches = [
   { keyword: "Softwareentwickler", location: "Berlin" },
   { keyword: "Pflegefachkraft", location: "Hamburg" },
@@ -138,6 +137,8 @@ const defaultEmailTemplate = {
   showApplyLink: true,
 };
 
+const locationSuggestionCache = new Map();
+
 function sleep(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
@@ -157,6 +158,20 @@ async function requestJson(url, options = {}) {
     throw new Error(data?.detail || data || `Anfrage fehlgeschlagen mit Status ${response.status}`);
   }
   return data;
+}
+
+async function requestLocationSuggestions(query) {
+  const cacheKey = query.trim().toLocaleLowerCase("de-DE");
+  if (locationSuggestionCache.has(cacheKey)) return locationSuggestionCache.get(cacheKey);
+
+  const params = new URLSearchParams({
+    query,
+    limit: "10",
+  });
+  const data = await requestJson(`/api/locations/autocomplete?${params.toString()}`);
+  const items = Array.isArray(data?.items) ? data.items : [];
+  locationSuggestionCache.set(cacheKey, items);
+  return items;
 }
 
 function extractJobs(payload) {
@@ -328,6 +343,10 @@ export default function Home({ initialShowcase, platformInsights }) {
   const [showAllSuggestions, setShowAllSuggestions] = useState(true);
   const [agentSuggest, setAgentSuggest] = useState(null);
   const [showAllAgentSuggestions, setShowAllAgentSuggestions] = useState(true);
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [agentLocationSuggestions, setAgentLocationSuggestions] = useState([]);
+  const [loadingLocationSuggestions, setLoadingLocationSuggestions] = useState(false);
+  const [loadingAgentLocationSuggestions, setLoadingAgentLocationSuggestions] = useState(false);
   const [exactLocation, setExactLocation] = useState(true);
   const [payload, setPayload] = useState(null);
   const [page, setPage] = useState(1);
@@ -358,6 +377,8 @@ export default function Home({ initialShowcase, platformInsights }) {
   const [salaryBucket, setSalaryBucket] = useState("all");
   const [emailTemplateOpts, setEmailTemplateOpts] = useState(defaultEmailTemplate);
   const [simulatingEmail, setSimulatingEmail] = useState(false);
+  const locationFetchVersion = useRef(0);
+  const agentLocationFetchVersion = useRef(0);
 
   const rawJobs = useMemo(() => extractJobs(payload).map(normalizeJob), [payload]);
   const jobsWithClientFilters = useMemo(() => {
@@ -428,18 +449,12 @@ export default function Home({ initialShowcase, platformInsights }) {
     () => getVisibleSuggestions(keyword, keywordSuggestions, openSuggest === "keyword" && showAllSuggestions),
     [keyword, openSuggest, showAllSuggestions],
   );
-  const visibleLocationSuggestions = useMemo(
-    () => getVisibleSuggestions(location, locationSuggestions, openSuggest === "location" && showAllSuggestions),
-    [location, openSuggest, showAllSuggestions],
-  );
+  const visibleLocationSuggestions = locationSuggestions;
   const visibleAgentKeywordSuggestions = useMemo(
     () => getVisibleSuggestions(alertForm.keyword, keywordSuggestions, agentSuggest === "keyword" && showAllAgentSuggestions),
     [alertForm.keyword, agentSuggest, showAllAgentSuggestions],
   );
-  const visibleAgentLocationSuggestions = useMemo(
-    () => getVisibleSuggestions(alertForm.location, locationSuggestions, agentSuggest === "location" && showAllAgentSuggestions),
-    [alertForm.location, agentSuggest, showAllAgentSuggestions],
-  );
+  const visibleAgentLocationSuggestions = agentLocationSuggestions;
   const salaryBuckets = useMemo(() => buildSalaryBuckets(rawJobs), [rawJobs]);
   const employerStats = useMemo(() => {
     const map = new Map();
@@ -679,6 +694,56 @@ export default function Home({ initialShowcase, platformInsights }) {
   useEffect(() => {
     localStorage.setItem("emailTemplateOpts", JSON.stringify(emailTemplateOpts));
   }, [emailTemplateOpts]);
+
+  useEffect(() => {
+    if (openSuggest !== "location") return undefined;
+
+    const requestId = locationFetchVersion.current + 1;
+    locationFetchVersion.current = requestId;
+    setLoadingLocationSuggestions(true);
+
+    const timer = window.setTimeout(() => {
+      requestLocationSuggestions(location)
+        .then((items) => {
+          if (locationFetchVersion.current !== requestId) return;
+          setLocationSuggestions(items);
+        })
+        .catch(() => {
+          if (locationFetchVersion.current !== requestId) return;
+          setLocationSuggestions([]);
+        })
+        .finally(() => {
+          if (locationFetchVersion.current === requestId) setLoadingLocationSuggestions(false);
+        });
+    }, 120);
+
+    return () => window.clearTimeout(timer);
+  }, [location, openSuggest]);
+
+  useEffect(() => {
+    if (agentSuggest !== "location") return undefined;
+
+    const requestId = agentLocationFetchVersion.current + 1;
+    agentLocationFetchVersion.current = requestId;
+    setLoadingAgentLocationSuggestions(true);
+
+    const timer = window.setTimeout(() => {
+      requestLocationSuggestions(alertForm.location)
+        .then((items) => {
+          if (agentLocationFetchVersion.current !== requestId) return;
+          setAgentLocationSuggestions(items);
+        })
+        .catch(() => {
+          if (agentLocationFetchVersion.current !== requestId) return;
+          setAgentLocationSuggestions([]);
+        })
+        .finally(() => {
+          if (agentLocationFetchVersion.current === requestId) setLoadingAgentLocationSuggestions(false);
+        });
+    }, 120);
+
+    return () => window.clearTimeout(timer);
+  }, [alertForm.location, agentSuggest]);
 
   useEffect(() => {
     if (!agency?.api_key) return;
@@ -1140,15 +1205,27 @@ export default function Home({ initialShowcase, platformInsights }) {
                 </div>
                 {openSuggest === "location" ? (
                   <div className="suggest-menu" id="location-suggestion-list" role="listbox">
-                    {(visibleLocationSuggestions.length ? visibleLocationSuggestions : locationSuggestions).map((suggestion) => (
-                      <button className="suggest-option" type="button" key={suggestion} onMouseDown={(event) => event.preventDefault()} onClick={() => {
-                        setLocation(suggestion);
-                        setOpenSuggest(null);
-                        setShowAllSuggestions(true);
-                      }}>
-                        {suggestion}
+                    {loadingLocationSuggestions ? (
+                      <button className="suggest-option" type="button" disabled>
+                        <LoaderCircle size={16} className="spin-icon" />
+                        Orte werden geladen...
                       </button>
-                    ))}
+                    ) : visibleLocationSuggestions.length ? (
+                      visibleLocationSuggestions.map((suggestion) => (
+                        <button className="suggest-option suggest-option-rich" type="button" key={suggestion.label} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+                          setLocation(suggestion.value);
+                          setOpenSuggest(null);
+                          setShowAllSuggestions(true);
+                        }}>
+                          <span>{suggestion.value}</span>
+                          {suggestion.state && suggestion.state !== suggestion.value ? <small>{suggestion.state}</small> : null}
+                        </button>
+                      ))
+                    ) : (
+                      <button className="suggest-option" type="button" disabled>
+                        Kein passender Standort gefunden
+                      </button>
+                    )}
                   </div>
                 ) : null}
               </label>
@@ -1570,15 +1647,27 @@ export default function Home({ initialShowcase, platformInsights }) {
                     </div>
                     {agentSuggest === "location" ? (
                       <div className="suggest-menu" id="agent-location-suggestion-list" role="listbox">
-                        {(visibleAgentLocationSuggestions.length ? visibleAgentLocationSuggestions : locationSuggestions).map((suggestion) => (
-                          <button className="suggest-option" type="button" key={suggestion} onMouseDown={(event) => event.preventDefault()} onClick={() => {
-                            setAlertForm({ ...alertForm, location: suggestion });
-                            setAgentSuggest(null);
-                            setShowAllAgentSuggestions(true);
-                          }}>
-                            {suggestion}
+                        {loadingAgentLocationSuggestions ? (
+                          <button className="suggest-option" type="button" disabled>
+                            <LoaderCircle size={16} className="spin-icon" />
+                            Orte werden geladen...
                           </button>
-                        ))}
+                        ) : visibleAgentLocationSuggestions.length ? (
+                          visibleAgentLocationSuggestions.map((suggestion) => (
+                            <button className="suggest-option suggest-option-rich" type="button" key={suggestion.label} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+                              setAlertForm({ ...alertForm, location: suggestion.value });
+                              setAgentSuggest(null);
+                              setShowAllAgentSuggestions(true);
+                            }}>
+                              <span>{suggestion.value}</span>
+                              {suggestion.state && suggestion.state !== suggestion.value ? <small>{suggestion.state}</small> : null}
+                            </button>
+                          ))
+                        ) : (
+                          <button className="suggest-option" type="button" disabled>
+                            Kein passender Standort gefunden
+                          </button>
+                        )}
                       </div>
                     ) : null}
                   </label>

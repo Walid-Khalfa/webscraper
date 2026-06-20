@@ -374,6 +374,9 @@ input:focus {
 
 .suggest-option {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   justify-content: flex-start;
   min-height: 42px;
   padding: 0 12px;
@@ -383,6 +386,23 @@ input:focus {
   font-family: "Space Grotesk", sans-serif;
   font-weight: 800;
   text-align: left;
+}
+
+.suggest-option-rich {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding-block: 10px;
+}
+
+.suggest-option-rich small {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.spin-icon {
+  animation: spin 0.9s linear infinite;
 }
 
 .suggest-option:hover:not(:disabled),

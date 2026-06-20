@@ -19,6 +19,11 @@ export const searchQuerySchema = z.object({
     .transform((value) => value === true || value === "true"),
 });
 
+export const locationAutocompleteSchema = z.object({
+  query: z.string().trim().max(120).optional().default(""),
+  limit: z.coerce.number().int().min(1).max(20).optional().default(10),
+});
+
 export const agencyCreateSchema = z.object({
   name: trimmedString("Agenturname", { min: 2, max: 80 }),
   email: z.string().trim().email("Bitte geben Sie eine gueltige E-Mail-Adresse ein.").max(160),
@@ -49,4 +54,3 @@ export function parseWithSchema(schema, input) {
   const issue = result.error.issues[0];
   throw new AppError(issue?.message || "Ungueltige Eingabedaten", 400, "VALIDATION_ERROR");
 }
-
