@@ -13,33 +13,37 @@ type SearchStatusPanelProps = {
 };
 
 export default function SearchStatusPanel({ isOpen, loading, logs, status, onToggle }: SearchStatusPanelProps) {
-  return (
-    <>
-      <button className="quick-search-chip terminal-toggle" type="button" onClick={onToggle}>
-        {isOpen ? "Suchstatus ausblenden" : "Suchstatus einblenden"}
-      </button>
+  const hasTechnicalDetails = Boolean(logs.length);
 
-      {Boolean(isOpen || loading || logs.length) && (
-        <section className="search-status-panel" aria-label="Live-Suchstatus">
-          <div className="search-status-header">
-            <div className="search-status-heading">
-              <strong>{status.title}</strong>
-              <p>{status.summary}</p>
+  return (
+    <section className="search-status-panel search-status-panel-compact" aria-label={status.title}>
+      <div className="search-status-header">
+        <div className="search-status-heading">
+          <strong>{status.title}</strong>
+          <p>{status.summary}</p>
+        </div>
+        <span className={`search-status-badge search-status-badge-${status.badge.toLowerCase()}`}>{status.badge}</span>
+      </div>
+
+      <div className="search-status-meta">
+        <span>{loading ? "Live-Aktualisierung laeuft" : "Status fuer Recruiter aufbereitet"}</span>
+        {hasTechnicalDetails ? (
+          <button className="search-status-details-toggle" type="button" onClick={onToggle} aria-expanded={isOpen}>
+            {isOpen ? "Technische Details ausblenden" : "Technische Details anzeigen"}
+          </button>
+        ) : null}
+      </div>
+
+      {hasTechnicalDetails && isOpen ? (
+        <div className="search-status-body">
+          {logs.map((line, index) => (
+            <div key={`${line}-${index}`} className="status-line">
+              <span className="status-dot" aria-hidden="true" />
+              <span>{line}</span>
             </div>
-            <span className={`search-status-badge search-status-badge-${status.badge.toLowerCase()}`}>
-              {status.badge}
-            </span>
-          </div>
-          <div className="search-status-body">
-            {(logs.length ? logs : ["Keine laufende Suche. Die naechste Abfrage erscheint hier automatisch."]).map((line, index) => (
-              <div key={`${line}-${index}`} className="status-line">
-                <span className="status-dot" aria-hidden="true" />
-                <span>{line}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-    </>
+          ))}
+        </div>
+      ) : null}
+    </section>
   );
 }

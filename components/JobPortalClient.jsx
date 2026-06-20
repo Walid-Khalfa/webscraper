@@ -367,7 +367,7 @@ export default function Home({ initialShowcase, platformInsights }) {
   const [toasts, setToasts] = useState([]);
   const [theme, setTheme] = useState("brutalist");
   const [viewMode, setViewMode] = useState("grid");
-  const [isConsoleOpen, setIsConsoleOpen] = useState(true);
+  const [isConsoleOpen, setIsConsoleOpen] = useState(false);
   const [consoleLogs, setConsoleLogs] = useState([]);
   const [favorites, setFavorites] = useState({});
   const [activeFavoriteRef, setActiveFavoriteRef] = useState(null);
@@ -489,16 +489,16 @@ export default function Home({ initialShowcase, platformInsights }) {
     if (loading) {
       return {
         badge: "Aktiv",
-        title: "Live-Suchstatus",
-        summary: "Die Anfrage wird verarbeitet und die BA-Daten werden geladen.",
+        title: "Suchstatus",
+        summary: "Die Suche laeuft. Aktuelle BA-Stellenangebote werden gerade geladen.",
       };
     }
 
     if (error) {
       return {
         badge: "Stoerung",
-        title: "Live-Suchstatus",
-        summary: "Die letzte Suchanfrage konnte nicht abgeschlossen werden.",
+        title: "Suchstatus",
+        summary: "Die letzte Suche konnte nicht vollstaendig geladen werden.",
       };
     }
 
@@ -506,15 +506,15 @@ export default function Home({ initialShowcase, platformInsights }) {
       const resultCount = jobsWithClientFilters.length || rawJobs.length;
       return {
         badge: "Abgeschlossen",
-        title: "Live-Suchstatus",
-        summary: `${resultCount} Stellenangebote stehen fuer die aktuelle Suche bereit.`,
+        title: "Suchstatus",
+        summary: `${resultCount} passende Stellenangebote stehen fuer die aktuelle Suche bereit.`,
       };
     }
 
     return {
       badge: "Bereit",
-      title: "Live-Suchstatus",
-      summary: "Starten Sie eine Suche, um aktuelle Stellenangebote und den Verarbeitungsstatus anzuzeigen.",
+      title: "Suchstatus",
+      summary: "Starten Sie eine Suche, um passende Stellenangebote direkt anzuzeigen.",
     };
   }, [loading, error, hasSearched, jobsWithClientFilters.length, rawJobs.length]);
   const commercialInsights = useMemo(

@@ -1703,10 +1703,6 @@ textarea {
   background: var(--accent);
 }
 
-.terminal-toggle {
-  margin-left: auto;
-}
-
 .search-status-panel {
   display: grid;
   gap: 0;
@@ -1714,6 +1710,11 @@ textarea {
   background: rgba(255, 255, 255, 0.58);
   box-shadow: 4px 4px 0 rgba(21, 21, 21, 0.12);
   overflow: hidden;
+}
+
+.search-status-panel-compact {
+  margin-left: auto;
+  width: min(100%, 790px);
 }
 
 .search-status-header {
@@ -1740,6 +1741,33 @@ textarea {
   max-width: 64ch;
   color: var(--muted);
   font-size: 0.94rem;
+}
+
+.search-status-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  border-top: 1px solid rgba(33, 39, 33, 0.08);
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.search-status-details-toggle {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: none;
+  font-size: 0.84rem;
+}
+
+.search-status-details-toggle:hover:not(:disabled),
+.search-status-details-toggle:focus-visible {
+  transform: none;
+  box-shadow: none;
 }
 
 .search-status-badge {
@@ -1775,14 +1803,14 @@ textarea {
 .search-status-body {
   display: grid;
   gap: 10px;
-  min-height: 88px;
   max-height: 220px;
   overflow-y: auto;
   padding: 16px 18px;
   color: var(--ink);
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.84rem;
-  background: rgba(255, 255, 255, 0.38);
+  background: rgba(255, 255, 255, 0.32);
+  border-top: 1px solid rgba(33, 39, 33, 0.08);
 }
 
 .status-line {
@@ -2006,7 +2034,7 @@ textarea {
   }
 
   .theme-switcher,
-  .terminal-toggle {
+  .search-status-panel-compact {
     margin-left: 0;
   }
 
@@ -2017,6 +2045,10 @@ textarea {
 
 @media (max-width: 560px) {
   .search-status-header {
+    display: grid;
+  }
+
+  .search-status-meta {
     display: grid;
   }
 
