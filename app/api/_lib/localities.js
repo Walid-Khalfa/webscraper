@@ -1,9 +1,4 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
-const rawLocalities = JSON.parse(fs.readFileSync(path.join(currentDir, "german-localities.json"), "utf8"));
+import rawLocalities from "./german-localities.json";
 
 const collator = new Intl.Collator("de-DE");
 
