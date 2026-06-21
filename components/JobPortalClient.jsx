@@ -2406,10 +2406,8 @@ export default function Home({ initialShowcase, platformInsights }) {
             <a href="/">Impressum</a>
             <a href="/">Datenschutz</a>
             <a href="mailto:walid@khalfajobs.me">Kontakt</a>
-            <a href="/health">API-Status</a>
-            <a href="https://github.com/Walid-Khalfa/webscraper" target="_blank" rel="noreferrer">GitHub</a>
             <a href="mailto:walid@khalfajobs.me">walid@khalfajobs.me</a>
-            <a href="https://wa.me/21653097624" target="_blank" rel="noreferrer">WhatsApp: +216 53 097 624</a>
+            <span>Erstellt von Walid - Juni 2026</span>
           </div>
         </footer>
       </section>
