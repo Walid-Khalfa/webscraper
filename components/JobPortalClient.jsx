@@ -1266,11 +1266,13 @@ export default function Home({ initialShowcase, platformInsights }) {
     event.preventDefault();
     if (!agency?.api_key) {
       setSaasStatus("Richten Sie zuerst einen Agentur-Zugang ein, bevor Sie einen Job-Alarm anlegen.");
+      pushToast("error", "Richten Sie zuerst einen Agentur-Zugang ein (Schritt 1).");
       trackEvent("alert_creation_failed", { reason: "missing_agency_access", keyword: alertForm.keyword, location: alertForm.location });
       return;
     }
     if (!agency?.email_verified) {
       setSaasStatus("Bitte bestaetigen Sie zuerst die E-Mail-Adresse Ihrer Agentur. Erst danach koennen Job-Alarme aktiviert werden.");
+      pushToast("error", "Bitte bestaetigen Sie zuerst die E-Mail-Adresse Ihrer Agentur.");
       trackEvent("alert_creation_failed", { reason: "agency_email_not_verified", keyword: alertForm.keyword, location: alertForm.location });
       return;
     }
@@ -2135,7 +2137,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                     ) : null}
                   </label>
                   <p className="form-hint">Der Job-Alarm arbeitet mit exakten Standorten, damit nur wirklich relevante Treffer in Ihrer taeglichen Zusammenfassung erscheinen.</p>
-                  <button className="secondary-action" type="submit" disabled={saasLoading || !agency || !agency.email_verified}>
+                  <button className="secondary-action" type="submit" disabled={saasLoading}>
                     <Plus size={19} />
                     Job-Alarm erstellen
                   </button>
