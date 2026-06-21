@@ -31,29 +31,13 @@ function buildLabel(name, state) {
   return `${name}, ${state}`;
 }
 
-const popularLocations = [
-  "Berlin",
-  "Hamburg",
-  "Muenchen",
-  "Koeln",
-  "Frankfurt am Main",
-  "Stuttgart",
-  "Duesseldorf",
-  "Leipzig",
-  "Dortmund",
-  "Essen",
-];
-
 const indexedLocalities = rawLocalities.map((entry) => ({
   ...entry,
   label: buildLabel(entry.name, entry.state),
   nameTerms: createSearchTerms(entry.name),
   searchTerms: createSearchTerms(`${entry.name} ${entry.state}`),
 }));
-
-const popularLocalities = popularLocations
-  .map((name) => indexedLocalities.find((entry) => normalizeText(entry.name) === normalizeText(name)))
-  .filter(Boolean);
+const alphabeticalLocalities = [...indexedLocalities].sort((left, right) => collator.compare(left.label, right.label));
 
 function scoreMatch(entry, query) {
   const queryTerms = createSearchTerms(query);
@@ -75,7 +59,7 @@ export function searchGermanLocalities(query, limit = 10) {
   const normalizedQuery = normalizeText(query);
 
   if (!normalizedQuery) {
-    return popularLocalities.slice(0, limit).map((entry) => ({
+    return alphabeticalLocalities.slice(0, limit).map((entry) => ({
       value: entry.name,
       label: entry.label,
       state: entry.state,

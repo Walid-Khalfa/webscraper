@@ -167,13 +167,13 @@ async function requestJson(url, options = {}) {
   return data;
 }
 
-async function requestLocationSuggestions(query) {
-  const cacheKey = query.trim().toLocaleLowerCase("de-DE");
+async function requestLocationSuggestions(query, limit = 10) {
+  const cacheKey = `${query.trim().toLocaleLowerCase("de-DE")}:${limit}`;
   if (locationSuggestionCache.has(cacheKey)) return locationSuggestionCache.get(cacheKey);
 
   const params = new URLSearchParams({
     query,
-    limit: "10",
+    limit: String(limit),
   });
   const data = await requestJson(`/api/locations/autocomplete?${params.toString()}`);
   const items = Array.isArray(data?.items) ? data.items : [];
@@ -848,7 +848,7 @@ export default function Home({ initialShowcase, platformInsights }) {
     setLoadingLocationSuggestions(true);
 
     const timer = window.setTimeout(() => {
-      requestLocationSuggestions(showAllSuggestions ? "" : location)
+      requestLocationSuggestions(showAllSuggestions ? "" : location, showAllSuggestions ? 120 : 40)
         .then((items) => {
           if (locationFetchVersion.current !== requestId) return;
           setLocationSuggestions(items);
@@ -873,7 +873,7 @@ export default function Home({ initialShowcase, platformInsights }) {
     setLoadingAgentLocationSuggestions(true);
 
     const timer = window.setTimeout(() => {
-      requestLocationSuggestions(showAllAgentSuggestions ? "" : alertForm.location)
+      requestLocationSuggestions(showAllAgentSuggestions ? "" : alertForm.location, showAllAgentSuggestions ? 120 : 40)
         .then((items) => {
           if (agentLocationFetchVersion.current !== requestId) return;
           setAgentLocationSuggestions(items);
