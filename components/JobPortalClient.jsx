@@ -399,6 +399,8 @@ export default function Home({ initialShowcase, platformInsights }) {
   const [agentOpen, setAgentOpen] = useState(false);
   const [agency, setAgency] = useState(null);
   const [agencyForm, setAgencyForm] = useState({ name: "", email: "", plan: "starter" });
+  const [authMode, setAuthMode] = useState("register");
+  const [loginKey, setLoginKey] = useState("");
   const [alertForm, setAlertForm] = useState({ keyword: "", location: "", frequency: "daily", max_results: 25 });
   const [subscriptions, setSubscriptions] = useState([]);
   const [workspaceOverview, setWorkspaceOverview] = useState(null);
@@ -834,7 +836,10 @@ export default function Home({ initialShowcase, platformInsights }) {
     const storedView = localStorage.getItem("jobViewMode");
     const storedEmailTemplate = localStorage.getItem("emailTemplateOpts");
 
-    if (storedAgency) setAgency(JSON.parse(storedAgency));
+    if (storedAgency) {
+      setAgency(JSON.parse(storedAgency));
+      setAgentOpen(true);
+    }
     if (storedFavorites) setFavorites(JSON.parse(storedFavorites));
     if (storedTheme) setTheme(storedTheme);
     if (storedView) setViewMode(storedView);
@@ -1075,6 +1080,28 @@ export default function Home({ initialShowcase, platformInsights }) {
       trackEvent("agency_created", { plan: created.plan });
     } catch (err) {
       setSaasStatus(getErrorMessage(err, "Agentur-Erstellung"));
+    } finally {
+      setSaasLoading(false);
+    }
+  }
+
+  async function handleLoginAgency(event) {
+    event.preventDefault();
+    if (!loginKey.trim()) return;
+    setSaasLoading(true);
+    setSaasStatus("");
+    try {
+      const freshAgency = await requestJson("/api/agencies/me", {
+        headers: { "X-Agency-Key": loginKey.trim() },
+      });
+      setAgency(freshAgency);
+      localStorage.setItem("agencyProfile", JSON.stringify(freshAgency));
+      await loadWorkspace(freshAgency.api_key);
+      setEmailTemplateOpts((current) => ({ ...current, agencyName: current.agencyName || freshAgency.name }));
+      setSaasStatus("Erfolgreich mit Agentur-Schluessel eingeloggt!");
+      trackEvent("agency_logged_in", { plan: freshAgency.plan });
+    } catch (err) {
+      setSaasStatus(getErrorMessage(err, "Login-Fehler"));
     } finally {
       setSaasLoading(false);
     }
@@ -1476,7 +1503,16 @@ export default function Home({ initialShowcase, platformInsights }) {
       </aside>
 
       <section className="workspace">
-        <ProductTopbar themes={themes} activeTheme={theme} onThemeChange={setTheme} />
+        <ProductTopbar
+          themes={themes}
+          activeTheme={theme}
+          onThemeChange={setTheme}
+          hasAgency={Boolean(agency)}
+          onToggleWorkspace={() => {
+            setAgentOpen(true);
+            trackEvent("agent_configurator_opened");
+          }}
+        />
 
         <header className="masthead hero-layout">
           <div className="hero-primary">
@@ -1898,30 +1934,79 @@ export default function Home({ initialShowcase, platformInsights }) {
               </div>
 
               <div className="saas-grid">
-                <form className="saas-panel saas-panel-secondary" onSubmit={handleCreateAgency}>
-                  <div className="panel-title">
-                    <KeyRound size={19} aria-hidden="true" />
-                    <h3>1. Agentur-Zugang einrichten</h3>
+                <div className="saas-panel saas-panel-secondary">
+                  <div className="view-mode-switch" style={{ marginBottom: "14px", display: "flex", gap: "8px" }}>
+                    <button
+                      type="button"
+                      className={`theme-chip${authMode === "register" ? " active" : ""}`}
+                      onClick={() => setAuthMode("register")}
+                      style={{ flex: 1, minHeight: "34px", fontSize: "0.78rem" }}
+                    >
+                      Zugang erstellen
+                    </button>
+                    <button
+                      type="button"
+                      className={`theme-chip${authMode === "login" ? " active" : ""}`}
+                      onClick={() => setAuthMode("login")}
+                      style={{ flex: 1, minHeight: "34px", fontSize: "0.78rem" }}
+                    >
+                      Einloggen
+                    </button>
                   </div>
-                  <label>
-                    <span>Agenturname</span>
-                    <input value={agencyForm.name} onChange={(event) => setAgencyForm({ ...agencyForm, name: event.target.value })} />
-                  </label>
-                  <label>
-                    <span>Kontakt-E-Mail</span>
-                    <input type="email" value={agencyForm.email} onChange={(event) => setAgencyForm({ ...agencyForm, email: event.target.value })} />
-                  </label>
-                  <button className="primary-action" type="submit" disabled={saasLoading}>
-                    {saasLoading ? <LoaderCircle className="spin" size={19} /> : <Plus size={19} />}
-                    {agency ? "Weiteren Zugang anlegen" : "Agentur-Zugang erstellen"}
-                  </button>
+
+                  {authMode === "register" ? (
+                    <form onSubmit={handleCreateAgency} style={{ display: "grid", gap: "14px" }}>
+                      <div className="panel-title">
+                        <KeyRound size={19} aria-hidden="true" />
+                        <h3>1. Agentur-Zugang einrichten</h3>
+                      </div>
+                      <label>
+                        <span>Agenturname</span>
+                        <input value={agencyForm.name} onChange={(event) => setAgencyForm({ ...agencyForm, name: event.target.value })} />
+                      </label>
+                      <label>
+                        <span>Kontakt-E-Mail</span>
+                        <input type="email" value={agencyForm.email} onChange={(event) => setAgencyForm({ ...agencyForm, email: event.target.value })} />
+                      </label>
+                      <button className="primary-action" type="submit" disabled={saasLoading}>
+                        {saasLoading ? <LoaderCircle className="spin" size={19} /> : <Plus size={19} />}
+                        {agency ? "Weiteren Zugang anlegen" : "Agentur-Zugang erstellen"}
+                      </button>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleLoginAgency} style={{ display: "grid", gap: "14px" }}>
+                      <div className="panel-title">
+                        <KeyRound size={19} aria-hidden="true" />
+                        <h3>Agentur-Schluessel eingeben</h3>
+                      </div>
+                      <label>
+                        <span>Agentur-Schlüssel (API-Key)</span>
+                        <input
+                          type="password"
+                          required
+                          placeholder="emp_..."
+                          value={loginKey}
+                          onChange={(event) => setLoginKey(event.target.value)}
+                        />
+                      </label>
+                      <button className="primary-action" type="submit" disabled={saasLoading}>
+                        {saasLoading ? <LoaderCircle className="spin" size={19} /> : <KeyRound size={19} />}
+                        Einloggen
+                      </button>
+                    </form>
+                  )}
+
                   {agency ? (
-                    <div className="agency-summary-card">
+                    <div className="agency-summary-card" style={{ marginTop: "16px" }}>
                       <div>
                         <span>Aktiver Agentur-Zugang</span>
                         <strong>{agency.name}</strong>
-                        <p>{agency.email}</p>
-                        <p>{agency.email_verified ? "E-Mail-Adresse bestaetigt" : "E-Mail-Adresse noch nicht bestaetigt"}</p>
+                        <p style={{ margin: 0 }}>{agency.email}</p>
+                        <p style={{ margin: "4px 0 0 0", fontSize: "13px" }}>{agency.email_verified ? "E-Mail-Adresse bestaetigt" : "E-Mail-Adresse noch nicht bestaetigt"}</p>
+                        <details style={{ marginTop: "8px", fontSize: "12px", cursor: "pointer" }}>
+                          <summary style={{ color: "var(--muted)" }}>Schluessel anzeigen</summary>
+                          <code style={{ display: "block", marginTop: "4px", padding: "4px", backgroundColor: "var(--paper)", wordBreak: "break-all" }}>{agency.api_key}</code>
+                        </details>
                       </div>
                       <div className="agency-summary-actions">
                         {!agency.email_verified ? (
@@ -1937,7 +2022,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                       </div>
                     </div>
                   ) : null}
-                </form>
+                </div>
 
                 <form className="saas-panel saas-panel-primary" onSubmit={handleCreateAlert} onBlur={(event) => {
                   if (!event.currentTarget.contains(event.relatedTarget)) {
