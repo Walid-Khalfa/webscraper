@@ -1078,7 +1078,7 @@ button:disabled {
   order: -1;
 }
 
-.saas-panel-primary .secondary-action {
+.saas-panel-secondary .secondary-action {
   color: var(--white);
   background: var(--accent);
 }
