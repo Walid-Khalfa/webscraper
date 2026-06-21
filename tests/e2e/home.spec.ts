@@ -31,6 +31,6 @@ test("topbar navigation and mocked search flow work", async ({ page }) => {
   await page.getByRole("button", { name: /Stellen finden/i }).click();
 
   await expect(page.getByRole("heading", { name: /1 Stellenangebote/i })).toBeVisible();
-  await expect(page.getByText("KhalfaJobs Testfirma")).toBeVisible();
+  await expect(page.getByText("KhalfaJobs Testfirma").first()).toBeVisible();
 });
 
