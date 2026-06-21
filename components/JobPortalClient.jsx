@@ -402,6 +402,15 @@ export default function Home({ initialShowcase, platformInsights }) {
   const [alertForm, setAlertForm] = useState({ keyword: "", location: "", frequency: "daily", max_results: 25 });
   const [subscriptions, setSubscriptions] = useState([]);
   const [workspaceOverview, setWorkspaceOverview] = useState(null);
+  const [connectingCrm, setConnectingCrm] = useState(null);
+  const [crmApiKey, setCrmApiKey] = useState("");
+  const [crmActionLoading, setCrmActionLoading] = useState(false);
+  const [syncingCrmCandidate, setSyncingCrmCandidate] = useState({});
+  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviteRole, setInviteRole] = useState("RECRUITER");
+  const [inviteLoading, setInviteLoading] = useState(false);
   const [workspaceLoading, setWorkspaceLoading] = useState(false);
   const [saasStatus, setSaasStatus] = useState("");
   const [saasLoading, setSaasLoading] = useState(false);
@@ -1108,6 +1117,124 @@ export default function Home({ initialShowcase, platformInsights }) {
     }
   }
 
+  async function handleConnectCrm(e) {
+    e.preventDefault();
+    if (!connectingCrm || !agency?.api_key) return;
+    setCrmActionLoading(true);
+    try {
+      await requestJson("/api/agencies/integrations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Agency-Key": agency.api_key,
+        },
+        body: JSON.stringify({
+          provider: connectingCrm.provider,
+          apiKey: crmApiKey,
+        }),
+      });
+      pushToast("success", `${connectingCrm.display_name} erfolgreich verbunden.`);
+      setConnectingCrm(null);
+      setCrmApiKey("");
+      await loadWorkspace();
+    } catch (err) {
+      pushToast("error", `Verbindung fehlgeschlagen: ${err.message}`);
+    } finally {
+      setCrmActionLoading(false);
+    }
+  }
+
+  async function handleDisconnectCrm(provider, displayName) {
+    if (!agency?.api_key) return;
+    if (!confirm(`Moechten Sie die Integration mit ${displayName} wirklich trennen?`)) return;
+    try {
+      await requestJson(`/api/agencies/integrations?provider=${provider}`, {
+        method: "DELETE",
+        headers: {
+          "X-Agency-Key": agency.api_key,
+        },
+      });
+      pushToast("success", `Verbindung mit ${displayName} getrennt.`);
+      await loadWorkspace();
+    } catch (err) {
+      pushToast("error", `Trennung failed: ${err.message}`);
+    }
+  }
+
+  async function handlePushToCrm(provider, reference, displayName) {
+    if (!agency?.api_key) return;
+    setSyncingCrmCandidate((current) => ({
+      ...current,
+      [`${reference}:${provider}`]: true,
+    }));
+    try {
+      const res = await requestJson("/api/agencies/integrations/push", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Agency-Key": agency.api_key,
+        },
+        body: JSON.stringify({ provider, reference }),
+      });
+      pushToast("success", res.message || `Candidat erfolgreich zu ${displayName} exportiert.`);
+      await loadWorkspace();
+    } catch (err) {
+      pushToast("error", `Export failed: ${err.message}`);
+    } finally {
+      setSyncingCrmCandidate((current) => ({
+        ...current,
+        [`${reference}:${provider}`]: false,
+      }));
+    }
+  }
+
+  async function handleInviteMember(e) {
+    e.preventDefault();
+    if (!agency?.api_key) return;
+    setInviteLoading(true);
+    try {
+      await requestJson("/api/agencies/members", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Agency-Key": agency.api_key,
+        },
+        body: JSON.stringify({
+          email: inviteEmail,
+          fullName: inviteName,
+          role: inviteRole,
+        }),
+      });
+      pushToast("success", `Einladung an ${inviteName} erfolgreich gesendet.`);
+      setShowInviteForm(false);
+      setInviteEmail("");
+      setInviteName("");
+      setInviteRole("RECRUITER");
+      await loadWorkspace();
+    } catch (err) {
+      pushToast("error", `Einladung fehlgeschlagen: ${err.message}`);
+    } finally {
+      setInviteLoading(false);
+    }
+  }
+
+  async function handleRemoveMember(memberId, name) {
+    if (!agency?.api_key) return;
+    if (!confirm(`Moechten Sie das Mitglied ${name} wirklich aus der Agentur entfernen?`)) return;
+    try {
+      await requestJson(`/api/agencies/members?id=${memberId}`, {
+        method: "DELETE",
+        headers: {
+          "X-Agency-Key": agency.api_key,
+        },
+      });
+      pushToast("success", `Mitglied ${name} wurde entfernt.`);
+      await loadWorkspace();
+    } catch (err) {
+      pushToast("error", `Entfernen failed: ${err.message}`);
+    }
+  }
+
   async function handleCreateAlert(event) {
     event.preventDefault();
     if (!agency?.api_key) {
@@ -1301,6 +1428,44 @@ export default function Home({ initialShowcase, platformInsights }) {
               }
             />
           </label>
+
+          {workspaceIntegrations.some((integration) => integration.status === "CONNECTED") ? (
+            <div style={{ marginTop: "24px", borderTop: "2px solid #1f1d1a", paddingTop: "18px" }}>
+              <p className="eyebrow" style={{ marginBottom: "8px" }}>ATS / CRM Synchronisation</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {workspaceIntegrations
+                  .filter((integration) => integration.status === "CONNECTED")
+                  .map((integration) => {
+                    const key = `${activeFavoriteRef}:${integration.provider}`;
+                    const isSyncing = syncingCrmCandidate[key];
+                    return (
+                      <button
+                        key={integration.id}
+                        type="button"
+                        className="button"
+                        disabled={isSyncing}
+                        onClick={() => handlePushToCrm(integration.provider, activeFavoriteRef, integration.display_name)}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          justifyContent: "center",
+                          width: "100%",
+                          backgroundColor: "#ffce45",
+                          border: "2px solid #1f1d1a",
+                          padding: "10px 14px",
+                          fontWeight: "bold",
+                          cursor: isSyncing ? "not-allowed" : "pointer"
+                        }}
+                      >
+                        {isSyncing ? <LoaderCircle size={14} className="animate-spin" /> : <Send size={14} />}
+                        An {integration.display_name} uebertragen
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          ) : null}
         </aside>
       ) : null}
 
@@ -1911,15 +2076,118 @@ export default function Home({ initialShowcase, platformInsights }) {
                         <strong>{agency.email_verified ? "Ja" : "Ausstehend"}</strong>
                       </div>
                     </div>
-                    <ul className="workspace-list">
-                      {workspaceMembers.length ? workspaceMembers.map((member) => (
-                        <li key={member.id}>
-                          <strong>{member.full_name}</strong>
-                          <span>{member.email}</span>
-                          <em>{member.role}</em>
-                        </li>
-                      )) : <li><span>Der erste Owner wird bei der Agentur-Anlage automatisch erzeugt.</span></li>}
+                    <ul className="workspace-list" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {workspaceMembers.length ? workspaceMembers.map((member) => {
+                        const isPrimaryOwner = member.role === "OWNER" || member.email === agency.email;
+                        return (
+                          <li key={member.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #e3ded3", paddingBottom: "8px" }}>
+                            <div style={{ display: "flex", flexDirection: "column" }}>
+                              <strong>{member.full_name}</strong>
+                              <span style={{ fontSize: "12px", color: "#6b665c" }}>{member.email}</span>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <span style={{
+                                fontSize: "11px",
+                                textTransform: "uppercase",
+                                border: "1px solid #1f1d1a",
+                                padding: "2px 6px",
+                                backgroundColor: member.role === "OWNER" ? "#fef3c7" : "#f3f4f6"
+                              }}>
+                                {member.role}
+                              </span>
+                              {!isPrimaryOwner ? (
+                                <button
+                                  type="button"
+                                  className="icon-button"
+                                  onClick={() => handleRemoveMember(member.id, member.full_name)}
+                                  style={{ padding: "4px", color: "#b5361f", border: "none", cursor: "pointer", background: "none" }}
+                                  title="Mitglied entfernen"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              ) : null}
+                            </div>
+                          </li>
+                        );
+                      }) : <li><span>Der erste Owner wird bei der Agentur-Anlage automatisch erzeugt.</span></li>}
                     </ul>
+
+                    {/* Seat Limit Warning or Invite Controls */}
+                    <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "2px solid #1f1d1a" }}>
+                      {workspaceMembers.length >= (workspaceBilling?.seats || 1) ? (
+                        <p style={{ fontSize: "12px", color: "#b5361f", margin: 0 }}>
+                          ⚠️ Maximale Anzahl an Sitzplaetzen ({workspaceBilling?.seats || 1}) erreicht. Bitte upgraden Sie Ihren Billing-Plan, um mehr Mitglieder einzuladen.
+                        </p>
+                      ) : (
+                        <div>
+                          {showInviteForm ? (
+                            <form onSubmit={handleInviteMember} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                              <label style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                                <span style={{ fontSize: "12px", fontWeight: "bold" }}>Name:</span>
+                                <input
+                                  type="text"
+                                  required
+                                  value={inviteName}
+                                  onChange={(e) => setInviteName(e.target.value)}
+                                  placeholder="Name des Mitglieds..."
+                                  style={{ padding: "6px", fontSize: "13px", border: "1px solid #1f1d1a", backgroundColor: "#fffaf1" }}
+                                />
+                              </label>
+                              <label style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                                <span style={{ fontSize: "12px", fontWeight: "bold" }}>E-Mail:</span>
+                                <input
+                                  type="email"
+                                  required
+                                  value={inviteEmail}
+                                  onChange={(e) => setInviteEmail(e.target.value)}
+                                  placeholder="recruiter@agency.de..."
+                                  style={{ padding: "6px", fontSize: "13px", border: "1px solid #1f1d1a", backgroundColor: "#fffaf1" }}
+                                />
+                              </label>
+                              <label style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                                <span style={{ fontSize: "12px", fontWeight: "bold" }}>Rolle:</span>
+                                <select
+                                  value={inviteRole}
+                                  onChange={(e) => setInviteRole(e.target.value)}
+                                  style={{ padding: "6px", fontSize: "13px", border: "1px solid #1f1d1a", backgroundColor: "#fffaf1" }}
+                                >
+                                  <option value="ADMIN">Administrator</option>
+                                  <option value="RECRUITER">Recruiter</option>
+                                  <option value="VIEWER">Viewer</option>
+                                </select>
+                              </label>
+                              <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+                                <button
+                                  type="submit"
+                                  className="button"
+                                  disabled={inviteLoading}
+                                  style={{ padding: "6px 14px", fontSize: "12px", backgroundColor: "#ffce45", border: "1px solid #1f1d1a" }}
+                                >
+                                  {inviteLoading ? "Einladen..." : "Einladung senden"}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="button button-secondary"
+                                  onClick={() => setShowInviteForm(false)}
+                                  style={{ padding: "6px 14px", fontSize: "12px", border: "1px solid #1f1d1a" }}
+                                >
+                                  Abbrechen
+                                </button>
+                              </div>
+                            </form>
+                          ) : (
+                            <button
+                              type="button"
+                              className="button"
+                              onClick={() => setShowInviteForm(true)}
+                              style={{ width: "100%", padding: "8px", fontSize: "13px", border: "1px solid #1f1d1a", backgroundColor: "#ffce45" }}
+                            >
+                              Mitglied einladen
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </article>
 
                   <article className="workspace-card">
@@ -2026,14 +2294,90 @@ export default function Home({ initialShowcase, platformInsights }) {
                     </div>
                     <ul className="workspace-list workspace-list-compact">
                       {workspaceIntegrations.length ? workspaceIntegrations.map((integration) => (
-                        <li key={integration.id}>
-                          <strong>{integration.display_name}</strong>
-                          <span>{integration.provider}</span>
-                          <em>{integration.status}</em>
+                        <li key={integration.id} style={{ display: "flex", flexDirection: "column", gap: "8px", borderBottom: "1px solid #e3ded3", paddingBottom: "12px", marginBottom: "12px" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                            <div>
+                              <strong>{integration.display_name}</strong>
+                              <span style={{ fontSize: "12px", color: "#6b665c", marginLeft: "8px" }}>({integration.provider})</span>
+                            </div>
+                            <span style={{
+                              fontSize: "12px",
+                              fontWeight: "bold",
+                              padding: "2px 8px",
+                              border: "1px solid #1f1d1a",
+                              backgroundColor: integration.status === "CONNECTED" ? "#d1fae5" : "#f3f4f6",
+                              color: integration.status === "CONNECTED" ? "#065f46" : "#374151"
+                            }}>
+                              {integration.status === "CONNECTED" ? "Verbunden" : "Bereit"}
+                            </span>
+                          </div>
+                          
+                          {integration.status === "CONNECTED" ? (
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                              {integration.last_sync_at ? (
+                                <span style={{ fontSize: "11px", color: "#6b665c" }}>Letzter Abgleich: {new Date(integration.last_sync_at).toLocaleString("de-DE")}</span>
+                              ) : (
+                                <span style={{ fontSize: "11px", color: "#6b665c" }}>Bisher keine Syncs</span>
+                              )}
+                              <button
+                                type="button"
+                                className="button button-secondary"
+                                style={{ padding: "4px 8px", fontSize: "12px", border: "1px solid #1f1d1a" }}
+                                onClick={() => handleDisconnectCrm(integration.provider, integration.display_name)}
+                              >
+                                Trennen
+                              </button>
+                            </div>
+                          ) : (
+                            <div>
+                              {connectingCrm?.provider === integration.provider ? (
+                                <form onSubmit={handleConnectCrm} style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px", width: "100%" }}>
+                                  <label style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                    <span style={{ fontSize: "12px", fontWeight: "bold" }}>API-Schluessel eingeben:</span>
+                                    <input
+                                      type="password"
+                                      required
+                                      placeholder="Schluessel eingeben..."
+                                      value={crmApiKey}
+                                      onChange={(e) => setCrmApiKey(e.target.value)}
+                                      style={{ padding: "6px", fontSize: "13px", border: "1px solid #1f1d1a", backgroundColor: "#fffaf1" }}
+                                    />
+                                  </label>
+                                  <div style={{ display: "flex", gap: "8px" }}>
+                                    <button
+                                      type="submit"
+                                      className="button"
+                                      disabled={crmActionLoading}
+                                      style={{ padding: "4px 12px", fontSize: "12px", backgroundColor: "#ffce45", border: "1px solid #1f1d1a" }}
+                                    >
+                                      Aktivieren
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="button button-secondary"
+                                      onClick={() => { setConnectingCrm(null); setCrmApiKey(""); }}
+                                      style={{ padding: "4px 12px", fontSize: "12px", border: "1px solid #1f1d1a" }}
+                                    >
+                                      Abbrechen
+                                    </button>
+                                  </div>
+                                </form>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="button"
+                                  style={{ padding: "4px 12px", fontSize: "12px", border: "1px solid #1f1d1a", backgroundColor: "#ffce45" }}
+                                  onClick={() => setConnectingCrm(integration)}
+                                >
+                                  Verbinden
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </li>
                       )) : <li><span>Personio, HubSpot und Greenhouse koennen als Integrationsziele vorbereitet werden.</span></li>}
                     </ul>
-                    <p className="workspace-muted">Diese Integrationen sind als SaaS-Fundament angelegt und koennen im naechsten Schritt aktiv verbunden werden.</p>
+                    <p className="workspace-muted">Diese Integrationen sind als SaaS-Fundament angelegt. Sie koennen diese hier direkt verbinden und aktivieren.</p>
                   </article>
                 </section>
               ) : null}

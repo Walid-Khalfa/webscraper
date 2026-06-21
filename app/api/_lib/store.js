@@ -685,3 +685,147 @@ export async function verifyAgencyEmail(id) {
 
   return mapAgency(agency);
 }
+
+export async function updateCrmIntegration(apiKey, provider, { status, config = null, externalAccountId = null }) {
+  const agency = await getAgencyRecord(apiKey);
+  const integration = await prisma.crmIntegration.upsert({
+    where: {
+      agencyId_provider: {
+        agencyId: agency.id,
+        provider: provider,
+      },
+    },
+    update: {
+      status,
+      config,
+      externalAccountId,
+      lastSyncAt: status === "CONNECTED" ? new Date() : null,
+    },
+    create: {
+      agencyId: agency.id,
+      provider,
+      displayName: provider === "hubspot" ? "HubSpot CRM" : provider === "personio" ? "Personio" : "Greenhouse ATS",
+      status,
+      config,
+      externalAccountId,
+    },
+  });
+
+  await recordAuditLog({
+    agencyId: agency.id,
+    actorEmail: agency.email,
+    action: status === "CONNECTED" ? "crm_connected" : "crm_disconnected",
+    entityType: "crm_integration",
+    entityId: String(integration.id),
+    metadata: { provider },
+  });
+
+  return mapCrmIntegration(integration);
+}
+
+export async function recordCrmPush(apiKey, provider, reference) {
+  const agency = await getAgencyRecord(apiKey);
+  const integration = await prisma.crmIntegration.findUnique({
+    where: {
+      agencyId_provider: {
+        agencyId: agency.id,
+        provider,
+      },
+    },
+  });
+
+  if (!integration || integration.status !== "CONNECTED") {
+    throw new Error(`CRM-Integration fuer ${provider} ist nicht verbunden.`);
+  }
+
+  const updated = await prisma.crmIntegration.update({
+    where: { id: integration.id },
+    data: { lastSyncAt: new Date() },
+  });
+
+  await recordAuditLog({
+    agencyId: agency.id,
+    actorEmail: agency.email,
+    action: "crm_candidate_pushed",
+    entityType: "candidate_dossier",
+    entityId: reference,
+    metadata: { provider },
+  });
+
+  return mapCrmIntegration(updated);
+}
+
+export async function inviteAgencyMember(apiKey, { email, fullName, role }) {
+  const agency = await getAgencyRecord(apiKey, { requireVerified: true, include: { members: true, billingAccount: true } });
+  
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const alreadyExists = agency.members.some((m) => m.email.toLowerCase() === normalizedEmail);
+  if (alreadyExists) {
+    throw createHttpError("Ein Mitglied mit dieser E-Mail existiert bereits in dieser Agentur.", 409);
+  }
+
+  const activeMembersCount = agency.members.filter((m) => m.isActive).length;
+  const maxSeats = agency.billingAccount?.seats || 1;
+  if (activeMembersCount >= maxSeats) {
+    throw createHttpError(`Sitzplatz-Limit von ${maxSeats} erreicht. Bitte upgraden Sie Ihren Plan.`, 403);
+  }
+
+  const now = new Date();
+  const member = await prisma.agencyUser.create({
+    data: {
+      agencyId: agency.id,
+      email: normalizedEmail,
+      fullName: String(fullName || "").trim(),
+      role,
+      isActive: true,
+      invitedAt: now,
+      acceptedAt: now,
+      lastSeenAt: now,
+    },
+  });
+
+  await recordAuditLog({
+    agencyId: agency.id,
+    actorEmail: agency.email,
+    action: "member_invited",
+    entityType: "agency_user",
+    entityId: String(member.id),
+    metadata: { email: member.email, role: member.role },
+  });
+
+  return mapAgencyUser(member);
+}
+
+export async function removeAgencyMember(apiKey, memberId) {
+  const agency = await getAgencyRecord(apiKey);
+  
+  const parsedId = Number(memberId);
+  const member = await prisma.agencyUser.findUnique({
+    where: { id: parsedId },
+  });
+
+  if (!member || member.agencyId !== agency.id) {
+    throw createHttpError("Mitglied nicht gefunden", 404);
+  }
+
+  if (member.role === "OWNER" || member.email === agency.email) {
+    throw createHttpError("Der primaere Inhaber der Agentur kann nicht geloescht werden.", 400);
+  }
+
+  const deleted = await prisma.agencyUser.delete({
+    where: { id: parsedId },
+  });
+
+  await recordAuditLog({
+    agencyId: agency.id,
+    actorEmail: agency.email,
+    action: "member_removed",
+    entityType: "agency_user",
+    entityId: String(deleted.id),
+    metadata: { email: deleted.email },
+  });
+
+  return mapAgencyUser(deleted);
+}
+
+

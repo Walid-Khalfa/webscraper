@@ -269,11 +269,15 @@ export function normalizeJob(item) {
 
 function normalizeLocationName(value) {
   return String(value || "")
+    .toLocaleLowerCase("de-DE")
+    .replaceAll("ä", "ae")
+    .replaceAll("ö", "oe")
+    .replaceAll("ü", "ue")
+    .replaceAll("ß", "ss")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
-    .replace(/\s+/g, " ")
-    .toLocaleLowerCase("de-DE");
+    .replace(/\s+/g, " ");
 }
 
 function isExactLocationMatch(candidate, expectedLocation) {

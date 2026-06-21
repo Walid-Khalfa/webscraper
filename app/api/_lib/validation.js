@@ -59,6 +59,23 @@ export const analyticsPayloadSchema = z.object({
   properties: z.record(z.string(), z.unknown()).optional().default({}),
 });
 
+export const crmConnectSchema = z.object({
+  provider: z.enum(["personio", "hubspot", "greenhouse"]),
+  apiKey: trimmedString("API-Schluessel", { min: 2, max: 500 }),
+  config: z.record(z.string(), z.unknown()).optional().default({}),
+});
+
+export const crmPushSchema = z.object({
+  provider: z.enum(["personio", "hubspot", "greenhouse"]),
+  reference: trimmedString("Referenz", { min: 2, max: 120 }),
+});
+
+export const inviteMemberSchema = z.object({
+  email: z.string().trim().email("Bitte geben Sie eine gueltige E-Mail-Adresse ein.").max(160),
+  fullName: trimmedString("Name des Mitglieds", { min: 2, max: 80 }),
+  role: z.enum(["ADMIN", "RECRUITER", "VIEWER"]),
+});
+
 export const numericIdSchema = z.coerce.number().int().positive();
 
 export function parseWithSchema(schema, input) {
