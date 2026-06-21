@@ -3,7 +3,7 @@ import { agencyKey } from "../../../_lib/http";
 import { errorResponse } from "../../../_lib/http";
 import { extractJobItems, filterJobsByExactLocation, normalizeJob, searchJobs, toCsv } from "../../../_lib/ba";
 import { assertRateLimit } from "../../../_lib/rate-limit";
-import { getAgency } from "../../../_lib/store";
+import { getAgency, recordSearchHistory } from "../../../_lib/store";
 import { parseWithSchema, searchQuerySchema } from "../../../_lib/validation";
 
 export const runtime = "nodejs";
@@ -32,6 +32,15 @@ export async function GET(request) {
     const items = pages.flatMap(extractJobItems).slice(0, 200);
     const filteredItems = exactLocation ? filterJobsByExactLocation(items, location) : items;
     const rows = filteredItems.map(normalizeJob).slice(0, exportLimit);
+    if (rawAgencyKey) {
+      await recordSearchHistory(rawAgencyKey, {
+        keyword,
+        location,
+        exactLocation,
+        resultCount: filteredItems.length,
+        exportedCount: rows.length,
+      });
+    }
     const exactSuffix = exactLocation ? "-exakter-ort" : "";
     const filename = `stellenangebote-${(keyword || "alle").replaceAll(" ", "-")}-${(location || "deutschland").replaceAll(" ", "-")}${exactSuffix}.csv`;
 

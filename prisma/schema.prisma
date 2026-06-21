@@ -7,19 +7,64 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum AgencyRole {
+  OWNER
+  ADMIN
+  RECRUITER
+  VIEWER
+}
+
+enum BillingStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum IntegrationStatus {
+  NOT_CONNECTED
+  CONNECTED
+  ERROR
+}
+
 model Agency {
-  id             Int                  @id @default(autoincrement())
-  name           String
-  email          String               @unique
-  plan           String               @default("starter")
-  apiKeyHash     String               @unique @map("api_key_hash")
-  isActive       Boolean              @default(true) @map("is_active")
-  emailVerifiedAt DateTime?           @map("email_verified_at")
-  verificationEmailSentAt DateTime?   @map("verification_email_sent_at")
-  createdAt      DateTime             @default(now()) @map("created_at")
-  subscriptions  SearchSubscription[]
+  id                      Int                  @id @default(autoincrement())
+  name                    String
+  email                   String               @unique
+  plan                    String               @default("starter")
+  apiKeyHash              String               @unique @map("api_key_hash")
+  isActive                Boolean              @default(true) @map("is_active")
+  emailVerifiedAt         DateTime?            @map("email_verified_at")
+  verificationEmailSentAt DateTime?            @map("verification_email_sent_at")
+  createdAt               DateTime             @default(now()) @map("created_at")
+  subscriptions           SearchSubscription[]
+  members                 AgencyUser[]
+  auditLogs               AuditLog[]
+  searchHistory           SearchHistory[]
+  candidateDossiers       CandidateDossier[]
+  crmIntegrations         CrmIntegration[]
+  billingAccount          BillingAccount?
+  complianceProfile       AgencyComplianceProfile?
 
   @@map("agencies")
+}
+
+model AgencyUser {
+  id         Int        @id @default(autoincrement())
+  agencyId    Int       @map("agency_id")
+  email      String
+  fullName   String     @map("full_name")
+  role       AgencyRole @default(RECRUITER)
+  isActive   Boolean    @default(true) @map("is_active")
+  invitedAt  DateTime?  @map("invited_at")
+  acceptedAt DateTime?  @map("accepted_at")
+  lastSeenAt DateTime?  @map("last_seen_at")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  agency     Agency     @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, email])
+  @@index([agencyId, role])
+  @@map("agency_users")
 }
 
 model ProductEvent {
@@ -36,17 +81,20 @@ model ProductEvent {
 }
 
 model SearchSubscription {
-  id          Int             @id @default(autoincrement())
-  agencyId    Int             @map("agency_id")
-  keyword     String
-  location    String
-  frequency   String          @default("daily")
-  maxResults  Int             @default(25) @map("max_results")
-  isActive    Boolean         @default(true) @map("is_active")
-  lastSentAt  DateTime?       @map("last_sent_at")
-  createdAt   DateTime        @default(now()) @map("created_at")
-  agency      Agency          @relation(fields: [agencyId], references: [id], onDelete: Cascade)
-  deliveries  EmailDelivery[]
+  id                   Int             @id @default(autoincrement())
+  agencyId             Int             @map("agency_id")
+  keyword              String
+  location             String
+  frequency            String          @default("daily")
+  maxResults           Int             @default(25) @map("max_results")
+  isActive             Boolean         @default(true) @map("is_active")
+  doubleOptInStatus    String          @default("confirmed") @map("double_opt_in_status")
+  doubleOptInTokenHash String?         @map("double_opt_in_token_hash")
+  confirmedAt          DateTime?       @map("confirmed_at")
+  lastSentAt           DateTime?       @map("last_sent_at")
+  createdAt            DateTime        @default(now()) @map("created_at")
+  agency               Agency          @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  deliveries           EmailDelivery[]
 
   @@map("search_subscriptions")
 }
@@ -63,4 +111,99 @@ model EmailDelivery {
   subscription   SearchSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
   @@map("email_deliveries")
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  agencyId    Int?    @map("agency_id")
+  actorEmail String?  @map("actor_email")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String?  @map("entity_id")
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+  agency     Agency?  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, createdAt])
+  @@map("audit_logs")
+}
+
+model SearchHistory {
+  id            Int      @id @default(autoincrement())
+  agencyId       Int     @map("agency_id")
+  keyword       String
+  location      String
+  exactLocation Boolean  @default(true) @map("exact_location")
+  resultCount   Int      @default(0) @map("result_count")
+  exportedCount Int      @default(0) @map("exported_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  agency        Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, createdAt])
+  @@map("search_history")
+}
+
+model CandidateDossier {
+  id          Int      @id @default(autoincrement())
+  agencyId     Int     @map("agency_id")
+  reference   String
+  title       String
+  employer    String
+  location    String
+  status      String   @default("interested")
+  notes       String   @default("")
+  tags        Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  agency      Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, reference])
+  @@index([agencyId, status])
+  @@map("candidate_dossiers")
+}
+
+model CrmIntegration {
+  id                Int               @id @default(autoincrement())
+  agencyId           Int              @map("agency_id")
+  provider          String
+  displayName       String            @map("display_name")
+  status            IntegrationStatus @default(NOT_CONNECTED)
+  externalAccountId String?           @map("external_account_id")
+  lastSyncAt        DateTime?         @map("last_sync_at")
+  config            Json?
+  createdAt         DateTime          @default(now()) @map("created_at")
+  agency            Agency            @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, provider])
+  @@map("crm_integrations")
+}
+
+model BillingAccount {
+  id               Int           @id @default(autoincrement())
+  agencyId          Int          @unique @map("agency_id")
+  status           BillingStatus @default(TRIAL)
+  planName         String        @default("Starter") @map("plan_name")
+  seats            Int           @default(1)
+  customerRef      String?       @map("customer_ref")
+  trialEndsAt      DateTime?     @map("trial_ends_at")
+  currentPeriodEnd DateTime?     @map("current_period_end")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  agency           Agency        @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@map("billing_accounts")
+}
+
+model AgencyComplianceProfile {
+  id                    Int      @id @default(autoincrement())
+  agencyId               Int     @unique @map("agency_id")
+  privacyAcceptedAt     DateTime? @map("privacy_accepted_at")
+  termsAcceptedAt       DateTime? @map("terms_accepted_at")
+  doubleOptInEnabled    Boolean  @default(true) @map("double_opt_in_enabled")
+  auditTrailEnabled     Boolean  @default(true) @map("audit_trail_enabled")
+  retentionPolicyDays   Int      @default(180) @map("retention_policy_days")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  agency                Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@map("agency_compliance_profiles")
 }

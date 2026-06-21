@@ -1143,6 +1143,109 @@ button:disabled {
   font-weight: 700;
 }
 
+.workspace-command-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.workspace-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  background: var(--white);
+  border: 2px solid var(--line);
+  box-shadow: 4px 4px 0 rgba(21, 21, 21, 0.14);
+}
+
+.workspace-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.workspace-card-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+
+.workspace-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.workspace-kpis div {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  background: var(--paper);
+  border: 1px solid rgba(21, 21, 21, 0.14);
+}
+
+.workspace-kpis span {
+  color: var(--steel);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.workspace-kpis strong {
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.workspace-list,
+.workspace-checks {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workspace-list li,
+.workspace-checks li {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  background: rgba(242, 239, 232, 0.9);
+  border: 1px solid rgba(21, 21, 21, 0.14);
+}
+
+.workspace-list-compact li {
+  gap: 2px;
+}
+
+.workspace-list li strong {
+  font-size: 0.98rem;
+  line-height: 1.25;
+}
+
+.workspace-list li span,
+.workspace-list li em,
+.workspace-checks li {
+  color: var(--steel);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.workspace-checks li {
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  color: var(--ink);
+}
+
+.workspace-muted {
+  margin: 0;
+  color: var(--steel);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .email-preview-band {
   display: grid;
   grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr);
@@ -1593,7 +1696,8 @@ button:disabled {
 
   .insights-strip,
   .showcase-grid,
-  .email-preview-band {
+  .email-preview-band,
+  .workspace-command-grid {
     grid-template-columns: 1fr;
   }
 

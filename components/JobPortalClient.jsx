@@ -3,9 +3,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
+  BarChart3,
+  BadgeCheck,
   ChevronDown,
   Clock,
+  CreditCard,
   Download,
+  FolderKanban,
+  History,
   KeyRound,
   LayoutGrid,
   List,
@@ -16,9 +21,11 @@ import {
   Plus,
   Search,
   Send,
+  ShieldCheck,
   Sparkles,
   Trash2,
   Columns3,
+  Users,
 } from "lucide-react";
 import AlertManager from "./AlertManager";
 import Dashboard from "./Dashboard";
@@ -361,6 +368,8 @@ export default function Home({ initialShowcase, platformInsights }) {
   const [agencyForm, setAgencyForm] = useState({ name: "", email: "", plan: "starter" });
   const [alertForm, setAlertForm] = useState({ keyword: "", location: "", frequency: "daily", max_results: 25 });
   const [subscriptions, setSubscriptions] = useState([]);
+  const [workspaceOverview, setWorkspaceOverview] = useState(null);
+  const [workspaceLoading, setWorkspaceLoading] = useState(false);
   const [saasStatus, setSaasStatus] = useState("");
   const [saasLoading, setSaasLoading] = useState(false);
   const [verificationSending, setVerificationSending] = useState(false);
@@ -521,6 +530,14 @@ export default function Home({ initialShowcase, platformInsights }) {
       meta: "Bereit fuer die naechste Suche",
     };
   }, [loading, error, hasSearched, jobsWithClientFilters.length, rawJobs.length]);
+  const workspaceData = workspaceOverview?.workspace || null;
+  const workspaceMembers = workspaceData?.members || [];
+  const workspaceSearchHistory = workspaceData?.search_history || [];
+  const workspaceDossiers = workspaceData?.candidate_dossiers || [];
+  const workspaceIntegrations = workspaceData?.crm_integrations || [];
+  const workspaceBilling = workspaceData?.billing_account || null;
+  const workspaceTrust = workspaceData?.trust || null;
+  const workspaceReporting = workspaceData?.reporting || null;
   const commercialInsights = useMemo(
     () => [
       {
@@ -586,6 +603,114 @@ export default function Home({ initialShowcase, platformInsights }) {
     localStorage.setItem("jobFavorites", JSON.stringify(next));
   }
 
+  function buildDossierPayload(entry) {
+    if (!entry?.job?.reference) return null;
+    return {
+      reference: entry.job.reference,
+      title: entry.job.title || "Unbenannte Stelle",
+      employer: entry.job.employer || "Arbeitgeber nicht genannt",
+      location: entry.job.location || "Standort nicht genannt",
+      status: entry.status || "interested",
+      notes: entry.notes || "",
+      tags: Array.isArray(entry.tags) ? entry.tags : [],
+    };
+  }
+
+  function mergeFavoritesFromDossiers(dossiers) {
+    if (!Array.isArray(dossiers) || !dossiers.length) return;
+    const next = { ...favorites };
+    dossiers.forEach((dossier) => {
+      const current = next[dossier.reference];
+      next[dossier.reference] = {
+        ...current,
+        status: dossier.status || current?.status || "interested",
+        notes: dossier.notes || current?.notes || "",
+        tags: Array.isArray(dossier.tags) ? dossier.tags : current?.tags || [],
+        job:
+          current?.job ||
+          {
+            reference: dossier.reference,
+            title: dossier.title,
+            employer: dossier.employer,
+            location: dossier.location,
+            occupation: "",
+            salary: "",
+            url: dossier.reference ? `https://www.arbeitsagentur.de/jobsuche/jobdetail/${dossier.reference}` : "",
+          },
+      };
+    });
+    saveFavorites(next);
+  }
+
+  function updateWorkspaceDossier(snapshot) {
+    if (!snapshot) return;
+    setWorkspaceOverview((current) => {
+      if (!current?.workspace) return current;
+      const currentDossiers = Array.isArray(current.workspace.candidate_dossiers) ? current.workspace.candidate_dossiers : [];
+      const nextDossiers = [snapshot, ...currentDossiers.filter((entry) => entry.reference !== snapshot.reference)].slice(0, 12);
+      return {
+        ...current,
+        workspace: {
+          ...current.workspace,
+          candidate_dossiers: nextDossiers,
+          reporting: {
+            ...current.workspace.reporting,
+            shared_dossiers: nextDossiers.length,
+          },
+        },
+      };
+    });
+  }
+
+  function removeWorkspaceDossier(reference) {
+    if (!reference) return;
+    setWorkspaceOverview((current) => {
+      if (!current?.workspace) return current;
+      const nextDossiers = (current.workspace.candidate_dossiers || []).filter((entry) => entry.reference !== reference);
+      return {
+        ...current,
+        workspace: {
+          ...current.workspace,
+          candidate_dossiers: nextDossiers,
+          reporting: {
+            ...current.workspace.reporting,
+            shared_dossiers: nextDossiers.length,
+          },
+        },
+      };
+    });
+  }
+
+  async function persistFavoriteEntry(entry) {
+    const payload = buildDossierPayload(entry);
+    if (!agency?.api_key || !payload) return;
+
+    try {
+      const saved = await requestJson("/api/agencies/dossiers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Agency-Key": agency.api_key,
+        },
+        body: JSON.stringify(payload),
+      });
+      updateWorkspaceDossier(saved);
+    } catch {}
+  }
+
+  async function deleteFavoriteFromWorkspace(reference) {
+    if (!agency?.api_key || !reference) return;
+    try {
+      await requestJson(`/api/agencies/dossiers/${encodeURIComponent(reference)}`, {
+        method: "DELETE",
+        headers: {
+          "X-Agency-Key": agency.api_key,
+        },
+      });
+      removeWorkspaceDossier(reference);
+    } catch {}
+  }
+
   function ensureFavorite(job, overrides = {}) {
     const current = favorites[job.reference];
     const next = {
@@ -598,6 +723,7 @@ export default function Home({ initialShowcase, platformInsights }) {
     };
     const all = { ...favorites, [job.reference]: next };
     saveFavorites(all);
+    void persistFavoriteEntry(next);
     return next;
   }
 
@@ -607,6 +733,7 @@ export default function Home({ initialShowcase, platformInsights }) {
       const next = { ...favorites };
       delete next[job.reference];
       saveFavorites(next);
+      void deleteFavoriteFromWorkspace(job.reference);
       if (activeFavoriteRef === job.reference) setActiveFavoriteRef(null);
       pushToast("success", "Favorit entfernt.");
       return;
@@ -621,20 +748,26 @@ export default function Home({ initialShowcase, platformInsights }) {
     if (!current) return;
     const currentIndex = statusCycle.indexOf(current.status || "interested");
     const nextStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
-    saveFavorites({ ...favorites, [reference]: { ...current, status: nextStatus } });
+    const next = { ...favorites, [reference]: { ...current, status: nextStatus } };
+    saveFavorites(next);
+    void persistFavoriteEntry(next[reference]);
     pushToast("success", `Status auf ${statusLabels[nextStatus]} gesetzt.`);
   }
 
   function updateFavoriteField(reference, updates) {
     const current = favorites[reference];
     if (!current) return;
-    saveFavorites({ ...favorites, [reference]: { ...current, ...updates } });
+    const next = { ...favorites, [reference]: { ...current, ...updates } };
+    saveFavorites(next);
+    void persistFavoriteEntry(next[reference]);
   }
 
   function moveFavoriteToStatus(reference, status) {
     const current = favorites[reference];
     if (!current) return;
-    saveFavorites({ ...favorites, [reference]: { ...current, status } });
+    const next = { ...favorites, [reference]: { ...current, status } };
+    saveFavorites(next);
+    void persistFavoriteEntry(next[reference]);
   }
 
   function applyQuickSearch(nextKeyword, nextLocation) {
@@ -689,6 +822,14 @@ export default function Home({ initialShowcase, platformInsights }) {
         localStorage.setItem("agencyProfile", JSON.stringify(freshAgency));
       })
       .catch(() => {});
+  }, [agency?.api_key]);
+
+  useEffect(() => {
+    if (!agency?.api_key) {
+      setWorkspaceOverview(null);
+      return;
+    }
+    void loadWorkspace(agency.api_key);
   }, [agency?.api_key]);
 
   useEffect(() => {
@@ -886,6 +1027,7 @@ export default function Home({ initialShowcase, platformInsights }) {
       });
       setAgency(created);
       localStorage.setItem("agencyProfile", JSON.stringify(created));
+      await loadWorkspace(created.api_key);
       setEmailTemplateOpts((current) => ({ ...current, agencyName: current.agencyName || created.name }));
       setSaasStatus("Der Agentur-Zugang wurde eingerichtet. Bitte bestaetigen Sie jetzt zuerst die E-Mail-Adresse, bevor Job-Alarme aktiviert werden.");
       trackEvent("agency_created", { plan: created.plan });
@@ -900,6 +1042,7 @@ export default function Home({ initialShowcase, platformInsights }) {
     localStorage.removeItem("agencyProfile");
     setAgency(null);
     setSubscriptions([]);
+    setWorkspaceOverview(null);
     setSaasStatus("Der lokale Agentur-Zugang wurde aus diesem Browser entfernt.");
   }
 
@@ -914,6 +1057,22 @@ export default function Home({ initialShowcase, platformInsights }) {
   async function refreshSubscriptions(apiKey = agency?.api_key) {
     if (!apiKey) return;
     setSubscriptions(await requestJson("/api/alerts/subscriptions", { headers: { "X-Agency-Key": apiKey } }));
+  }
+
+  async function loadWorkspace(apiKey = agency?.api_key) {
+    if (!apiKey) return;
+    setWorkspaceLoading(true);
+    try {
+      const data = await requestJson("/api/agencies/workspace?limit=6", {
+        headers: { "X-Agency-Key": apiKey },
+      });
+      setWorkspaceOverview(data);
+      mergeFavoritesFromDossiers(data?.workspace?.candidate_dossiers || []);
+    } catch {
+      setWorkspaceOverview(null);
+    } finally {
+      setWorkspaceLoading(false);
+    }
   }
 
   async function handleCreateAlert(event) {
@@ -937,6 +1096,7 @@ export default function Home({ initialShowcase, platformInsights }) {
         body: JSON.stringify(alertForm),
       });
       await refreshSubscriptions(agency.api_key);
+      await loadWorkspace(agency.api_key);
       setSaasStatus("Der Job-Alarm wurde eingerichtet und kann ab sofort genutzt werden.");
       trackEvent("agency_alert_created", { keyword: alertForm.keyword, location: alertForm.location });
     } catch (err) {
@@ -960,6 +1120,7 @@ export default function Home({ initialShowcase, platformInsights }) {
         headers: { "X-Agency-Key": agency.api_key },
       });
       await refreshSubscriptions(agency.api_key);
+      await loadWorkspace(agency.api_key);
       setSaasStatus(
         result.dry_run
           ? `Die Zusammenfassung fuer ${result.recipient} wurde vorbereitet. Hinterlegen Sie einen Mail-Dienst, um reale Zustellungen zu aktivieren.`
@@ -1000,6 +1161,7 @@ export default function Home({ initialShowcase, platformInsights }) {
         headers: { "X-Agency-Key": agency.api_key },
       });
       await refreshSubscriptions(agency.api_key);
+      await loadWorkspace(agency.api_key);
       setSaasStatus("Der Job-Alarm wurde entfernt.");
       trackEvent("agency_alert_deleted", { subscriptionId });
     } catch (err) {
@@ -1694,6 +1856,154 @@ export default function Home({ initialShowcase, platformInsights }) {
                   <div className="alarm-trust-line">Datenquelle: Bundesagentur fuer Arbeit · Versand nur nach bestaetigter Agentur-E-Mail · Starter = 1 Alarm, Agentur-Zugang = bis zu 200 CSV-Treffer</div>
                 </form>
               </div>
+
+              {agency ? (
+                <section className="workspace-command-grid" aria-label="Agentur-Workspace">
+                  <article className="workspace-card">
+                    <div className="workspace-card-header">
+                      <div>
+                        <p className="eyebrow">Authentifizierung und Team</p>
+                        <h3>Multi-Agentur-Zugang mit Rollenmodell</h3>
+                      </div>
+                      <Users size={18} />
+                    </div>
+                    {workspaceLoading ? <p className="workspace-muted">Workspace wird geladen...</p> : null}
+                    <div className="workspace-kpis">
+                      <div>
+                        <span>Aktive Mitglieder</span>
+                        <strong>{workspaceReporting?.active_members || 0}</strong>
+                      </div>
+                      <div>
+                        <span>Bestaetigte Absenderadresse</span>
+                        <strong>{agency.email_verified ? "Ja" : "Ausstehend"}</strong>
+                      </div>
+                    </div>
+                    <ul className="workspace-list">
+                      {workspaceMembers.length ? workspaceMembers.map((member) => (
+                        <li key={member.id}>
+                          <strong>{member.full_name}</strong>
+                          <span>{member.email}</span>
+                          <em>{member.role}</em>
+                        </li>
+                      )) : <li><span>Der erste Owner wird bei der Agentur-Anlage automatisch erzeugt.</span></li>}
+                    </ul>
+                  </article>
+
+                  <article className="workspace-card">
+                    <div className="workspace-card-header">
+                      <div>
+                        <p className="eyebrow">Billing SaaS</p>
+                        <h3>Plan, Sitzplaetze und Laufzeit</h3>
+                      </div>
+                      <CreditCard size={18} />
+                    </div>
+                    <div className="workspace-kpis">
+                      <div>
+                        <span>Plan</span>
+                        <strong>{workspaceBilling?.plan_name || "Starter"}</strong>
+                      </div>
+                      <div>
+                        <span>Status</span>
+                        <strong>{workspaceBilling?.status || "TRIAL"}</strong>
+                      </div>
+                      <div>
+                        <span>Sitzplaetze</span>
+                        <strong>{workspaceBilling?.seats || 1}</strong>
+                      </div>
+                    </div>
+                    <p className="workspace-muted">Die Billing-Struktur ist fuer spaetere Stripe- oder Paddle-Anbindung vorbereitet.</p>
+                  </article>
+
+                  <article className="workspace-card">
+                    <div className="workspace-card-header">
+                      <div>
+                        <p className="eyebrow">Suche und Reporting</p>
+                        <h3>Historie und Business-Metriken</h3>
+                      </div>
+                      <BarChart3 size={18} />
+                    </div>
+                    <div className="workspace-kpis">
+                      <div>
+                        <span>Aktive Job-Alarme</span>
+                        <strong>{workspaceReporting?.active_alerts || 0}</strong>
+                      </div>
+                      <div>
+                        <span>Letzte Recherchen</span>
+                        <strong>{workspaceReporting?.recent_searches || 0}</strong>
+                      </div>
+                    </div>
+                    <ul className="workspace-list workspace-list-compact">
+                      {workspaceSearchHistory.length ? workspaceSearchHistory.map((entry) => (
+                        <li key={entry.id}>
+                          <strong>{entry.keyword || "Allgemeine Suche"}</strong>
+                          <span>{entry.location || "Deutschland"} · {entry.result_count} Treffer</span>
+                        </li>
+                      )) : <li><span>Noch keine gespeicherte Suchhistorie vorhanden.</span></li>}
+                    </ul>
+                  </article>
+
+                  <article className="workspace-card">
+                    <div className="workspace-card-header">
+                      <div>
+                        <p className="eyebrow">Pipeline und Kandidatendossiers</p>
+                        <h3>Geteilte Recruiting-Pipeline</h3>
+                      </div>
+                      <FolderKanban size={18} />
+                    </div>
+                    <div className="workspace-kpis">
+                      <div>
+                        <span>Geteilte Dossiers</span>
+                        <strong>{workspaceReporting?.shared_dossiers || 0}</strong>
+                      </div>
+                    </div>
+                    <ul className="workspace-list workspace-list-compact">
+                      {workspaceDossiers.length ? workspaceDossiers.map((dossier) => (
+                        <li key={dossier.reference}>
+                          <strong>{dossier.title}</strong>
+                          <span>{dossier.location}</span>
+                          <em>{statusLabels[dossier.status] || dossier.status}</em>
+                        </li>
+                      )) : <li><span>Favoriten aus dem Job-Tracker werden hier als gemeinsame Dossiers gespeichert.</span></li>}
+                    </ul>
+                  </article>
+
+                  <article className="workspace-card">
+                    <div className="workspace-card-header">
+                      <div>
+                        <p className="eyebrow">DSGVO und E-Mail-Governance</p>
+                        <h3>Vertrauen, Audit Trail und Double Opt-in</h3>
+                      </div>
+                      <ShieldCheck size={18} />
+                    </div>
+                    <ul className="workspace-checks">
+                      <li><BadgeCheck size={16} /> Audit Trail {workspaceTrust?.audit_trail ? "aktiv" : "inaktiv"}</li>
+                      <li><BadgeCheck size={16} /> Double Opt-in {workspaceTrust?.double_opt_in ? "erzwingbar" : "deaktiviert"}</li>
+                      <li><BadgeCheck size={16} /> DSGVO-Basis {workspaceTrust?.gdpr_ready ? "bestaetigt" : "vorbereitet"}</li>
+                      <li><BadgeCheck size={16} /> Verifizierter Versand {workspaceTrust?.verified_sender ? "aktiv" : "ausstehend"}</li>
+                    </ul>
+                  </article>
+
+                  <article className="workspace-card">
+                    <div className="workspace-card-header">
+                      <div>
+                        <p className="eyebrow">CRM / ATS Integrationen</p>
+                        <h3>Verbindungsstatus fuer externe Systeme</h3>
+                      </div>
+                      <History size={18} />
+                    </div>
+                    <ul className="workspace-list workspace-list-compact">
+                      {workspaceIntegrations.length ? workspaceIntegrations.map((integration) => (
+                        <li key={integration.id}>
+                          <strong>{integration.display_name}</strong>
+                          <span>{integration.provider}</span>
+                          <em>{integration.status}</em>
+                        </li>
+                      )) : <li><span>Personio, HubSpot und Greenhouse koennen als Integrationsziele vorbereitet werden.</span></li>}
+                    </ul>
+                    <p className="workspace-muted">Diese Integrationen sind als SaaS-Fundament angelegt und koennen im naechsten Schritt aktiv verbunden werden.</p>
+                  </article>
+                </section>
+              ) : null}
 
               <EmailDigestPreview
                 agencyName={agency?.name}

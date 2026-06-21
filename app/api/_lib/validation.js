@@ -37,6 +37,20 @@ export const subscriptionCreateSchema = z.object({
   max_results: z.coerce.number().int().min(1).max(100).optional().default(25),
 });
 
+export const agencyWorkspaceQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(20).optional().default(6),
+});
+
+export const candidateDossierSchema = z.object({
+  reference: trimmedString("Referenz", { min: 2, max: 120 }),
+  title: trimmedString("Stellentitel", { min: 2, max: 160 }),
+  employer: trimmedString("Arbeitgeber", { min: 2, max: 160 }),
+  location: trimmedString("Standort", { min: 2, max: 120 }),
+  status: z.enum(["interested", "applied", "interview", "closed"]).optional().default("interested"),
+  notes: z.string().trim().max(4000).optional().default(""),
+  tags: z.array(z.string().trim().min(1).max(40)).max(12).optional().default([]),
+});
+
 export const analyticsPayloadSchema = z.object({
   event: trimmedString("Event", { min: 2, max: 80 }),
   distinctId: z.string().trim().max(160).optional(),
