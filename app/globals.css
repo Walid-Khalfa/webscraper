@@ -2171,3 +2171,247 @@ textarea {
     max-height: calc(100vh - 16px);
   }
 }
+
+/* --- PREMIUM UI/UX IMPROVEMENTS --- */
+
+/* 1. Base transitions for cards and actions */
+.job-card,
+.workspace-card,
+.dashboard-card,
+.insight-card,
+.search-panel {
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+button,
+.apply-link,
+.apply-link-large,
+.digest-open-link {
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 2. Brutalist active translations on hover */
+:root:not([data-theme="cyberpunk"]):not([data-theme="hacker"]) .job-card:hover,
+:root:not([data-theme="cyberpunk"]):not([data-theme="hacker"]) .workspace-card:hover,
+:root:not([data-theme="cyberpunk"]):not([data-theme="hacker"]) .dashboard-card:hover,
+:root:not([data-theme="cyberpunk"]):not([data-theme="hacker"]) .insight-card:hover,
+:root:not([data-theme="cyberpunk"]):not([data-theme="hacker"]) .search-panel:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 14px 14px 0 var(--ink);
+}
+
+/* 3. Cyberpunk neon glow effects */
+:root[data-theme="cyberpunk"] button:hover:not(:disabled),
+:root[data-theme="cyberpunk"] .apply-link:hover,
+:root[data-theme="cyberpunk"] .apply-link-large:hover,
+:root[data-theme="cyberpunk"] .digest-open-link:hover {
+  box-shadow: 0 0 10px var(--line), 0 0 20px var(--accent);
+  filter: drop-shadow(0 0 2px var(--accent));
+  transform: scale(1.02) translateY(-2px);
+}
+
+:root[data-theme="cyberpunk"] .job-card:hover,
+:root[data-theme="cyberpunk"] .workspace-card:hover,
+:root[data-theme="cyberpunk"] .dashboard-card:hover,
+:root[data-theme="cyberpunk"] .insight-card:hover,
+:root[data-theme="cyberpunk"] .search-panel:hover {
+  box-shadow: 0 0 15px rgba(83, 247, 255, 0.4), inset 0 0 10px rgba(255, 77, 166, 0.2);
+  border-color: var(--line);
+  transform: translateY(-4px);
+}
+
+/* 4. Hacker neon glow & scanline effects */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+:root[data-theme="hacker"]::before {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.12) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  z-index: 9999;
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+}
+
+:root[data-theme="hacker"]::after {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(56, 255, 93, 0.08);
+  opacity: 0.8;
+  z-index: 10000;
+  pointer-events: none;
+  animation: scanline 8s linear infinite;
+}
+
+:root[data-theme="hacker"] button:hover:not(:disabled),
+:root[data-theme="hacker"] .apply-link:hover,
+:root[data-theme="hacker"] .apply-link-large:hover,
+:root[data-theme="hacker"] .digest-open-link:hover {
+  box-shadow: 0 0 12px var(--line);
+  filter: drop-shadow(0 0 3px var(--line));
+  transform: translateY(-2px);
+}
+
+:root[data-theme="hacker"] .job-card:hover,
+:root[data-theme="hacker"] .workspace-card:hover,
+:root[data-theme="hacker"] .dashboard-card:hover,
+:root[data-theme="hacker"] .insight-card:hover,
+:root[data-theme="hacker"] .search-panel:hover {
+  box-shadow: 0 0 12px var(--line);
+  border-color: var(--accent);
+  transform: translateY(-4px);
+}
+
+/* 5. Skeleton loading with active theme variables & shimmer pulse */
+@keyframes shimmer-pulse {
+  0% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.65;
+  }
+}
+
+.skeleton-card {
+  animation: shimmer-pulse 2s ease-in-out infinite;
+}
+
+.skeleton-line {
+  background: var(--paper-deep) !important;
+}
+
+:root:not([data-theme="cyberpunk"]):not([data-theme="hacker"]) .skeleton-line::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+}
+
+:root[data-theme="cyberpunk"] .skeleton-line::after {
+  background: linear-gradient(90deg, transparent, rgba(83, 247, 255, 0.25), transparent);
+}
+
+:root[data-theme="hacker"] .skeleton-line::after {
+  background: linear-gradient(90deg, transparent, rgba(56, 255, 93, 0.25), transparent);
+}
+
+/* 6. Transitions for Favorite Drawer */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.favorite-drawer {
+  animation: slide-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* 7. Entry animation for job cards */
+@keyframes card-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.job-card {
+  animation: card-fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* 8. Premium custom toggle switch styling */
+.exact-location-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 2px solid var(--line);
+  background: var(--paper);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.exact-location-toggle:hover {
+  background: var(--paper-deep);
+}
+
+.exact-location-toggle input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.toggle-switch-track {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  background: var(--white);
+  border: 2px solid var(--line);
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toggle-switch-track.active {
+  background: var(--accent);
+}
+
+.toggle-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--line);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toggle-switch-track.active .toggle-switch-thumb {
+  transform: translateX(20px);
+  background: var(--white);
+}
+
+.exact-location-toggle:focus-within {
+  outline: 4px solid var(--signal);
+  outline-offset: 3px;
+}

@@ -1607,6 +1607,9 @@ export default function Home({ initialShowcase, platformInsights }) {
 
               <label className="exact-location-toggle">
                 <input type="checkbox" checked={exactLocation} onChange={(event) => setExactLocation(event.target.checked)} />
+                <span className={`toggle-switch-track${exactLocation ? " active" : ""}`} aria-hidden="true">
+                  <span className="toggle-switch-thumb" />
+                </span>
                 <span>Nur exakte Standorte</span>
               </label>
               <button className="primary-action" type="submit" disabled={loading}>
