@@ -37,6 +37,7 @@ import SearchPanel from "./SearchPanel";
 import ToastStack from "./ToastStack";
 import { trackEvent } from "./analytics";
 import EmailDigestPreview from "./EmailDigestPreview";
+import germanLocalities from "../app/api/_lib/german-localities.json";
 
 const preferredListKeys = ["ergebnisliste", "stellenangebote", "angebote", "jobs", "items", "results", "content", "data"];
 const keywordSuggestions = [
@@ -145,6 +146,38 @@ const defaultEmailTemplate = {
 };
 
 const locationSuggestionCache = new Map();
+const localityCollator = new Intl.Collator("de-DE");
+
+function normalizeLocalityText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("de-DE")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+const clientLocalitySuggestions = germanLocalities
+  .map((entry) => ({
+    value: entry.name,
+    label: entry.state && entry.state !== entry.name ? `${entry.name}, ${entry.state}` : entry.name,
+    state: entry.state,
+    normalized: normalizeLocalityText(`${entry.name} ${entry.state || ""}`),
+  }))
+  .sort((left, right) => localityCollator.compare(left.label, right.label));
+
+function getClientLocationSuggestions(query, limit = 40) {
+  const normalizedQuery = normalizeLocalityText(query);
+  const items = !normalizedQuery
+    ? clientLocalitySuggestions
+    : clientLocalitySuggestions.filter((entry) => entry.normalized.includes(normalizedQuery));
+
+  return items.slice(0, limit).map(({ value, label, state }) => ({
+    value,
+    label,
+    state,
+  }));
+}
 
 function sleep(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -176,7 +209,7 @@ async function requestLocationSuggestions(query, limit = 10) {
     limit: String(limit),
   });
   const data = await requestJson(`/api/locations/autocomplete?${params.toString()}`);
-  const items = Array.isArray(data?.items) ? data.items : [];
+  const items = Array.isArray(data?.items) && data.items.length ? data.items : getClientLocationSuggestions(query, limit);
   locationSuggestionCache.set(cacheKey, items);
   return items;
 }
@@ -855,7 +888,7 @@ export default function Home({ initialShowcase, platformInsights }) {
         })
         .catch(() => {
           if (locationFetchVersion.current !== requestId) return;
-          setLocationSuggestions([]);
+          setLocationSuggestions(getClientLocationSuggestions(showAllSuggestions ? "" : location, showAllSuggestions ? 120 : 40));
         })
         .finally(() => {
           if (locationFetchVersion.current === requestId) setLoadingLocationSuggestions(false);
@@ -880,7 +913,7 @@ export default function Home({ initialShowcase, platformInsights }) {
         })
         .catch(() => {
           if (agentLocationFetchVersion.current !== requestId) return;
-          setAgentLocationSuggestions([]);
+          setAgentLocationSuggestions(getClientLocationSuggestions(showAllAgentSuggestions ? "" : alertForm.location, showAllAgentSuggestions ? 120 : 40));
         })
         .finally(() => {
           if (agentLocationFetchVersion.current === requestId) setLoadingAgentLocationSuggestions(false);
