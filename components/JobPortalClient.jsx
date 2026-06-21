@@ -848,7 +848,7 @@ export default function Home({ initialShowcase, platformInsights }) {
     setLoadingLocationSuggestions(true);
 
     const timer = window.setTimeout(() => {
-      requestLocationSuggestions(location)
+      requestLocationSuggestions(showAllSuggestions ? "" : location)
         .then((items) => {
           if (locationFetchVersion.current !== requestId) return;
           setLocationSuggestions(items);
@@ -863,7 +863,7 @@ export default function Home({ initialShowcase, platformInsights }) {
     }, 120);
 
     return () => window.clearTimeout(timer);
-  }, [location, openSuggest]);
+  }, [location, openSuggest, showAllSuggestions]);
 
   useEffect(() => {
     if (agentSuggest !== "location") return undefined;
@@ -873,7 +873,7 @@ export default function Home({ initialShowcase, platformInsights }) {
     setLoadingAgentLocationSuggestions(true);
 
     const timer = window.setTimeout(() => {
-      requestLocationSuggestions(alertForm.location)
+      requestLocationSuggestions(showAllAgentSuggestions ? "" : alertForm.location)
         .then((items) => {
           if (agentLocationFetchVersion.current !== requestId) return;
           setAgentLocationSuggestions(items);
@@ -888,7 +888,7 @@ export default function Home({ initialShowcase, platformInsights }) {
     }, 120);
 
     return () => window.clearTimeout(timer);
-  }, [alertForm.location, agentSuggest]);
+  }, [alertForm.location, agentSuggest, showAllAgentSuggestions]);
 
   useEffect(() => {
     if (!agency?.api_key) return;
