@@ -1934,7 +1934,7 @@ export default function Home({ initialShowcase, platformInsights }) {
               </div>
 
               <div className="saas-grid">
-                <div className="saas-panel saas-panel-secondary">
+                <div className="saas-panel saas-panel-primary">
                   <div className="view-mode-switch" style={{ marginBottom: "14px", display: "flex", gap: "8px" }}>
                     <button
                       type="button"
@@ -2024,7 +2024,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                   ) : null}
                 </div>
 
-                <form className="saas-panel saas-panel-primary" onSubmit={handleCreateAlert} onBlur={(event) => {
+                <form className="saas-panel saas-panel-secondary" onSubmit={handleCreateAlert} onBlur={(event) => {
                   if (!event.currentTarget.contains(event.relatedTarget)) {
                     setAgentSuggest(null);
                     setShowAllAgentSuggestions(true);
