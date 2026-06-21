@@ -218,6 +218,33 @@ function normalizeSalary(item) {
   return "Keine Verguetung angegeben";
 }
 
+function collectUniqueStrings(values) {
+  const seen = new Set();
+  const items = [];
+
+  for (const value of values) {
+    const text = flatten(value);
+    if (!text) continue;
+    if (seen.has(text)) continue;
+    seen.add(text);
+    items.push(text);
+  }
+
+  return items;
+}
+
+function getLocationCandidates(item) {
+  const directCandidates = collectUniqueStrings([
+    valueAt(item, ["arbeitsort.ort", "ort", "standort", "adresse.ort", "stellenlokationen.adresse.ort"]),
+  ]);
+
+  const locationEntries = Array.isArray(item?.stellenlokationen)
+    ? item.stellenlokationen.flatMap((entry) => [entry?.adresse?.ort, entry?.adresse?.gemeinde, entry?.adresse?.kreis])
+    : [];
+
+  return collectUniqueStrings([...directCandidates, ...locationEntries]);
+}
+
 export function normalizeJob(item) {
   const reference = valueAt(item, ["referenznummer", "refnr", "refNr", "reference", "id", "hashId", "stellenangebotsId"]);
   const title = valueAt(item, ["titel", "title", "stellenangebotsTitel", "stellenbezeichnung", "beruf", "jobtitel"]);
@@ -232,7 +259,7 @@ export function normalizeJob(item) {
     Referenz: referenceText,
     Titel: flatten(title),
     Arbeitgeber: flatten(employer),
-    Ort: flatten(location),
+    Ort: getLocationCandidates(item)[0] || flatten(location),
     Postleitzahl: flatten(postalCode),
     Gehalt: normalizeSalary(item),
     Beruf: flatten(occupation),
@@ -242,18 +269,29 @@ export function normalizeJob(item) {
 
 function normalizeLocationName(value) {
   return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .trim()
+    .replace(/\s+/g, " ")
     .toLocaleLowerCase("de-DE");
+}
+
+function isExactLocationMatch(candidate, expectedLocation) {
+  const normalizedCandidate = normalizeLocationName(candidate);
+  if (!normalizedCandidate) return false;
+  if (normalizedCandidate === expectedLocation) return true;
+
+  const primarySegment = normalizedCandidate.split(",")[0]?.trim() || "";
+  if (primarySegment === expectedLocation) return true;
+
+  return normalizedCandidate.startsWith(`${expectedLocation},`) || normalizedCandidate.startsWith(`${expectedLocation} (`);
 }
 
 export function filterJobsByExactLocation(items, location) {
   const expectedLocation = normalizeLocationName(location);
   if (!expectedLocation) return items;
 
-  return items.filter((item) => {
-    const normalized = normalizeJob(item);
-    return normalizeLocationName(normalized.Ort) === expectedLocation;
-  });
+  return items.filter((item) => getLocationCandidates(item).some((candidate) => isExactLocationMatch(candidate, expectedLocation)));
 }
 
 export function toCsv(rows) {
