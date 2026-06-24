@@ -4,8 +4,9 @@ import { PrismaClient } from "@prisma/client";
 // setting SKIP_DB_DURING_BUILD=true in environments (e.g., Vercel build) to
 // avoid exhausting limited DB connections during parallel prerendering.
 const skipFlag = String(process.env.SKIP_DB_DURING_BUILD || process.env.SKIP_DB || "").toLowerCase();
+const isNextProductionBuild = process.env.NEXT_PHASE === "phase-production-build";
 let prisma;
-if (skipFlag === "1" || skipFlag === "true") {
+if (skipFlag === "1" || skipFlag === "true" || isNextProductionBuild) {
   // Lightweight fake Prisma client that returns safe defaults for common
   // read operations. Keep implementation minimal to avoid surprising behavior.
   const fake = new Proxy(
@@ -50,7 +51,9 @@ if (skipFlag === "1" || skipFlag === "true") {
   // Concurrency guard: limit number of concurrent Prisma method calls to avoid
   // exhausting database connections during heavy parallel phases (e.g. Next.js
   // build prerendering many pages). Tune with PRISMA_MAX_CONCURRENT env var.
-  const PRISMA_MAX_CONCURRENT = Math.max(Number(process.env.PRISMA_MAX_CONCURRENT) || 6, 1);
+  // Default much lower in production to match pooled Postgres/Supabase limits.
+  const defaultConcurrency = process.env.NODE_ENV === "production" ? 1 : 4;
+  const PRISMA_MAX_CONCURRENT = Math.max(Number(process.env.PRISMA_MAX_CONCURRENT) || defaultConcurrency, 1);
 
   function createSemaphore(limit) {
     let active = 0;

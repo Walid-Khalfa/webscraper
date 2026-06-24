@@ -1,4 +1,5 @@
 import JobPortalClient from "../components/JobPortalClient";
+import { unstable_cache } from "next/cache";
 import { extractJobItems, normalizeJob, searchJobs } from "./api/_lib/ba";
 import { getPlatformInsights } from "./api/_lib/product-insights";
 
@@ -133,8 +134,16 @@ async function getShowcaseData() {
   }
 }
 
+const getCachedShowcaseData = unstable_cache(getShowcaseData, ["homepage-showcase"], {
+  revalidate: 300,
+});
+
+const getCachedPlatformInsights = unstable_cache(getPlatformInsights, ["homepage-platform-insights"], {
+  revalidate: 120,
+});
+
 export default async function Page() {
-  const [showcase, platformInsights] = await Promise.all([getShowcaseData(), getPlatformInsights()]);
+  const [showcase, platformInsights] = await Promise.all([getCachedShowcaseData(), getCachedPlatformInsights()]);
 
   return (
     <>

@@ -54,7 +54,7 @@ export async function getPlatformInsights() {
       latestEvent,
       latestDelivery,
       latestSubscription,
-    ] = await Promise.all([
+    ] = await prisma.$transaction([
       prisma.agency.count({ where: { isActive: true } }),
       prisma.searchSubscription.count({ where: { isActive: true } }),
       prisma.productEvent.count({
