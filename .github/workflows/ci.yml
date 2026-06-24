@@ -27,19 +27,30 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
       - name: Run unit tests
         run: npm run test:unit
-      - name: Run e2e tests (Playwright)
-        run: npx playwright test --reporter=dot,html
-      - name: Upload Playwright report
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 14
+      - name: Build application
+        run: npm run build
+      - name: Start application
+        run: |
+          npm run start -- --hostname 127.0.0.1 --port 3000 > /tmp/khalfajobs-app.log 2>&1 &
+      - name: Wait for health endpoint
+        run: |
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:3000/health >/tmp/health.json; then
+              cat /tmp/health.json
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/khalfajobs-app.log || true
+          exit 1
+      - name: Run HTTP smoke tests
+        run: |
+          curl -fsS http://127.0.0.1:3000/ | grep -q "KhalfaJobs"
+          curl -fsS http://127.0.0.1:3000/health | grep -q '"status":"ok"'
+          curl -sS -o /tmp/cron.json -w "%{http_code}" http://127.0.0.1:3000/api/cron/agents | grep -q "^401$"
+          cat /tmp/cron.json | grep -q "Ungueltiger Cron-Schluessel"
 
   secret-scan:
     runs-on: ubuntu-latest

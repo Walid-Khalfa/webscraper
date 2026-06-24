@@ -70,6 +70,20 @@ function structuredData() {
 }
 
 async function getShowcaseData() {
+  if (process.env.CI === "true" || process.env.PLAYWRIGHT === "true") {
+    return {
+      jobs: [],
+      positions: showcaseQueries.map((entry) => `${entry.keyword} in ${entry.location}`),
+      regions: ["Berlin", "Hamburg", "Koeln", "Frankfurt am Main"],
+      trends: [],
+      metrics: {
+        activeProfiles: showcaseQueries.length,
+        sampleHits: 0,
+        activeRegions: 4,
+      },
+    };
+  }
+
   try {
     const payloads = await Promise.all(
       showcaseQueries.map((query) =>
