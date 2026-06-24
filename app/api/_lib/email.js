@@ -17,6 +17,9 @@ function getAppBaseUrl() {
 }
 
 function getEmailSecret() {
+  if (process.env.NODE_ENV === "production" && !process.env.EMAIL_LINK_SECRET) {
+    throw new Error("EMAIL_LINK_SECRET fehlt in Produktion");
+  }
   return process.env.EMAIL_LINK_SECRET || process.env.RESEND_API_KEY || "dev-email-link-secret";
 }
 

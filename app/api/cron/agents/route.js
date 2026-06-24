@@ -10,6 +10,11 @@ export const dynamic = "force-dynamic";
 export async function GET(request) {
   try {
     const expectedSecret = process.env.CRON_SECRET;
+    if (process.env.NODE_ENV === "production" && !expectedSecret) {
+      const error = new Error("CRON_SECRET fehlt in Produktion");
+      error.status = 500;
+      throw error;
+    }
     if (expectedSecret && request.headers.get("authorization") !== `Bearer ${expectedSecret}`) {
       const error = new Error("Ungueltiger Cron-Schluessel");
       error.status = 401;
