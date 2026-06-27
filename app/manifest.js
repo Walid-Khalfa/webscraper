@@ -2,7 +2,7 @@ export default function manifest() {
   return {
     name: "KhalfaJobs Deutsches Stellenregister",
     short_name: "KhalfaJobs",
-    description: "Professionelle Live-Suche fuer Stellenangebote der Bundesagentur fuer Arbeit mit CSV-Export und Job-Alarmen.",
+    description: "Professionelle Live-Suche für Stellenangebote der Bundesagentur für Arbeit mit CSV-Export und Job-Alarmen.",
     start_url: "/",
     display: "standalone",
     background_color: "#f2efe8",

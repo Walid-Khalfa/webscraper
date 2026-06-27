@@ -6,7 +6,7 @@ function previewRows(jobs) {
     title: job.title || "Stellenprofil",
     employer: job.employer || "Arbeitgeber nicht genannt",
     location: job.location || "Standort nicht genannt",
-    salary: job.salary || "Keine Verguetung angegeben",
+    salary: job.salary || "Keine Vergütung angegeben",
   }));
 }
 
@@ -25,7 +25,7 @@ export default function EmailDigestPreview({
   const resolvedLocation = location || "Berlin";
   const resolvedAgency = options.agencyName || agencyName || "Ihre Agentur";
   const greeting = options.greeting || "Guten Morgen";
-  const subject = options.subject || `Neue Stellenangebote fuer ${resolvedKeyword} in ${resolvedLocation}`;
+  const subject = options.subject || `Neue Stellenangebote für ${resolvedKeyword} in ${resolvedLocation}`;
 
   function update(field, value) {
     onChange?.({ ...options, [field]: value });
@@ -36,7 +36,7 @@ export default function EmailDigestPreview({
   }
 
   return (
-    <section className="email-preview-band" aria-label="Vorschau des taeglichen Job-Alarms">
+    <section className="email-preview-band" aria-label="Vorschau des täglichen Job-Alarms">
       <div className="email-preview-copy">
         <div>
           <p className="eyebrow">WYSIWYG E-Mail-Digest</p>
@@ -116,7 +116,7 @@ export default function EmailDigestPreview({
                     {row.location}
                   </span>
                 ) : null}
-                {options.showSalary && row.salary !== "Keine Verguetung angegeben" ? (
+                {options.showSalary && row.salary !== "Keine Vergütung angegeben" ? (
                   <span className="digest-salary">
                     <WalletCards size={14} aria-hidden="true" />
                     {row.salary}
@@ -135,7 +135,7 @@ export default function EmailDigestPreview({
 
         <div className="digest-mockup-footer">
           <span>Exakter Ort aktiv</span>
-          <span>Datenquelle Bundesagentur fuer Arbeit</span>
+          <span>Datenquelle Bundesagentur für Arbeit</span>
         </div>
       </div>
     </section>

@@ -3,7 +3,7 @@ import JobCardSkeleton from "../components/JobCardSkeleton";
 export default function Loading() {
   return (
     <main className="app-shell">
-      <aside className="registry-rail" aria-label="Anwendungsidentitaet">
+      <aside className="registry-rail" aria-label="Anwendungsidentität">
         <span>BA</span>
         <span>LIVE</span>
         <span>SAAS</span>
@@ -11,7 +11,7 @@ export default function Loading() {
       <section className="workspace">
         <header className="masthead">
           <div>
-            <p className="eyebrow">Oeffentliche Suche der Bundesagentur fuer Arbeit</p>
+            <p className="eyebrow">Öffentliche Suche der Bundesagentur für Arbeit</p>
             <h1>Deutsches Stellenregister</h1>
           </div>
         </header>

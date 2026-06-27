@@ -179,7 +179,7 @@ const defaultEmailTemplate = {
   subject: "",
   agencyName: "",
   greeting: "Guten Morgen",
-  intro: "hier sind Ihre neuesten relevanten Stellenangebote fuer heute.",
+  intro: "hier sind Ihre neuesten relevanten Stellenangebote für heute.",
   showSalary: true,
   showLocation: true,
   showApplyLink: true,
@@ -513,7 +513,7 @@ export default function Home({ initialShowcase, platformInsights }) {
           identifier: job.reference
             ? {
                 "@type": "PropertyValue",
-                name: "Bundesagentur fuer Arbeit",
+                name: "Bundesagentur für Arbeit",
                 value: job.reference,
               }
             : undefined,
@@ -1878,11 +1878,11 @@ export default function Home({ initialShowcase, platformInsights }) {
               <AlertTriangle size={42} />
             </div>
             <h3>Keine passenden Stellenangebote gefunden</h3>
-            <p>Die Suche wurde erfolgreich ausgefuehrt, liefert mit den aktuellen Kriterien jedoch keine passenden Treffer.</p>
+            <p>Die Suche wurde erfolgreich ausgeführt, liefert mit den aktuellen Kriterien jedoch keine passenden Treffer.</p>
             <ul className="zero-actions">
-              <li>Pruefen Sie die Schreibweise von Beruf und Standort.</li>
+              <li>Prüfen Sie die Schreibweise von Beruf und Standort.</li>
               <li>Deaktivieren Sie "Nur exakte Standorte", wenn auch angrenzende Orte relevant sind.</li>
-              <li>Verwenden Sie einen allgemeineren Suchbegriff fuer eine breitere Recherche.</li>
+              <li>Verwenden Sie einen allgemeineren Suchbegriff für eine breitere Recherche.</li>
             </ul>
           </div>
         ) : (
@@ -1892,7 +1892,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                 <Search size={42} />
               </div>
               <h3>Aktuelle Stellenangebote</h3>
-              <p>Starten Sie eine Suche nach Beruf und Standort, um relevante Stellenangebote sofort zu pruefen, zu exportieren, als Favorit zu speichern oder per Job-Alarm zu verfolgen.</p>
+              <p>Starten Sie eine Suche nach Beruf und Standort, um relevante Stellenangebote sofort zu prüfen, zu exportieren, als Favorit zu speichern oder per Job-Alarm zu verfolgen.</p>
             </div>
 
             <section className="insights-strip" aria-label="Produkt- und Vertrauensmerkmale">
@@ -1959,7 +1959,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                 <article className="showcase-list-card">
                   <p className="eyebrow">Trends</p>
                   <ul>
-                    {(initialShowcase?.trends?.length ? initialShowcase.trends : ["Live-Daten stehen fuer Ihre Recruiting-Suche bereit."]).map((entry) => (
+                    {(initialShowcase?.trends?.length ? initialShowcase.trends : ["Live-Daten stehen für Ihre Recruiting-Suche bereit."]).map((entry) => (
                       <li key={entry}><span>{entry}</span></li>
                     ))}
                   </ul>
@@ -1971,7 +1971,7 @@ export default function Home({ initialShowcase, platformInsights }) {
 
         <ClientErrorBoundary
           compact
-          title="Der Job-Alarm-Bereich ist temporaer gestoert."
+          title="Der Job-Alarm-Bereich ist temporär gestört."
           description="Die Suche und der CSV-Export bleiben nutzbar. Laden Sie den Alarm-Bereich separat neu."
         >
           <AlertManager
