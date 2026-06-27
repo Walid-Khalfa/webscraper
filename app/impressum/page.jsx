@@ -1,9 +1,16 @@
-import Link from "next/link";
+import ProductTopbar from "../../components/ProductTopbar";
+import SiteFooter from "../../components/SiteFooter";
+import { legalContact, legalFieldsMissing } from "../../lib/site-config";
 
 export const metadata = {
-  title: "Impressum | KhalfaJobs",
-  description: "Rechtliche Angaben und Impressum für den Online-Dienst KhalfaJobs gemäß § 5 TMG.",
-  robots: { index: false, follow: true },
+  title: "Impressum",
+  description: "Impressum und Anbieterkennzeichnung für KhalfaJobs.",
+  alternates: { canonical: "/impressum" },
+  openGraph: {
+    title: "Impressum | KhalfaJobs",
+    description: "Impressum und Anbieterkennzeichnung für KhalfaJobs.",
+    url: "/impressum",
+  },
 };
 
 export default function ImpressumPage() {
@@ -15,96 +22,78 @@ export default function ImpressumPage() {
         <span>INFO</span>
       </aside>
       <article className="workspace legal-page">
-        <Link className="back-link" href="/">
-          ← Zurück zur Recruiting-Suche
-        </Link>
-        <header className="job-detail-hero" style={{ marginBottom: "30px" }}>
+        <ProductTopbar />
+        <header className="job-detail-hero legal-hero">
           <p className="eyebrow">Gesetzliche Angaben</p>
-          <h1 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", margin: "10px 0" }}>Impressum</h1>
-          <p>Angaben gemäß § 5 TMG und Verantwortlichkeit für den Inhalt.</p>
+          <h1>Impressum</h1>
+          <p>Die Pflichtangaben für den deutschen Markt sind sichtbar angelegt und müssen vor dem Live-Betrieb mit den echten Unternehmensdaten vervollständigt werden.</p>
         </header>
 
-        <section className="job-detail-section" style={{ display: "grid", gap: "24px", lineHeight: "1.6" }}>
+        {legalFieldsMissing.length ? (
+          <section className="compliance-note" aria-label="Offene Pflichtangaben">
+            <strong>Vor Veröffentlichung ergänzen:</strong>
+            <ul>
+              {legalFieldsMissing.map(([label]) => (
+                <li key={label}>{label}</li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        <section className="job-detail-section legal-grid">
           <div>
-            <h2 style={{ fontSize: "1.5rem", borderBottom: "3px solid var(--line)", paddingBottom: "8px", marginBottom: "12px" }}>
-              Diensteanbieter
-            </h2>
+            <h2>Diensteanbieter</h2>
             <p>
-              <strong>KhalfaJobs</strong><br />
-              Walid Khalfa<br />
-              c/o WebScraper Project Team<br />
-              Musterstraße 12<br />
-              10115 Berlin<br />
-              Deutschland
+              <strong>{legalContact.businessName}</strong><br />
+              {legalContact.ownerName}<br />
+              {legalContact.street}<br />
+              {legalContact.postalCode} {legalContact.city}<br />
+              {legalContact.country}
             </p>
           </div>
 
           <div>
-            <h2 style={{ fontSize: "1.5rem", borderBottom: "3px solid var(--line)", paddingBottom: "8px", marginBottom: "12px" }}>
-              Kontakt
-            </h2>
+            <h2>Kontakt</h2>
             <p>
-              E-Mail: <a href="mailto:alerts@khalfajobs.me" style={{ color: "var(--signal-dark)", textDecoration: "underline" }}>alerts@khalfajobs.me</a><br />
-              Telefon: +49 (0) 30 12345678 (Dummy-Support)<br />
-              Webseite: <a href="https://emploi-agences-next.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: "var(--signal-dark)", textDecoration: "underline" }}>https://emploi-agences-next.vercel.app</a>
+              E-Mail: <a href={`mailto:${legalContact.email}`}>{legalContact.email}</a><br />
+              Telefon: {legalContact.phone}<br />
+              Website: <a href={legalContact.website}>{legalContact.website}</a>
             </p>
           </div>
 
           <div>
-            <h2 style={{ fontSize: "1.5rem", borderBottom: "3px solid var(--line)", paddingBottom: "8px", marginBottom: "12px" }}>
-              Vertretungsberechtigte Person
-            </h2>
-            <p>Walid Khalfa (Inhaber / Projektleiter)</p>
-          </div>
-
-          <div>
-            <h2 style={{ fontSize: "1.5rem", borderBottom: "3px solid var(--line)", paddingBottom: "8px", marginBottom: "12px" }}>
-              Register und Steuern
-            </h2>
+            <h2>Verantwortlich für den Inhalt</h2>
             <p>
-              <strong>Registergericht:</strong> Amtsgericht Berlin-Charlottenburg<br />
-              <strong>Registernummer:</strong> HRB 123456 B (Dummy)<br />
-              <strong>Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG:</strong> DE 123456789 (Dummy)
+              {legalContact.contentResponsible}<br />
+              {legalContact.street}<br />
+              {legalContact.postalCode} {legalContact.city}
             </p>
           </div>
 
           <div>
-            <h2 style={{ fontSize: "1.5rem", borderBottom: "3px solid var(--line)", paddingBottom: "8px", marginBottom: "12px" }}>
-              Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
-            </h2>
+            <h2>Register und Umsatzsteuer</h2>
             <p>
-              Walid Khalfa<br />
-              Musterstraße 12<br />
-              10115 Berlin
+              Registergericht: {legalContact.commercialRegisterCourt}<br />
+              Registernummer: {legalContact.commercialRegisterNumber}<br />
+              USt-IdNr. gemäß § 27a UStG: {legalContact.vatId}
             </p>
           </div>
 
           <div>
-            <h2 style={{ fontSize: "1.5rem", borderBottom: "3px solid var(--line)", paddingBottom: "8px", marginBottom: "12px" }}>
-              Haftung und Streitschlichtung
-            </h2>
+            <h2>Streitschlichtung</h2>
             <p>
-              Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit, die Sie unter{" "}
-              <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer" style={{ color: "var(--signal-dark)", textDecoration: "underline" }}>
-                https://ec.europa.eu/consumers/odr
-              </a>{" "}
-              finden. Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
-            </p>
-          </div>
-
-          <div>
-            <h2 style={{ fontSize: "1.5rem", borderBottom: "3px solid var(--line)", paddingBottom: "8px", marginBottom: "12px" }}>
-              Hoster
-            </h2>
-            <p>
-              Vercel Inc.<br />
-              650 2nd St<br />
-              San Francisco, CA 94107<br />
-              USA<br />
-              E-Mail: support@vercel.com
+              Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung bereit:
+              {" "}
+              <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer">
+                ec.europa.eu/consumers/odr
+              </a>.
+              {" "}
+              Eine Teilnahme an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle erfolgt nur, wenn dies gesetzlich erforderlich ist.
             </p>
           </div>
         </section>
+
+        <SiteFooter />
       </article>
     </main>
   );

@@ -14,7 +14,7 @@ function startOfWeek() {
 }
 
 function relativeFrom(date) {
-  if (!date) return "Noch keine Aktivitaet";
+  if (!date) return "Noch keine Aktivität";
   const diffMs = Date.now() - new Date(date).getTime();
   const minutes = Math.max(0, Math.round(diffMs / 60000));
   if (minutes <= 1) return "Vor weniger als 1 Minute";
@@ -121,7 +121,7 @@ export async function getPlatformInsights() {
       exportsToday: 0,
       alertsSentToday: 0,
       searchHitsWeek: 0,
-      lastActivityLabel: "Noch keine Aktivitaet",
+      lastActivityLabel: "Noch keine Aktivität",
     };
   }
 }

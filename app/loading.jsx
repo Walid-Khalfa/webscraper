@@ -11,8 +11,8 @@ export default function Loading() {
       <section className="workspace">
         <header className="masthead">
           <div>
-            <p className="eyebrow">Öffentliche Suche der Bundesagentur für Arbeit</p>
-            <h1>Deutsches Stellenregister</h1>
+            <p className="eyebrow">Jobsuche für Recruiting-Agenturen</p>
+            <h1>KhalfaJobs wird geladen</h1>
           </div>
         </header>
         <section className="results-grid" aria-label="Anwendung wird geladen">

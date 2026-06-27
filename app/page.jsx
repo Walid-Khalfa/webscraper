@@ -3,8 +3,7 @@ import ClientErrorBoundary from "../components/ClientErrorBoundary";
 import { unstable_cache } from "next/cache";
 import { extractJobItems, normalizeJob, searchJobs } from "./api/_lib/ba";
 import { getPlatformInsights } from "./api/_lib/product-insights";
-
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://emploi-agences-next.vercel.app";
+import { appUrl, defaultDescription, siteName } from "../lib/site-config";
 const showcaseQueries = [
   { keyword: "Softwareentwickler", location: "Berlin" },
   { keyword: "Pflegefachkraft", location: "Hamburg" },
@@ -13,18 +12,16 @@ const showcaseQueries = [
 ];
 
 export const metadata = {
-  title: "Deutsches Stellenregister | Live-Stellensuche für Recruiting-Teams",
-  description:
-    "Durchsuchen Sie aktuelle Stellenangebote der Bundesagentur für Arbeit in Echtzeit, exportieren Sie passende Treffer als CSV und aktivieren Sie Job-Alarme für Recruiting-Teams.",
+  title: "KhalfaJobs – Jobsuche für Recruiting-Agenturen",
+  description: defaultDescription,
   alternates: {
-    canonical: appUrl,
+    canonical: "/",
   },
   openGraph: {
-    title: "Deutsches Stellenregister | Live-Stellensuche für Recruiting-Teams",
-    description:
-      "Live-Suche, CSV-Export und Job-Alarme für Stellenangebote der Bundesagentur für Arbeit.",
-    url: appUrl,
-    siteName: "KhalfaJobs",
+    title: "KhalfaJobs – Jobsuche für Recruiting-Agenturen",
+    description: defaultDescription,
+    url: "/",
+    siteName,
     locale: "de_DE",
     type: "website",
   },
@@ -37,14 +34,14 @@ function structuredData() {
       {
         "@type": "Organization",
         "@id": `${appUrl}/#organization`,
-        name: "KhalfaJobs",
+        name: siteName,
         url: appUrl,
         email: "alerts@khalfajobs.me",
       },
       {
         "@type": "WebSite",
         "@id": `${appUrl}/#website`,
-        name: "KhalfaJobs",
+        name: siteName,
         url: appUrl,
         publisher: { "@id": `${appUrl}/#organization` },
         inLanguage: "de-DE",
@@ -52,18 +49,6 @@ function structuredData() {
           "@type": "SearchAction",
           target: `${appUrl}/?keyword={search_term_string}&location={search_location}`,
           "query-input": "required name=search_term_string",
-        },
-      },
-      {
-        "@type": "WebApplication",
-        name: "Deutsches Stellenregister",
-        url: appUrl,
-        applicationCategory: "BusinessApplication",
-        operatingSystem: "Any",
-        offers: {
-          "@type": "Offer",
-          price: "0",
-          priceCurrency: "EUR",
         },
       },
     ],
@@ -114,7 +99,7 @@ async function getShowcaseData() {
         employer: job.Arbeitgeber || "Arbeitgeber nicht genannt",
         location: job.Ort || "Standort nicht genannt",
         occupation: job.Beruf || "",
-        salary: job.Gehalt || "Keine Verguetung angegeben",
+        salary: job.Gehalt || "Keine Vergütung angegeben",
         url: job.URL || "",
       }));
 

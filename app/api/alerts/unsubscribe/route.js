@@ -34,7 +34,7 @@ export async function GET(request) {
         <body>
           <main>
             <h1>Job-Alarm abbestellt</h1>
-            <p>Dieser KhalfaJobs Job-Alarm wurde deaktiviert. Sie erhalten dafuer keine weiteren automatischen Stellenangebote per E-Mail.</p>
+            <p>Dieser KhalfaJobs Job-Alarm wurde deaktiviert. Sie erhalten dafür keine weiteren automatischen Stellenangebote per E-Mail.</p>
           </main>
         </body>
       </html>`,

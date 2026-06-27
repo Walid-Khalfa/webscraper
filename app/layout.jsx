@@ -1,19 +1,23 @@
 import "./globals.css";
 import PwaRegistration from "../components/PwaRegistration";
-
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://emploi-agences-next.vercel.app";
+import { appUrl, defaultDescription, defaultTitle, siteName } from "../lib/site-config";
 
 export const metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "Deutsches Stellenregister | KhalfaJobs",
-    template: "%s | KhalfaJobs",
+    default: defaultTitle,
+    template: `%s | ${siteName}`,
   },
-  description: "Professionelle Live-Suche für Stellenangebote mit CSV-Export und Job-Alarmen für Arbeitsvermittlungen und Recruiting-Teams.",
+  description: defaultDescription,
   manifest: "/manifest.webmanifest",
   robots: {
     index: true,
     follow: true,
+  },
+  openGraph: {
+    siteName,
+    locale: "de_DE",
+    type: "website",
   },
 };
 

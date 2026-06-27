@@ -23,7 +23,7 @@ export async function GET(request) {
         <head>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <title>E-Mail bestaetigt</title>
+          <title>E-Mail bestätigt</title>
           <style>
             body { margin: 0; font-family: Arial, sans-serif; background: #f4f1ea; color: #1f1d1a; }
             main { max-width: 640px; margin: 12vh auto; padding: 32px; background: #fffaf1; border: 2px solid #1f1d1a; }
@@ -33,8 +33,8 @@ export async function GET(request) {
         </head>
         <body>
           <main>
-            <h1>E-Mail-Adresse bestaetigt</h1>
-            <p>Die Agentur wurde erfolgreich verifiziert. Ab sofort koennen Job-Alarme aktiviert und automatische KhalfaJobs E-Mails versendet werden.</p>
+            <h1>E-Mail-Adresse bestätigt</h1>
+            <p>Die Agentur wurde erfolgreich verifiziert. Ab sofort können Job-Alarme aktiviert und automatische KhalfaJobs E-Mails versendet werden.</p>
           </main>
         </body>
       </html>`,

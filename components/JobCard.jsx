@@ -17,7 +17,7 @@ export default function JobCard({
   onCycleStatus,
 }) {
   const detailUrl = job.reference ? `/jobs/${encodeURIComponent(job.reference)}` : "";
-  const hasSalary = job.salary && job.salary !== "Keine Verguetung angegeben";
+  const hasSalary = job.salary && job.salary !== "Keine Vergütung angegeben";
   const compact = viewMode === "list" || viewMode === "kanban";
 
   return (
@@ -25,7 +25,7 @@ export default function JobCard({
       <div className="job-card-top">
         <div className="job-card-reference-stack">
           {detailUrl ? (
-            <a className="reference" href={detailUrl} aria-label={`${job.title} Detailseite oeffnen`}>
+            <a className="reference" href={detailUrl} aria-label={`${job.title} Detailseite öffnen`}>
               {job.reference}
             </a>
           ) : (
@@ -43,7 +43,7 @@ export default function JobCard({
             {isFavorite ? <Star size={18} /> : <Heart size={18} />}
           </button>
           {detailUrl ? (
-            <a className="icon-link" href={detailUrl} aria-label="SEO-Detailseite oeffnen">
+            <a className="icon-link" href={detailUrl} aria-label="SEO-Detailseite öffnen">
               <ExternalLink size={18} />
             </a>
           ) : null}
@@ -60,11 +60,11 @@ export default function JobCard({
         <MapPin size={18} aria-hidden="true" />
         <span>{job.location}</span>
       </div>
-      <div className={`meta-line salary-line${job.salary === "Keine Verguetung angegeben" ? " muted-salary" : ""}`}>
+      <div className={`meta-line salary-line${job.salary === "Keine Vergütung angegeben" ? " muted-salary" : ""}`}>
         <WalletCards size={18} aria-hidden="true" />
         <div className="salary-stack">
-          <span>{job.salary || "Keine Verguetung angegeben"}</span>
-          {hasSalary ? <small className="salary-badge">Verguetung standardisiert</small> : null}
+          <span>{job.salary || "Keine Vergütung angegeben"}</span>
+          {hasSalary ? <small className="salary-badge">Vergütung standardisiert</small> : null}
         </div>
       </div>
 
@@ -89,7 +89,7 @@ export default function JobCard({
               href={job.url}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`${job.title} bei der Quelle oeffnen`}
+              aria-label={`${job.title} bei der Quelle öffnen`}
             >
               Zur Stelle
             </a>

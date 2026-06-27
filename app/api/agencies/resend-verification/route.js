@@ -10,10 +10,10 @@ export async function POST(request) {
     await assertRateLimit(request, "agency-resend-verification", { max: 5, windowMs: 10 * 60_000, keySuffix: agencyKey(request) || "" });
     const agency = await getAgency(agencyKey(request));
     if (agency.email_verified) {
-      return json({ already_verified: true, message: "Die E-Mail-Adresse ist bereits bestaetigt." });
+      return json({ already_verified: true, message: "Die E-Mail-Adresse ist bereits bestätigt." });
     }
 
-    const subject = "Bitte bestaetigen Sie Ihre E-Mail-Adresse fuer KhalfaJobs";
+    const subject = "Bitte bestätigen Sie Ihre E-Mail-Adresse für KhalfaJobs";
     const delivery = await sendEmail({
       to: agency.email,
       subject,

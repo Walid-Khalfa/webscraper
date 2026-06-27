@@ -1,6 +1,5 @@
 import { extractJobItems, normalizeJob, searchJobs } from "./api/_lib/ba";
-
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://emploi-agences-next.vercel.app";
+import { appUrl } from "../lib/site-config";
 
 export default async function sitemap() {
   const now = new Date();
@@ -27,6 +26,36 @@ export default async function sitemap() {
       lastModified: now,
       changeFrequency: "daily",
       priority: 1,
+    },
+    {
+      url: `${appUrl}/pricing`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${appUrl}/datenquelle`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${appUrl}/impressum`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: `${appUrl}/datenschutz`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: `${appUrl}/kontakt`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.5,
     },
     ...jobUrls,
   ];

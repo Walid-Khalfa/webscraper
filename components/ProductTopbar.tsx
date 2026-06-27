@@ -1,43 +1,32 @@
-import ThemeSwitcher from "./ThemeSwitcher";
-
-type ThemeEntry = {
-  id: string;
-  label: string;
-};
+import Link from "next/link";
 
 type ProductTopbarProps = {
-  themes: ThemeEntry[];
-  activeTheme: string;
-  onThemeChange: (themeId: string) => void;
-  hasAgency: boolean;
-  onToggleWorkspace: () => void;
+  onToggleWorkspace?: () => void;
 };
 
 export default function ProductTopbar({
-  themes,
-  activeTheme,
-  onThemeChange,
-  hasAgency,
   onToggleWorkspace,
 }: ProductTopbarProps) {
   return (
     <div className="product-topbar">
-      <a href="#top" className="product-brand">
+      <Link href="/" className="product-brand">
         KhalfaJobs für Personalvermittlungen
-      </a>
-      <nav className="product-nav" aria-label="Primaere Navigation">
-        <a href="#suche" className="topbar-link">Suche</a>
-        <a href="#ergebnisse" className="topbar-link">Ergebnisse</a>
-        <a href="#job-alarm" className="topbar-link" onClick={onToggleWorkspace}>
-          {hasAgency ? "Workspace" : "Job-Alarm"}
+      </Link>
+      <nav className="product-nav" aria-label="Primäre Navigation">
+        <Link href="/" className="topbar-link">Suche</Link>
+        <a href="/#ergebnisse" className="topbar-link">Ergebnisse</a>
+        <a
+          href="/#job-alarm"
+          className="topbar-link"
+          onClick={onToggleWorkspace}
+        >
+          Job-Alarm
         </a>
-        <a href="#datenquelle" className="topbar-link">Datenquelle</a>
-        <a href="/impressum" className="topbar-link">Impressum</a>
-        <a href="/datenschutz" className="topbar-link">Datenschutz</a>
+        <Link href="/pricing" className="topbar-link">Preise</Link>
+        <Link href="/datenquelle" className="topbar-link">Datenquelle</Link>
+        <Link href="/impressum" className="topbar-link">Impressum</Link>
+        <Link href="/datenschutz" className="topbar-link">Datenschutz</Link>
       </nav>
-      {process.env.NODE_ENV !== "production" && (
-        <ThemeSwitcher themes={themes} activeTheme={activeTheme} onChange={onThemeChange} />
-      )}
     </div>
   );
 }

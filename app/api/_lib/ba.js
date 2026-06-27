@@ -145,7 +145,7 @@ export async function searchJobs({ keyword, location, page = 1, size = 25 }) {
     const status = [401, 403].includes(response.status) ? 502 : response.status >= 500 ? 503 : 502;
     const message =
       response.status >= 500
-        ? "Die Bundesagentur-API ist momentan nicht verfuegbar. Bitte versuchen Sie es spaeter erneut."
+        ? "Die Bundesagentur-API ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut."
         : "Die Bundesagentur-API konnte die Anfrage nicht erfolgreich verarbeiten.";
     throw createAppError(`${message} (${response.status}) ${text.slice(0, 180)}`.trim(), status, "BA_UPSTREAM_ERROR");
   }
@@ -234,7 +234,7 @@ function normalizeSalary(item) {
 
   if (from || to) return `${from ? formatEuro(from) : ""}${from && to ? " - " : ""}${to ? formatEuro(to) : ""} ${suffix}`.trim();
   if (fixed) return `${formatEuro(fixed)} ${suffix}`.trim();
-  return "Keine Verguetung angegeben";
+  return "Keine Vergütung angegeben";
 }
 
 function collectUniqueStrings(values) {

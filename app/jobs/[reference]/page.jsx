@@ -1,11 +1,10 @@
 import { notFound } from "next/navigation";
 import { Building2, BriefcaseBusiness, CalendarDays, ExternalLink, MapPin, WalletCards } from "lucide-react";
 import { findJobByReference, flatten, normalizeJob, valueAt } from "../../api/_lib/ba";
+import { appUrl } from "../../../lib/site-config";
 
 export const runtime = "nodejs";
 export const revalidate = 300;
-
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://emploi-agences-next.vercel.app";
 
 function toIsoDate(value) {
   if (!value) return undefined;
@@ -35,7 +34,7 @@ function buildDescription(job, raw) {
   return [
     `${job.Titel || "Stellenangebot"} bei ${job.Arbeitgeber || "Arbeitgeber nicht genannt"} in ${job.Ort || "Deutschland"}.`,
     job.Beruf ? `Beruf: ${job.Beruf}.` : "",
-    job.Gehalt && job.Gehalt !== "Keine Verguetung angegeben" ? `Verguetung: ${job.Gehalt}.` : "",
+    job.Gehalt && job.Gehalt !== "Keine Vergütung angegeben" ? `Vergütung: ${job.Gehalt}.` : "",
     flatten(valueAt(raw, ["stellenangebotsart"])) ? `Angebotsart: ${flatten(valueAt(raw, ["stellenangebotsart"]))}.` : "",
   ]
     .filter(Boolean)

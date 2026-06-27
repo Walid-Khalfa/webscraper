@@ -93,7 +93,7 @@ export function buildAgencyVerificationHtml({ agency }) {
   const escapedAgency = escapeHtml(agency.name);
 
   return `
-    <div style="display:none; max-height:0; overflow:hidden;">Bestaetigen Sie Ihre E-Mail-Adresse fuer KhalfaJobs.</div>
+    <div style="display:none; max-height:0; overflow:hidden;">Bestätigen Sie Ihre E-Mail-Adresse für KhalfaJobs.</div>
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f1ea; margin:0; padding:28px 0;">
       <tr>
         <td align="center">
@@ -101,18 +101,18 @@ export function buildAgencyVerificationHtml({ agency }) {
             <tr>
               <td style="padding: 28px 32px 18px; background:#1f1d1a; color:#fffaf1;">
                 <div style="font: 700 13px Arial, sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#ffce45;">KhalfaJobs Verifizierung</div>
-                <h1 style="margin:10px 0 0; font: 700 30px Arial, sans-serif;">E-Mail-Adresse bestaetigen</h1>
+                <h1 style="margin:10px 0 0; font: 700 30px Arial, sans-serif;">E-Mail-Adresse bestätigen</h1>
               </td>
             </tr>
             <tr>
               <td style="padding: 26px 32px 32px; color:#1f1d1a; font:16px Arial, sans-serif; line-height:1.6;">
                 <p style="margin:0 0 16px;">Guten Tag ${escapedAgency},</p>
-                <p style="margin:0 0 16px;">bitte bestaetigen Sie zuerst Ihre E-Mail-Adresse, bevor fuer Ihre Agentur automatische Job-Alarme aktiviert werden.</p>
+                <p style="margin:0 0 16px;">bitte bestätigen Sie zuerst Ihre E-Mail-Adresse, bevor für Ihre Agentur automatische Job-Alarme aktiviert werden.</p>
                 <p style="margin:0 0 24px;">Ohne diese Verifizierung werden keine Recruiting-Digests von KhalfaJobs versendet.</p>
                 <a href="${verificationUrl}" style="display:inline-block; background:#df4829; color:#ffffff; font:700 15px Arial, sans-serif; text-decoration:none; padding:14px 18px; border:2px solid #1f1d1a;">
-                  E-Mail-Adresse bestaetigen
+                  E-Mail-Adresse bestätigen
                 </a>
-                <p style="margin:24px 0 0; color:#6b665c; font-size:13px;">Falls Sie diese Registrierung nicht gestartet haben, koennen Sie diese E-Mail ignorieren.</p>
+                <p style="margin:24px 0 0; color:#6b665c; font-size:13px;">Falls Sie diese Registrierung nicht gestartet haben, können Sie diese E-Mail ignorieren.</p>
               </td>
             </tr>
           </table>
@@ -129,15 +129,15 @@ export function buildDigestHtml({ agency, subscription, rows }) {
   const escapedKeyword = escapeHtml(subscription.keyword);
   const escapedLocation = escapeHtml(subscription.location);
   const preheader = rows.length
-    ? `${rows.length} neue Stellenangebote fuer ${subscription.keyword} in ${subscription.location}`
-    : `Keine neuen Stellenangebote fuer ${subscription.keyword} in ${subscription.location}`;
+    ? `${rows.length} neue Stellenangebote für ${subscription.keyword} in ${subscription.location}`
+    : `Keine neuen Stellenangebote für ${subscription.keyword} in ${subscription.location}`;
 
   const footer = `
     <tr>
       <td style="padding: 24px 32px 32px; color: #6b665c; font: 13px Arial, sans-serif; line-height: 1.6; border-top: 1px solid #e3ded3;">
         <strong>KhalfaJobs</strong><br />
-        Automatisierte Stellenangebote aus der Bundesagentur fuer Arbeit fuer registrierte Agenturen.<br />
-        Sie erhalten diese E-Mail, weil fuer Ihre Agentur ein Job-Alarm aktiv ist.
+        Automatisierte Stellenangebote aus der Bundesagentur für Arbeit für registrierte Agenturen.<br />
+        Sie erhalten diese E-Mail, weil für Ihre Agentur ein Job-Alarm aktiv ist.
         <a href="${unsubscribeUrl}" style="color: #b5361f; text-decoration: underline;">Job-Alarm abbestellen</a>.<br /><br />
         <a href="${appBaseUrl}" style="display:inline-block; background:#f5c542; color:#1f1d1a; font:700 13px Arial, sans-serif; text-decoration:none; padding:10px 14px; border:2px solid #1f1d1a;">
           Eigenen Recruiting-Job-Alarm einrichten
@@ -162,7 +162,7 @@ export function buildDigestHtml({ agency, subscription, rows }) {
               <tr>
                 <td style="padding: 28px 32px; color:#1f1d1a; font:16px Arial, sans-serif; line-height:1.6;">
                   <p style="margin:0 0 16px;">Guten Morgen ${escapedAgency},</p>
-                  <p style="margin:0 0 16px;">fuer Ihre Suche <strong>${escapedKeyword}</strong> in <strong>${escapedLocation}</strong> wurden heute keine neuen passenden Stellenangebote gefunden.</p>
+                  <p style="margin:0 0 16px;">für Ihre Suche <strong>${escapedKeyword}</strong> in <strong>${escapedLocation}</strong> wurden heute keine neuen passenden Stellenangebote gefunden.</p>
                   <p style="margin:0;">Wir pruefen morgen automatisch erneut und senden Ihnen nur Ergebnisse aus dem exakt angegebenen Ort.</p>
                 </td>
               </tr>
@@ -186,7 +186,7 @@ export function buildDigestHtml({ agency, subscription, rows }) {
                   <div style="font:700 18px Arial, sans-serif; color:#1f1d1a; line-height:1.25;">${escapeHtml(row.Titel || "Stellenprofil")}</div>
                   <div style="margin-top:8px; font:14px Arial, sans-serif; color:#4d6570;">${escapeHtml(row.Arbeitgeber || "Arbeitgeber nicht genannt")} · ${escapeHtml(row.Ort || "Standort nicht genannt")}</div>
                   <div style="margin-top:6px; font:13px Arial, sans-serif; color:#6b665c;">${escapeHtml(row.Beruf || "Beruf nicht genannt")}</div>
-                  ${row.Gehalt && row.Gehalt !== "Keine Verguetung angegeben" ? `<div style="margin-top:8px; font:700 14px Arial, sans-serif; color:#b5361f;">${escapeHtml(row.Gehalt)}</div>` : ""}
+                  ${row.Gehalt && row.Gehalt !== "Keine Vergütung angegeben" ? `<div style="margin-top:8px; font:700 14px Arial, sans-serif; color:#b5361f;">${escapeHtml(row.Gehalt)}</div>` : ""}
                 </td>
                 <td align="right" style="width:140px; vertical-align:middle;">
                   ${

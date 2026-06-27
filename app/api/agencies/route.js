@@ -11,7 +11,7 @@ export async function POST(request) {
     await assertRateLimit(request, "agency-create", { max: 10, windowMs: 60_000 });
     const payload = parseWithSchema(agencyCreateSchema, await request.json());
     const agency = await createAgency(payload);
-    const subject = "Bitte bestaetigen Sie Ihre E-Mail-Adresse fuer KhalfaJobs";
+    const subject = "Bitte bestätigen Sie Ihre E-Mail-Adresse für KhalfaJobs";
     const delivery = await sendEmail({
       to: agency.email,
       subject,

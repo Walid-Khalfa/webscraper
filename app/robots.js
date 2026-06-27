@@ -1,4 +1,4 @@
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://emploi-agences-next.vercel.app";
+import { appUrl } from "../lib/site-config";
 
 export default function robots() {
   return {

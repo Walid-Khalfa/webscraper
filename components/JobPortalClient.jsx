@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
@@ -31,10 +32,12 @@ import {
 import JobCard from "./JobCard";
 import JobCardSkeleton from "./JobCardSkeleton";
 import ProductTopbar from "./ProductTopbar";
+import SiteFooter from "./SiteFooter";
 import SearchPanel from "./SearchPanel";
 import ToastStack from "./ToastStack";
 import { trackEvent } from "./analytics";
 import ClientErrorBoundary from "./ClientErrorBoundary";
+import { pricingPlans, recruitingBenefits, recruitingUseCases } from "../lib/site-config";
 
 const Dashboard = dynamic(() => import("./Dashboard"));
 const KanbanBoard = dynamic(() => import("./KanbanBoard"), {
@@ -68,10 +71,10 @@ const keywordSuggestions = [
   "Hebamme",
   "Physiotherapeut",
   "Ergotherapeut",
-  "Logopaede",
+  "Logopäde",
   "Radiologieassistent",
-  "Notfallsanitaeter",
-  "Rettungssanitaeter",
+  "Notfallsanitäter",
+  "Rettungssanitäter",
   "Apotheker",
   "Elektriker",
   "Mechatroniker",
@@ -81,7 +84,7 @@ const keywordSuggestions = [
   "Produktionsmitarbeiter",
   "Schlosser",
   "CNC-Fachkraft",
-  "Qualitaetsmanager",
+  "Qualitätsmanager",
   "Servicetechniker",
   "Anlagenmechaniker",
   "Kfz-Mechatroniker",
@@ -98,7 +101,7 @@ const keywordSuggestions = [
   "Projektleiter",
   "Account Manager",
   "Key Account Manager",
-  "Einkaeufer",
+  "Einkäufer",
   "Marketing Manager",
   "Customer Success Manager",
   "Fachinformatiker",
@@ -165,11 +168,6 @@ const statusLabels = {
   interview: "Interview",
   closed: "Abgelehnt / Angebot",
 };
-const themes = [
-  { id: "brutalist", label: "Brutalistisch" },
-  { id: "cyberpunk", label: "Cyberpunk" },
-  { id: "hacker", label: "Retro Hacker" },
-];
 const viewModes = [
   { id: "grid", label: "Gitter", icon: LayoutGrid },
   { id: "list", label: "Liste", icon: List },
@@ -331,7 +329,7 @@ function normalizeSalary(item) {
 
   if (from || to) return `${from ? formatEuro(from) : ""}${from && to ? " - " : ""}${to ? formatEuro(to) : ""} ${suffix}`.trim();
   if (fixed) return `${formatEuro(fixed)} ${suffix}`.trim();
-  return "Keine Verguetung angegeben";
+  return "Keine Vergütung angegeben";
 }
 
 function normalizeJob(item) {
@@ -380,8 +378,8 @@ function formatLastUpdated(value) {
 
 function formatFrequencyLabel(value) {
   const normalized = String(value || "").toLocaleLowerCase("de-DE");
-  if (normalized === "daily") return "Taeglich";
-  if (normalized === "weekly") return "Woechentlich";
+  if (normalized === "daily") return "Täglich";
+  if (normalized === "weekly") return "Wöchentlich";
   if (normalized === "monthly") return "Monatlich";
   return value || "Individuell";
 }
@@ -458,7 +456,6 @@ export default function Home({ initialShowcase, platformInsights }) {
   const [saasLoading, setSaasLoading] = useState(false);
   const [verificationSending, setVerificationSending] = useState(false);
   const [toasts, setToasts] = useState([]);
-  const [theme, setTheme] = useState("brutalist");
   const [viewMode, setViewMode] = useState("grid");
   const [isConsoleOpen, setIsConsoleOpen] = useState(false);
   const [consoleLogs, setConsoleLogs] = useState([]);
@@ -624,38 +621,24 @@ export default function Home({ initialShowcase, platformInsights }) {
   const workspaceReporting = workspaceData?.reporting || null;
   const commercialInsights = useMemo(
     () => [
+      ...recruitingBenefits,
       {
-        label: "Datenquelle",
-        value: "Bundesagentur für Arbeit",
-        description: "Offizielle Stellenangebote als Basis für professionelle Recruiting-Recherchen.",
-      },
-      {
-        label: "API-Status",
-        value: "Live verbunden",
-        description: "Suchanfragen werden direkt gegen die aktuelle BA-Datenquelle verarbeitet.",
-      },
-      {
-        label: "Aktive Job-Alarme",
+        label: "Job-Alarm",
         value: platformInsights?.activeAlerts ? `${platformInsights.activeAlerts} aktiv` : "Sofort einrichtbar",
-        description: "Passende Stellenangebote können täglich automatisiert per E-Mail zugestellt werden.",
-      },
-      {
-        label: "Agentur-Zugänge",
-        value: platformInsights?.activeAgencies ? `${platformInsights.activeAgencies} aktiv` : "SaaS-bereit",
-        description: "Mehrere Recruiting-Arbeitsbereiche lassen sich zentral verwalten und absichern.",
+        description: "Wiederkehrende Recherchen lassen sich per E-Mail automatisch überwachen.",
       },
       {
         label: "Standortfilter",
-        value: "Nur exakte Treffer",
-        description: "Recruiting-Teams können Ergebnisse strikt auf den gewünschten Ort begrenzen.",
+        value: "Exakt oder regional",
+        description: "Ergebnisse können streng nach Ort oder breiter für Marktbeobachtung bewertet werden.",
       },
       {
         label: "CSV-Export",
         value: "Bis zu 200 Treffer",
-        description: "Serverseitiger Export für Outreach, Shortlists und interne Recruiting-Workflows.",
+        description: "Trefferlisten lassen sich für Outreach, Shortlists und internes Reporting exportieren.",
       },
     ],
-    [platformInsights?.activeAlerts, platformInsights?.activeAgencies],
+    [platformInsights?.activeAlerts],
   );
 
   function pushToast(type, message, persist = false) {
@@ -872,7 +855,6 @@ export default function Home({ initialShowcase, platformInsights }) {
   useEffect(() => {
     const storedAgency = localStorage.getItem("agencyProfile");
     const storedFavorites = localStorage.getItem("jobFavorites");
-    const storedTheme = localStorage.getItem("jobTheme");
     const storedView = localStorage.getItem("jobViewMode");
     const storedEmailTemplate = localStorage.getItem("emailTemplateOpts");
 
@@ -881,7 +863,6 @@ export default function Home({ initialShowcase, platformInsights }) {
       setAgentOpen(true);
     }
     if (storedFavorites) setFavorites(JSON.parse(storedFavorites));
-    if (storedTheme) setTheme(storedTheme);
     if (storedView) setViewMode(storedView);
     if (storedEmailTemplate) {
       setEmailTemplateOpts({ ...defaultEmailTemplate, ...JSON.parse(storedEmailTemplate) });
@@ -895,11 +876,6 @@ export default function Home({ initialShowcase, platformInsights }) {
     if (locationParam) setLocation(locationParam);
     if (exactLocationParam) setExactLocation(exactLocationParam !== "false");
   }, []);
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    localStorage.setItem("jobTheme", theme);
-  }, [theme]);
 
   useEffect(() => {
     if (!agency?.api_key) return;
@@ -1090,7 +1066,7 @@ export default function Home({ initialShowcase, platformInsights }) {
       pushToast(
         "success",
         exportTier === "agentur"
-          ? `CSV-Export heruntergeladen. Ihr Agentur-Zugang enthaelt bis zu ${exportLimit} Treffer pro Export.`
+          ? `CSV-Export heruntergeladen. Ihr Agentur-Zugang enthält bis zu ${exportLimit} Treffer pro Export.`
           : `Starter-Export heruntergeladen. Ohne Agentur-Zugang sind bis zu ${exportLimit} Treffer enthalten.`,
       );
       trackEvent("csv_export_completed", { keyword, location, exactLocation });
@@ -1411,7 +1387,7 @@ export default function Home({ initialShowcase, platformInsights }) {
   function renderSalaryChart() {
     const maxCount = Math.max(...salaryBuckets.map((bucket) => bucket.count), 1);
     return (
-      <svg viewBox="0 0 360 180" className="chart-svg" role="img" aria-label="Verguetungsverteilung">
+      <svg viewBox="0 0 360 180" className="chart-svg" role="img" aria-label="Vergütungsverteilung">
         {salaryBuckets.map((bucket, index) => {
           const height = (bucket.count / maxCount) * 110;
           const x = 20 + index * 82;
@@ -1448,7 +1424,7 @@ export default function Home({ initialShowcase, platformInsights }) {
   }
 
   return (
-    <main className="app-shell theme-shell" data-theme={theme} id="top">
+    <main className="app-shell" id="top">
       {jobPostingJsonLd ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jobPostingJsonLd) }} /> : null}
       <ToastStack toasts={toasts} />
 
@@ -1459,7 +1435,7 @@ export default function Home({ initialShowcase, platformInsights }) {
               <p className="eyebrow">Favorit bearbeiten</p>
               <h3>{activeFavorite.job?.title || activeFavoriteRef}</h3>
             </div>
-            <button className="icon-button" type="button" onClick={() => setActiveFavoriteRef(null)} aria-label="Seitenpanel schliessen">
+            <button className="icon-button" type="button" onClick={() => setActiveFavoriteRef(null)} aria-label="Seitenpanel schließen">
               <PanelRightClose size={18} />
             </button>
           </div>
@@ -1548,13 +1524,9 @@ export default function Home({ initialShowcase, platformInsights }) {
         <ClientErrorBoundary
           compact
           title="Die Topbar konnte nicht geladen werden."
-          description="Navigation und Theme-Umschaltung sind temporär nicht verfügbar."
+          description="Die Hauptnavigation ist temporär nicht verfügbar."
         >
           <ProductTopbar
-            themes={themes}
-            activeTheme={theme}
-            onThemeChange={setTheme}
-            hasAgency={Boolean(agency)}
             onToggleWorkspace={() => {
               setAgentOpen(true);
               trackEvent("agent_configurator_opened");
@@ -1564,22 +1536,23 @@ export default function Home({ initialShowcase, platformInsights }) {
 
         <header className="masthead hero-layout" style={{ marginBottom: "12px" }}>
           <div className="hero-primary" style={{ gap: "4px" }}>
-            <p className="eyebrow">LIVE-STELLENSUCHE FÜR RECRUITING-TEAMS</p>
+            <p className="eyebrow">Jobsuche für Recruiting-Agenturen</p>
             <h1 style={{ margin: 0, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", lineHeight: "1.15" }}>
-              Relevante Stellenangebote für Ihr Recruiting.
+              Relevante Stellenangebote für Ihr Recruiting
             </h1>
             <p className="hero-copy" style={{ margin: "4px 0 0", fontSize: "15px" }}>
-              Live-Suche, CSV-Export bis zu 200 Treffer und automatisierte E-Mail-Alarme für Recruiting-Teams.
+              Durchsuchen Sie aktuelle BA-Stellenangebote, speichern Sie relevante Treffer und exportieren Sie Shortlists für Kundenmandate, Marktbeobachtung und Active Sourcing.
             </p>
           </div>
           <div className="hero-proof" style={{ gap: "8px" }}>
             <div className="sync-badge" style={{ padding: "6px 10px" }}>
               <Clock size={16} aria-hidden="true" />
-              Live-Daten (BA)
+              Live-Daten der BA
             </div>
             <p style={{ fontSize: "13px", margin: 0 }}>
-              ⚡ <strong>+50</strong> Recruiting-Teams aktiv<br />
-              ⚡ <strong>+120.000</strong> Jobs täglich live indexiert
+              Für Recruiting-Teams, Personalberater und HR-Dienstleister entwickelt.
+              <br />
+              Klare Suche, exportierbare Ergebnisse und strukturierte Job-Alarme.
             </p>
           </div>
         </header>
@@ -1618,7 +1591,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                     aria-expanded={openSuggest === "keyword"}
                     aria-controls="keyword-suggestion-list"
                   />
-                  <button className="suggest-toggle" type="button" aria-label="Berufsvorschlaege anzeigen" aria-expanded={openSuggest === "keyword"} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+                  <button className="suggest-toggle" type="button" aria-label="Berufsvorschläge anzeigen" aria-expanded={openSuggest === "keyword"} onMouseDown={(event) => event.preventDefault()} onClick={() => {
                     if (openSuggest === "keyword") {
                       setOpenSuggest(null);
                       setShowAllSuggestions(true);
@@ -1666,7 +1639,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                     aria-expanded={openSuggest === "location"}
                     aria-controls="location-suggestion-list"
                   />
-                  <button className="suggest-toggle" type="button" aria-label="Standortvorschlaege anzeigen" aria-expanded={openSuggest === "location"} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+                  <button className="suggest-toggle" type="button" aria-label="Standortvorschläge anzeigen" aria-expanded={openSuggest === "location"} onMouseDown={(event) => event.preventDefault()} onClick={() => {
                     if (openSuggest === "location") {
                       setOpenSuggest(null);
                       setShowAllSuggestions(true);
@@ -1905,7 +1878,7 @@ export default function Home({ initialShowcase, platformInsights }) {
               ))}
             </section>
 
-            <section className="showcase-grid" aria-label="Marktueberblick">
+            <section className="showcase-grid" aria-label="Marktüberblick">
               <div className="showcase-main">
                 <div className="showcase-header">
                   <div>
@@ -1969,54 +1942,50 @@ export default function Home({ initialShowcase, platformInsights }) {
           </section>
         )}
 
-        {/* Social Proof & Pricing Sections */}
-        {!hasSearched && (
-          <>
-            <section className="social-proof-section" aria-label="Kundenvertrauen" style={{ marginTop: '4rem', marginBottom: '4rem' }}>
-              <div className="zero-state">
-                <div className="zero-illustration" aria-hidden="true" style={{ background: 'var(--success-surface)', color: 'var(--success-border)' }}>
-                  <Users size={42} />
-                </div>
-                <h3>Bereits über 500 Recruiting-Teams vertrauen auf KhalfaJobs</h3>
-                <p>Profitieren auch Sie von Echtzeit-Suchen, direkten BA-Anbindungen und zuverlässigen Job-Alarmen.</p>
-              </div>
-            </section>
+        <section className="credibility-section" aria-label="Einsatzszenarien">
+          <div className="section-heading">
+            <p className="eyebrow">Für Recruiting-Workflows</p>
+            <h2>Für Recruiting-Teams, Personalberater und HR-Dienstleister entwickelt</h2>
+            <p>Statt generischer Versprechen zeigt die Plattform konkrete Einsatzfälle für Recherche, Marktbeobachtung und exportierbare Shortlists.</p>
+          </div>
+          <div className="use-case-grid">
+            {recruitingUseCases.map((useCase) => (
+              <article key={useCase.title} className="use-case-card">
+                <Users size={20} aria-hidden="true" />
+                <h3>{useCase.title}</h3>
+                <p>{useCase.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
 
-            <section className="pricing-section" id="pricing" aria-label="Preise" style={{ marginBottom: '4rem' }}>
-              <div className="zero-state">
-                <div className="zero-illustration" aria-hidden="true" style={{ background: 'var(--accent-surface)', color: 'var(--accent-base)' }}>
-                  <CreditCard size={42} />
+        <section className="pricing-section" id="pricing" aria-label="Preise">
+          <div className="section-heading">
+            <p className="eyebrow">Preise</p>
+            <h2>Klare Pakete für Suche, Alerts und Export</h2>
+            <p>Alle Pakete sind auf Recruiting-Workflows ausgerichtet. Die Agentur-Variante bleibt absichtlich individuell, wenn Teamgröße oder Integrationen abgestimmt werden müssen.</p>
+          </div>
+          <div className="plan-grid">
+            {pricingPlans.map((plan) => (
+              <article key={plan.name} className={`plan-card${plan.highlighted ? " is-highlighted" : ""}`}>
+                <div>
+                  {plan.highlighted ? <span className="plan-badge">Empfohlen</span> : null}
+                  <h3>{plan.name}</h3>
+                  <p className="plan-price">{plan.price}</p>
+                  <p>{plan.description}</p>
+                  <ul className="plan-list">
+                    {plan.features.map((feature) => (
+                      <li key={feature}>{feature}</li>
+                    ))}
+                  </ul>
                 </div>
-                <h3>Transparente Preise für Agenturen</h3>
-                <p>Keine versteckten Kosten. Wählen Sie den Plan, der zu Ihrem Recruiting-Volumen passt.</p>
-              </div>
-              <div className="results-grid" style={{ marginTop: '2rem' }}>
-                <article className="dashboard-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '2rem' }}>
-                  <h4>Starter</h4>
-                  <div style={{ fontSize: '2rem', fontWeight: 800, margin: '1rem 0' }}>Kostenlos</div>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 2rem 0', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <li>Live-Suche</li>
-                    <li>Bis zu 50 CSV-Exporte</li>
-                    <li>1 Job-Alarm</li>
-                  </ul>
-                  <button type="button" className="primary-action" onClick={() => { window.scrollTo({ top: 0 }); document.querySelector('input[type="text"]')?.focus(); }}>Jetzt suchen</button>
-                </article>
-                <article className="dashboard-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '2rem', border: '2px solid var(--accent-base)' }}>
-                  <div style={{ background: 'var(--accent-base)', color: '#fff', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '1rem' }}>Beliebt</div>
-                  <h4>Pro</h4>
-                  <div style={{ fontSize: '2rem', fontWeight: 800, margin: '1rem 0' }}>49€<span style={{ fontSize: '1rem', fontWeight: 'normal', opacity: 0.7 }}>/Monat</span></div>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 2rem 0', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <li>Alles aus Starter</li>
-                    <li>Bis zu 500 CSV-Exporte</li>
-                    <li>Unbegrenzte Job-Alarme</li>
-                    <li>Team-Workspace</li>
-                  </ul>
-                  <button type="button" className="primary-action" onClick={() => setAgentOpen(true)}>Pro wählen</button>
-                </article>
-              </div>
-            </section>
-          </>
-        )}
+                <Link href={plan.href} className="plan-cta">
+                  {plan.cta}
+                </Link>
+              </article>
+            ))}
+          </div>
+        </section>
 
         <ClientErrorBoundary
           compact
@@ -2559,11 +2528,11 @@ export default function Home({ initialShowcase, platformInsights }) {
                               {connectingCrm?.provider === integration.provider ? (
                                 <form onSubmit={handleConnectCrm} style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px", width: "100%" }}>
                                   <label style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                                    <span style={{ fontSize: "12px", fontWeight: "bold" }}>API-Schluessel eingeben:</span>
+                                    <span style={{ fontSize: "12px", fontWeight: "bold" }}>API-Schlüssel eingeben:</span>
                                     <input
                                       type="password"
                                       required
-                                      placeholder="Schluessel eingeben..."
+                                      placeholder="Schlüssel eingeben..."
                                       value={crmApiKey}
                                       onChange={(e) => setCrmApiKey(e.target.value)}
                                       style={{ padding: "6px", fontSize: "13px", border: "1px solid #1f1d1a", backgroundColor: "#fffaf1" }}
@@ -2601,9 +2570,9 @@ export default function Home({ initialShowcase, platformInsights }) {
                             </div>
                           )}
                         </li>
-                      )) : <li><span>Personio, HubSpot und Greenhouse koennen als Integrationsziele vorbereitet werden.</span></li>}
+                      )) : <li><span>Personio, HubSpot und Greenhouse können als Integrationsziele vorbereitet werden.</span></li>}
                     </ul>
-                    <p className="workspace-muted">Diese Integrationen sind als SaaS-Fundament angelegt. Sie koennen diese hier direkt verbinden und aktivieren.</p>
+                    <p className="workspace-muted">Diese Integrationen sind als SaaS-Fundament angelegt. Sie können diese hier direkt verbinden und aktivieren.</p>
                   </article>
                 </section>
               ) : null}
@@ -2611,7 +2580,7 @@ export default function Home({ initialShowcase, platformInsights }) {
               <ClientErrorBoundary
                 compact
                 title="Die E-Mail-Vorschau konnte nicht geladen werden."
-                description="Der Agentur-Bereich bleibt verfuegbar. Laden Sie nur die Digest-Vorschau neu."
+                description="Der Agentur-Bereich bleibt verfügbar. Laden Sie nur die Digest-Vorschau neu."
               >
                 <EmailDigestPreview
                   agencyName={agency?.name}
@@ -2629,63 +2598,32 @@ export default function Home({ initialShowcase, platformInsights }) {
           </AlertManager>
         </ClientErrorBoundary>
 
-        <section className="pricing-section" style={{ marginTop: "40px", borderTop: "4px solid var(--line)", paddingTop: "30px", marginBottom: "40px" }} id="pricing">
-          <h2 style={{ fontSize: "2rem", marginBottom: "10px", textAlign: "center" }}>Transparente Preise für Recruiting-Teams</h2>
-          <p style={{ textAlign: "center", color: "var(--steel)", marginBottom: "28px", fontWeight: 700 }}>
-            Starten Sie kostenlos oder schalten Sie den vollen Funktionsumfang für Ihre Agentur frei.
-          </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px", maxWidth: "900px", margin: "0 auto" }}>
-            {/* Starter Card */}
-            <div style={{ border: "4px solid var(--line)", padding: "24px", background: "var(--white)", boxShadow: "8px 8px 0 var(--line)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-              <div>
-                <h3 style={{ fontSize: "1.6rem", margin: "0 0 8px" }}>Starter</h3>
-                <p style={{ color: "var(--muted)", margin: "0 0 16px" }}>Für einzelne Personalvermittler und zum Testen.</p>
-                <div style={{ fontSize: "2rem", fontWeight: "900", margin: "0 0 20px" }}>0 € <span style={{ fontSize: "1rem", fontWeight: "bold", color: "var(--muted)" }}>/ dauerhaft</span></div>
-                <ul style={{ paddingLeft: "20px", margin: "0 0 20px", display: "grid", gap: "8px", lineHeight: "1.4" }}>
-                  <li>1 aktiver E-Mail-Alarm (täglich)</li>
-                  <li>CSV-Export limitiert auf max. 25 Treffer</li>
-                  <li>Live-Suche der Bundesagentur für Arbeit</li>
-                  <li>Lokaler Job-Tracker im Browser</li>
-                </ul>
-              </div>
-              <a href="#suche" className="primary-action" style={{ textAlign: "center", display: "block", textDecoration: "none", marginTop: "10px" }}>
-                Kostenlos starten
-              </a>
-            </div>
-
-            {/* Agency Card */}
-            <div style={{ border: "4px solid var(--line)", padding: "24px", background: "var(--bg)", boxShadow: "8px 8px 0 var(--line)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-              <div>
-                <span style={{ background: "var(--signal)", border: "2px solid var(--line)", padding: "4px 8px", fontSize: "12px", fontWeight: "bold", textTransform: "uppercase", display: "inline-block", marginBottom: "12px" }}>Beliebt</span>
-                <h3 style={{ fontSize: "1.6rem", margin: "0 0 8px" }}>Agency</h3>
-                <p style={{ color: "var(--muted)", margin: "0 0 16px" }}>Für Recruiting-Teams und wachsende Agenturen.</p>
-                <div style={{ fontSize: "2rem", fontWeight: "900", margin: "0 0 20px" }}>149 € <span style={{ fontSize: "1rem", fontWeight: "bold", color: "var(--muted)" }}>/ Monat <br /><span style={{ fontSize: "12px", fontWeight: "normal" }}>zzgl. MwSt.</span></span></div>
-                <ul style={{ paddingLeft: "20px", margin: "0 0 20px", display: "grid", gap: "8px", lineHeight: "1.4" }}>
-                  <li><strong>Unbegrenzte</strong> E-Mail-Alarme</li>
-                  <li><strong>CSV-Export bis zu 200 Treffer</strong></li>
-                  <li>Vorbereitete CRM-Schnittstellen</li>
-                  <li>Erhöhtes Rate-Limit für Abfragen</li>
-                  <li>14 Tage kostenlos testen – keine Kreditkarte</li>
-                </ul>
-              </div>
-              <button className="primary-action" onClick={() => { setAgentOpen(true); trackEvent("pricing_agency_clicked"); }} style={{ width: "100%", marginTop: "10px" }}>
-                Agency-Zugang einrichten
-              </button>
-            </div>
+        <section className="data-source-section" id="datenquelle" aria-label="Datenquelle">
+          <div className="section-heading">
+            <p className="eyebrow">Datenquelle</p>
+            <h2>Recherche auf Basis der Bundesagentur für Arbeit</h2>
+            <p>Die Plattform strukturiert öffentliche BA-Stellenangebote für Recruiting-Workflows. Die Originalanzeige bleibt dabei die maßgebliche Primärquelle.</p>
+          </div>
+          <div className="data-source-grid">
+            <article className="use-case-card">
+              <ShieldCheck size={20} aria-hidden="true" />
+              <h3>Öffentliche Primärquelle</h3>
+              <p>Suchanfragen werden live gegen die BA-Daten verarbeitet, statt mit statischen Beispielinhalten zu arbeiten.</p>
+            </article>
+            <article className="use-case-card">
+              <Download size={20} aria-hidden="true" />
+              <h3>Export für Shortlists</h3>
+              <p>Treffer können gespeichert, bewertet und als CSV für Kundenprojekte oder interne Recherchen exportiert werden.</p>
+            </article>
+            <article className="use-case-card">
+              <Mail size={20} aria-hidden="true" />
+              <h3>Job-Alarm für Monitoring</h3>
+              <p>Wiederkehrende Suchen lassen sich über E-Mail-Digests überwachen, sobald Agenturzugang und Versand eingerichtet sind.</p>
+            </article>
           </div>
         </section>
 
-        <footer className="site-footer" aria-label="KhalfaJobs Branding">
-          <p className="site-footer-title">KhalfaJobs für professionelle Personalvermittlung</p>
-          <div className="site-footer-links">
-            <span>Datenquelle: Bundesagentur für Arbeit</span>
-            <a href="/impressum">Impressum</a>
-            <a href="/datenschutz">Datenschutzerklärung</a>
-            <a href="mailto:walid@khalfajobs.me">Kontakt</a>
-            <a href="mailto:walid@khalfajobs.me">walid@khalfajobs.me</a>
-            <span>Erstellt von Walid - Juni 2026</span>
-          </div>
-        </footer>
+        <SiteFooter />
       </section>
     </main>
   );
