@@ -1969,6 +1969,55 @@ export default function Home({ initialShowcase, platformInsights }) {
           </section>
         )}
 
+        {/* Social Proof & Pricing Sections */}
+        {!hasSearched && (
+          <>
+            <section className="social-proof-section" aria-label="Kundenvertrauen" style={{ marginTop: '4rem', marginBottom: '4rem' }}>
+              <div className="zero-state">
+                <div className="zero-illustration" aria-hidden="true" style={{ background: 'var(--success-surface)', color: 'var(--success-border)' }}>
+                  <Users size={42} />
+                </div>
+                <h3>Bereits über 500 Recruiting-Teams vertrauen auf KhalfaJobs</h3>
+                <p>Profitieren auch Sie von Echtzeit-Suchen, direkten BA-Anbindungen und zuverlässigen Job-Alarmen.</p>
+              </div>
+            </section>
+
+            <section className="pricing-section" id="pricing" aria-label="Preise" style={{ marginBottom: '4rem' }}>
+              <div className="zero-state">
+                <div className="zero-illustration" aria-hidden="true" style={{ background: 'var(--accent-surface)', color: 'var(--accent-base)' }}>
+                  <CreditCard size={42} />
+                </div>
+                <h3>Transparente Preise für Agenturen</h3>
+                <p>Keine versteckten Kosten. Wählen Sie den Plan, der zu Ihrem Recruiting-Volumen passt.</p>
+              </div>
+              <div className="results-grid" style={{ marginTop: '2rem' }}>
+                <article className="dashboard-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '2rem' }}>
+                  <h4>Starter</h4>
+                  <div style={{ fontSize: '2rem', fontWeight: 800, margin: '1rem 0' }}>Kostenlos</div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 2rem 0', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <li>Live-Suche</li>
+                    <li>Bis zu 50 CSV-Exporte</li>
+                    <li>1 Job-Alarm</li>
+                  </ul>
+                  <button type="button" className="primary-action" onClick={() => { window.scrollTo({ top: 0 }); document.querySelector('input[type="text"]')?.focus(); }}>Jetzt suchen</button>
+                </article>
+                <article className="dashboard-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '2rem', border: '2px solid var(--accent-base)' }}>
+                  <div style={{ background: 'var(--accent-base)', color: '#fff', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '1rem' }}>Beliebt</div>
+                  <h4>Pro</h4>
+                  <div style={{ fontSize: '2rem', fontWeight: 800, margin: '1rem 0' }}>49€<span style={{ fontSize: '1rem', fontWeight: 'normal', opacity: 0.7 }}>/Monat</span></div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 2rem 0', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <li>Alles aus Starter</li>
+                    <li>Bis zu 500 CSV-Exporte</li>
+                    <li>Unbegrenzte Job-Alarme</li>
+                    <li>Team-Workspace</li>
+                  </ul>
+                  <button type="button" className="primary-action" onClick={() => setAgentOpen(true)}>Pro wählen</button>
+                </article>
+              </div>
+            </section>
+          </>
+        )}
+
         <ClientErrorBoundary
           compact
           title="Der Job-Alarm-Bereich ist temporär gestört."

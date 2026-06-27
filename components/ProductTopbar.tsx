@@ -32,8 +32,10 @@ export default function ProductTopbar({
           {hasAgency ? "Workspace" : "Job-Alarm"}
         </a>
         <a href="#datenquelle" className="topbar-link">Datenquelle</a>
+        <a href="/impressum" className="topbar-link">Impressum</a>
+        <a href="/datenschutz" className="topbar-link">Datenschutz</a>
       </nav>
-      {process.env.NEXT_PUBLIC_SHOW_THEME_SWITCHER === "true" && (
+      {process.env.NODE_ENV !== "production" && (
         <ThemeSwitcher themes={themes} activeTheme={activeTheme} onChange={onThemeChange} />
       )}
     </div>
