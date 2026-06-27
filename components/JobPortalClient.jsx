@@ -2311,7 +2311,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                     <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "2px solid #1f1d1a" }}>
                       {workspaceMembers.length >= (workspaceBilling?.seats || 1) ? (
                         <p style={{ fontSize: "12px", color: "#b5361f", margin: 0 }}>
-                          ⚠️ Maximale Anzahl an Sitzplaetzen ({workspaceBilling?.seats || 1}) erreicht. Bitte upgraden Sie Ihren Billing-Plan, um mehr Mitglieder einzuladen.
+                          ⚠️ Maximale Anzahl an Sitzplätzen ({workspaceBilling?.seats || 1}) erreicht. Bitte upgraden Sie Ihren Billing-Plan, um mehr Mitglieder einzuladen.
                         </p>
                       ) : (
                         <div>

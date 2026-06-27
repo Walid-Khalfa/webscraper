@@ -200,7 +200,7 @@ async function getAgencyRecord(apiKey, options = {}) {
     include = {},
   } = options;
 
-  if (!apiKey) throw createHttpError("Ungueltiger Agentur-Schluessel", 401);
+  if (!apiKey) throw createHttpError("Ungültiger Agentur-Schlüssel", 401);
 
   const apiKeyHash = hashKey(apiKey);
   const agency = await prisma.agency.findUnique({
@@ -208,9 +208,9 @@ async function getAgencyRecord(apiKey, options = {}) {
     include,
   });
 
-  if (!agency || !agency.isActive) throw createHttpError("Ungueltiger Agentur-Schluessel", 401);
+  if (!agency || !agency.isActive) throw createHttpError("Ungültiger Agentur-Schlüssel", 401);
   if (requireVerified && !agency.emailVerifiedAt) {
-    throw createHttpError("Bitte bestaetigen Sie zuerst die E-Mail-Adresse Ihrer Agentur.", 403);
+    throw createHttpError("Bitte bestätigen Sie zuerst die E-Mail-Adresse Ihrer Agentur.", 403);
   }
 
   return agency;
@@ -735,7 +735,7 @@ export async function recordCrmPush(apiKey, provider, reference) {
   });
 
   if (!integration || integration.status !== "CONNECTED") {
-    throw new Error(`CRM-Integration fuer ${provider} ist nicht verbunden.`);
+    throw new Error(`CRM-Integration für ${provider} ist nicht verbunden.`);
   }
 
   const updated = await prisma.crmIntegration.update({
@@ -827,5 +827,4 @@ export async function removeAgencyMember(apiKey, memberId) {
 
   return mapAgencyUser(deleted);
 }
-
 

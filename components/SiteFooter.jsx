@@ -13,7 +13,7 @@ export default function SiteFooter() {
         <Link href="/datenschutz">Datenschutz</Link>
         <Link href="/pricing">Preise</Link>
         <Link href="/datenquelle">Datenquelle</Link>
-        <Link href="/kontakt">Kontakt</Link>
+        <a href={`mailto:${legalContact.email}`}>Kontakt</a>
         <a href={`mailto:${legalContact.email}`}>{legalContact.email}</a>
       </div>
     </footer>

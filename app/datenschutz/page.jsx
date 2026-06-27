@@ -46,8 +46,6 @@ export default function DatenschutzPage() {
             <p>
               {legalContact.ownerName}<br />
               {legalContact.businessName}<br />
-              {legalContact.street}<br />
-              {legalContact.postalCode} {legalContact.city}<br />
               E-Mail: <a href={`mailto:${legalContact.email}`}>{legalContact.email}</a>
             </p>
           </div>

@@ -31,9 +31,9 @@ export default function ImpressumPage() {
 
         {legalFieldsMissing.length ? (
           <section className="compliance-note" aria-label="Offene Pflichtangaben">
-            <strong>Vor Veröffentlichung ergänzen:</strong>
+            <strong>Für einen rechtssicheren Deutschland-Launch fehlen noch Pflichtangaben:</strong>
             <ul>
-              {legalFieldsMissing.map(([label]) => (
+              {legalFieldsMissing.map((label) => (
                 <li key={label}>{label}</li>
               ))}
             </ul>
@@ -46,8 +46,6 @@ export default function ImpressumPage() {
             <p>
               <strong>{legalContact.businessName}</strong><br />
               {legalContact.ownerName}<br />
-              {legalContact.street}<br />
-              {legalContact.postalCode} {legalContact.city}<br />
               {legalContact.country}
             </p>
           </div>
@@ -56,7 +54,6 @@ export default function ImpressumPage() {
             <h2>Kontakt</h2>
             <p>
               E-Mail: <a href={`mailto:${legalContact.email}`}>{legalContact.email}</a><br />
-              Telefon: {legalContact.phone}<br />
               Website: <a href={legalContact.website}>{legalContact.website}</a>
             </p>
           </div>
@@ -64,19 +61,13 @@ export default function ImpressumPage() {
           <div>
             <h2>Verantwortlich für den Inhalt</h2>
             <p>
-              {legalContact.contentResponsible}<br />
-              {legalContact.street}<br />
-              {legalContact.postalCode} {legalContact.city}
+              {legalContact.contentResponsible}
             </p>
           </div>
 
           <div>
             <h2>Register und Umsatzsteuer</h2>
-            <p>
-              Registergericht: {legalContact.commercialRegisterCourt}<br />
-              Registernummer: {legalContact.commercialRegisterNumber}<br />
-              USt-IdNr. gemäß § 27a UStG: {legalContact.vatId}
-            </p>
+            <p>Register- und Umsatzsteuerangaben werden ergänzt, sobald die endgültigen Unternehmensdaten bestätigt sind.</p>
           </div>
 
           <div>

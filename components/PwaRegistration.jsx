@@ -5,8 +5,10 @@ import { useEffect } from "react";
 export default function PwaRegistration() {
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
-
-    navigator.serviceWorker.register("/sw.js").catch(() => {});
+    navigator.serviceWorker.getRegistrations()
+      .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+      .then(() => caches?.keys?.().then((keys) => Promise.all(keys.map((key) => caches.delete(key)))))
+      .catch(() => {});
   }, []);
 
   return null;
