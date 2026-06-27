@@ -6,13 +6,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "analyze": "cross-env ANALYZE=true SKIP_DB_DURING_BUILD=true next build",
     "start": "next start",
     "postinstall": "prisma generate",
     "lint": "next lint",
     "test": "npm run test:unit",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:a11y": "node scripts/run-a11y.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -23,10 +25,13 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@next/bundle-analyzer": "^16.2.9",
     "@playwright/test": "^1.61.0",
     "@types/node": "^26.0.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "cross-env": "^10.1.0",
     "prisma": "^6.19.3",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9"

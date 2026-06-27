@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
@@ -27,17 +28,24 @@ import {
   Columns3,
   Users,
 } from "lucide-react";
-import AlertManager from "./AlertManager";
-import Dashboard from "./Dashboard";
 import JobCard from "./JobCard";
 import JobCardSkeleton from "./JobCardSkeleton";
-import KanbanBoard from "./KanbanBoard";
 import ProductTopbar from "./ProductTopbar";
 import SearchPanel from "./SearchPanel";
 import ToastStack from "./ToastStack";
 import { trackEvent } from "./analytics";
-import EmailDigestPreview from "./EmailDigestPreview";
-import germanLocalities from "../app/api/_lib/german-localities.json";
+import ClientErrorBoundary from "./ClientErrorBoundary";
+
+const Dashboard = dynamic(() => import("./Dashboard"));
+const KanbanBoard = dynamic(() => import("./KanbanBoard"), {
+  loading: () => null,
+});
+const AlertManager = dynamic(() => import("./AlertManager"), {
+  loading: () => null,
+});
+const EmailDigestPreview = dynamic(() => import("./EmailDigestPreview"), {
+  loading: () => null,
+});
 
 const preferredListKeys = ["ergebnisliste", "stellenangebote", "angebote", "jobs", "items", "results", "content", "data"];
 const keywordSuggestions = [
@@ -118,6 +126,38 @@ const quickSearches = [
   { keyword: "Elektriker", location: "Koeln" },
   { keyword: "Projektmanager", location: "Frankfurt am Main" },
 ];
+const fallbackLocalities = [
+  { name: "Berlin", state: "Berlin" },
+  { name: "Hamburg", state: "Hamburg" },
+  { name: "Muenchen", state: "Bayern" },
+  { name: "Koeln", state: "Nordrhein-Westfalen" },
+  { name: "Frankfurt am Main", state: "Hessen" },
+  { name: "Stuttgart", state: "Baden-Wuerttemberg" },
+  { name: "Duesseldorf", state: "Nordrhein-Westfalen" },
+  { name: "Dortmund", state: "Nordrhein-Westfalen" },
+  { name: "Essen", state: "Nordrhein-Westfalen" },
+  { name: "Leipzig", state: "Sachsen" },
+  { name: "Bremen", state: "Bremen" },
+  { name: "Dresden", state: "Sachsen" },
+  { name: "Hannover", state: "Niedersachsen" },
+  { name: "Nuernberg", state: "Bayern" },
+  { name: "Duisburg", state: "Nordrhein-Westfalen" },
+  { name: "Bochum", state: "Nordrhein-Westfalen" },
+  { name: "Wuppertal", state: "Nordrhein-Westfalen" },
+  { name: "Bielefeld", state: "Nordrhein-Westfalen" },
+  { name: "Bonn", state: "Nordrhein-Westfalen" },
+  { name: "Mannheim", state: "Baden-Wuerttemberg" },
+  { name: "Karlsruhe", state: "Baden-Wuerttemberg" },
+  { name: "Wiesbaden", state: "Hessen" },
+  { name: "Muenster", state: "Nordrhein-Westfalen" },
+  { name: "Augsburg", state: "Bayern" },
+  { name: "Gelsenkirchen", state: "Nordrhein-Westfalen" },
+  { name: "Aachen", state: "Nordrhein-Westfalen" },
+  { name: "Braunschweig", state: "Niedersachsen" },
+  { name: "Kiel", state: "Schleswig-Holstein" },
+  { name: "Magdeburg", state: "Sachsen-Anhalt" },
+  { name: "Freiburg im Breisgau", state: "Baden-Wuerttemberg" },
+];
 const statusCycle = ["interested", "applied", "interview", "closed"];
 const statusLabels = {
   interested: "Interessiert",
@@ -157,7 +197,7 @@ function normalizeLocalityText(value) {
     .trim();
 }
 
-const clientLocalitySuggestions = germanLocalities
+const clientLocalitySuggestions = fallbackLocalities
   .map((entry) => ({
     value: entry.name,
     label: entry.state && entry.state !== entry.name ? `${entry.name}, ${entry.state}` : entry.name,
@@ -1505,16 +1545,22 @@ export default function Home({ initialShowcase, platformInsights }) {
       </aside>
 
       <section className="workspace">
-        <ProductTopbar
-          themes={themes}
-          activeTheme={theme}
-          onThemeChange={setTheme}
-          hasAgency={Boolean(agency)}
-          onToggleWorkspace={() => {
-            setAgentOpen(true);
-            trackEvent("agent_configurator_opened");
-          }}
-        />
+        <ClientErrorBoundary
+          compact
+          title="Die Topbar konnte nicht geladen werden."
+          description="Navigation und Theme-Umschaltung sind temporaer nicht verfuegbar."
+        >
+          <ProductTopbar
+            themes={themes}
+            activeTheme={theme}
+            onThemeChange={setTheme}
+            hasAgency={Boolean(agency)}
+            onToggleWorkspace={() => {
+              setAgentOpen(true);
+              trackEvent("agent_configurator_opened");
+            }}
+          />
+        </ClientErrorBoundary>
 
         <header className="masthead hero-layout">
           <div className="hero-primary">
@@ -1533,14 +1579,19 @@ export default function Home({ initialShowcase, platformInsights }) {
           </div>
         </header>
 
-        <SearchPanel
-          form={(
-            <form className="search-panel search-panel-prominent" onSubmit={handleSearch} onBlur={(event) => {
-              if (!event.currentTarget.contains(event.relatedTarget)) {
-                setOpenSuggest(null);
-                setShowAllSuggestions(true);
-              }
-            }}>
+        <ClientErrorBoundary
+          compact
+          title="Die Suchoberflaeche konnte nicht geladen werden."
+          description="Bitte laden Sie nur diesen Bereich neu, um die Suche fortzusetzen."
+        >
+          <SearchPanel
+            form={(
+              <form className="search-panel search-panel-prominent" onSubmit={handleSearch} onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) {
+                  setOpenSuggest(null);
+                  setShowAllSuggestions(true);
+                }
+              }}>
               <label className="suggest-field">
                 <span>Gesuchte Position oder Suchbegriff</span>
                 <div className="suggest-input-wrap">
@@ -1556,6 +1607,9 @@ export default function Home({ initialShowcase, platformInsights }) {
                       setShowAllSuggestions(true);
                     }}
                     autoComplete="off"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-haspopup="listbox"
                     aria-expanded={openSuggest === "keyword"}
                     aria-controls="keyword-suggestion-list"
                   />
@@ -1601,6 +1655,9 @@ export default function Home({ initialShowcase, platformInsights }) {
                       setShowAllSuggestions(true);
                     }}
                     autoComplete="off"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-haspopup="listbox"
                     aria-expanded={openSuggest === "location"}
                     aria-controls="location-suggestion-list"
                   />
@@ -1654,17 +1711,18 @@ export default function Home({ initialShowcase, platformInsights }) {
                 {loading ? <LoaderCircle className="spin" size={19} /> : <Search size={19} />}
                 Stellen finden
               </button>
-            </form>
-          )}
-          trustItems={trustItems}
-          quickSearches={quickSearches}
-          onQuickSearch={applyQuickSearch}
-          isStatusOpen={isConsoleOpen}
-          loading={loading}
-          consoleLogs={consoleLogs}
-          liveSearchStatus={liveSearchStatus}
-          onToggleStatus={() => setIsConsoleOpen((value) => !value)}
-        />
+              </form>
+            )}
+            trustItems={trustItems}
+            quickSearches={quickSearches}
+            onQuickSearch={applyQuickSearch}
+            isStatusOpen={isConsoleOpen}
+            loading={loading}
+            consoleLogs={consoleLogs}
+            liveSearchStatus={liveSearchStatus}
+            onToggleStatus={() => setIsConsoleOpen((value) => !value)}
+          />
+        </ClientErrorBoundary>
 
         {error ? (
           <div className="error-banner error-panel" role="alert">
@@ -1727,28 +1785,34 @@ export default function Home({ initialShowcase, platformInsights }) {
             </div>
 
             {rawJobs.length ? (
-              <Dashboard>
-                <article className="dashboard-card">
-                  <div className="dashboard-card-header">
-                    <div>
-                      <p className="eyebrow">Verguetungsverteilung</p>
-                      <h3>Filter per Gehaltsklasse</h3>
+              <ClientErrorBoundary
+                compact
+                title="Die Recruiting-Analyse ist temporaer nicht verfuegbar."
+                description="Die Ergebnisliste bleibt nutzbar. Laden Sie die Analytik bei Bedarf separat neu."
+              >
+                <Dashboard>
+                  <article className="dashboard-card">
+                    <div className="dashboard-card-header">
+                      <div>
+                        <p className="eyebrow">Verguetungsverteilung</p>
+                        <h3>Filter per Gehaltsklasse</h3>
+                      </div>
+                      <button className="toolbar-chip" type="button" onClick={() => setSalaryBucket("all")}>Zuruecksetzen</button>
                     </div>
-                    <button className="toolbar-chip" type="button" onClick={() => setSalaryBucket("all")}>Zuruecksetzen</button>
-                  </div>
-                  {renderSalaryChart()}
-                </article>
-                <article className="dashboard-card">
-                  <div className="dashboard-card-header">
-                    <div>
-                      <p className="eyebrow">Top-Arbeitgeber</p>
-                      <h3>Unternehmen im geladenen Datensatz</h3>
+                    {renderSalaryChart()}
+                  </article>
+                  <article className="dashboard-card">
+                    <div className="dashboard-card-header">
+                      <div>
+                        <p className="eyebrow">Top-Arbeitgeber</p>
+                        <h3>Unternehmen im geladenen Datensatz</h3>
+                      </div>
+                      <Sparkles size={18} />
                     </div>
-                    <Sparkles size={18} />
-                  </div>
-                  {renderEmployerChart()}
-                </article>
-              </Dashboard>
+                    {renderEmployerChart()}
+                  </article>
+                </Dashboard>
+              </ClientErrorBoundary>
             ) : null}
           </>
         ) : null}
@@ -1762,17 +1826,23 @@ export default function Home({ initialShowcase, platformInsights }) {
         ) : jobsWithClientFilters.length > 0 ? (
           <>
             {viewMode === "kanban" ? (
-              <KanbanBoard
-                columns={kanbanJobs}
-                statusLabels={statusLabels}
-                draggingRef={draggingRef}
-                onDropCard={(status) => moveFavoriteToStatus(draggingRef, status)}
-                onStartDrag={setDraggingRef}
-                onEndDrag={() => setDraggingRef(null)}
-                onToggleFavorite={toggleFavorite}
-                onOpenFavorite={setActiveFavoriteRef}
-                onCycleStatus={cycleFavoriteStatus}
-              />
+              <ClientErrorBoundary
+                compact
+                title="Der Job-Tracker konnte nicht geladen werden."
+                description="Wechseln Sie zur Gitter- oder Listenansicht, waehrend der Tracker neu initialisiert wird."
+              >
+                <KanbanBoard
+                  columns={kanbanJobs}
+                  statusLabels={statusLabels}
+                  draggingRef={draggingRef}
+                  onDropCard={(status) => moveFavoriteToStatus(draggingRef, status)}
+                  onStartDrag={setDraggingRef}
+                  onEndDrag={() => setDraggingRef(null)}
+                  onToggleFavorite={toggleFavorite}
+                  onOpenFavorite={setActiveFavoriteRef}
+                  onCycleStatus={cycleFavoriteStatus}
+                />
+              </ClientErrorBoundary>
             ) : (
               <section className={`results-grid${viewMode === "list" ? " results-list" : ""}`}>
                 {jobsWithClientFilters.map((job, index) => (
@@ -1893,41 +1963,46 @@ export default function Home({ initialShowcase, platformInsights }) {
           </section>
         )}
 
-        <AlertManager
-          agentOpen={agentOpen}
-          onToggle={() => {
-            setAgentOpen((open) => {
-              const next = !open;
-              if (next) trackEvent("agent_configurator_opened");
-              return next;
-            });
-          }}
-          statusBanner={saasStatus ? <div className="status-banner">{saasStatus}</div> : null}
-          subscriptions={(
-            <div className="subscription-list">
-              {subscriptions.map((subscription) => (
-                <article className="subscription-row" key={subscription.id}>
-                  <div className="subscription-copy">
-                    <span className="subscription-kicker">Aktiver Job-Alarm</span>
-                    <strong>{normalizeSubscriptionText(subscription.keyword) || "Suchprofil fehlt"}</strong>
-                    <span className="subscription-location">{normalizeSubscriptionText(subscription.location) || "Standort fehlt"}</span>
-                  </div>
-                  <span className="subscription-frequency">{formatFrequencyLabel(subscription.frequency)}</span>
-                  <div className="subscription-actions">
-                    <button className="secondary-action" type="button" onClick={() => handleDeleteAlert(subscription.id)} disabled={saasLoading}>
-                      <Trash2 size={18} />
-                      Loeschen
-                    </button>
-                    <button className="secondary-action" type="button" onClick={() => handleSendNow(subscription.id)} disabled={saasLoading}>
-                      <Send size={18} />
-                      Jetzt versenden
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
+        <ClientErrorBoundary
+          compact
+          title="Der Job-Alarm-Bereich ist temporaer gestoert."
+          description="Die Suche und der CSV-Export bleiben nutzbar. Laden Sie den Alarm-Bereich separat neu."
         >
+          <AlertManager
+            agentOpen={agentOpen}
+            onToggle={() => {
+              setAgentOpen((open) => {
+                const next = !open;
+                if (next) trackEvent("agent_configurator_opened");
+                return next;
+              });
+            }}
+            statusBanner={saasStatus ? <div className="status-banner">{saasStatus}</div> : null}
+            subscriptions={(
+              <div className="subscription-list">
+                {subscriptions.map((subscription) => (
+                  <article className="subscription-row" key={subscription.id}>
+                    <div className="subscription-copy">
+                      <span className="subscription-kicker">Aktiver Job-Alarm</span>
+                      <strong>{normalizeSubscriptionText(subscription.keyword) || "Suchprofil fehlt"}</strong>
+                      <span className="subscription-location">{normalizeSubscriptionText(subscription.location) || "Standort fehlt"}</span>
+                    </div>
+                    <span className="subscription-frequency">{formatFrequencyLabel(subscription.frequency)}</span>
+                    <div className="subscription-actions">
+                      <button className="secondary-action" type="button" onClick={() => handleDeleteAlert(subscription.id)} disabled={saasLoading}>
+                        <Trash2 size={18} />
+                        Loeschen
+                      </button>
+                      <button className="secondary-action" type="button" onClick={() => handleSendNow(subscription.id)} disabled={saasLoading}>
+                        <Send size={18} />
+                        Jetzt versenden
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          >
           {agentOpen ? (
             <div className="agent-body">
               <div className="agent-summary">
@@ -2051,6 +2126,9 @@ export default function Home({ initialShowcase, platformInsights }) {
                           setShowAllAgentSuggestions(true);
                         }}
                         autoComplete="off"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-haspopup="listbox"
                         aria-expanded={agentSuggest === "keyword"}
                         aria-controls="agent-keyword-suggestion-list"
                       />
@@ -2095,6 +2173,9 @@ export default function Home({ initialShowcase, platformInsights }) {
                           setShowAllAgentSuggestions(true);
                         }}
                         autoComplete="off"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-haspopup="listbox"
                         aria-expanded={agentSuggest === "location"}
                         aria-controls="agent-location-suggestion-list"
                       />
@@ -2472,19 +2553,26 @@ export default function Home({ initialShowcase, platformInsights }) {
                 </section>
               ) : null}
 
-              <EmailDigestPreview
-                agencyName={agency?.name}
-                keyword={alertForm.keyword || keyword}
-                location={alertForm.location || location}
-                jobs={jobsWithClientFilters.length ? jobsWithClientFilters : initialShowcase?.jobs}
-                options={emailTemplateOpts}
-                onChange={setEmailTemplateOpts}
-                onSimulateSend={handleSimulateEmailSend}
-                simulating={simulatingEmail}
-              />
+              <ClientErrorBoundary
+                compact
+                title="Die E-Mail-Vorschau konnte nicht geladen werden."
+                description="Der Agentur-Bereich bleibt verfuegbar. Laden Sie nur die Digest-Vorschau neu."
+              >
+                <EmailDigestPreview
+                  agencyName={agency?.name}
+                  keyword={alertForm.keyword || keyword}
+                  location={alertForm.location || location}
+                  jobs={jobsWithClientFilters.length ? jobsWithClientFilters : initialShowcase?.jobs}
+                  options={emailTemplateOpts}
+                  onChange={setEmailTemplateOpts}
+                  onSimulateSend={handleSimulateEmailSend}
+                  simulating={simulatingEmail}
+                />
+              </ClientErrorBoundary>
             </div>
           ) : null}
-        </AlertManager>
+          </AlertManager>
+        </ClientErrorBoundary>
 
         <footer className="site-footer" aria-label="KhalfaJobs Branding">
           <p className="site-footer-title">KhalfaJobs fuer professionelle Personalvermittlung</p>

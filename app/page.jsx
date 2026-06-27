@@ -1,4 +1,5 @@
 import JobPortalClient from "../components/JobPortalClient";
+import ClientErrorBoundary from "../components/ClientErrorBoundary";
 import { unstable_cache } from "next/cache";
 import { extractJobItems, normalizeJob, searchJobs } from "./api/_lib/ba";
 import { getPlatformInsights } from "./api/_lib/product-insights";
@@ -165,7 +166,12 @@ export default async function Page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData()) }}
       />
-      <JobPortalClient initialShowcase={showcase} platformInsights={platformInsights} />
+      <ClientErrorBoundary
+        title="Die Recruiting-Oberflaeche konnte nicht vollstaendig geladen werden."
+        description="Der Fehler wurde auf die Portalansicht begrenzt. Bitte laden Sie diesen Bereich erneut oder pruefen Sie das Deployment-Protokoll."
+      >
+        <JobPortalClient initialShowcase={showcase} platformInsights={platformInsights} />
+      </ClientErrorBoundary>
     </>
   );
 }
