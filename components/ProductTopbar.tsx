@@ -23,7 +23,7 @@ export default function ProductTopbar({
   return (
     <div className="product-topbar">
       <a href="#top" className="product-brand">
-        KhalfaJobs fuer Personalvermittlungen
+        KhalfaJobs für Personalvermittlungen
       </a>
       <nav className="product-nav" aria-label="Primaere Navigation">
         <a href="#suche" className="topbar-link">Suche</a>
@@ -33,7 +33,9 @@ export default function ProductTopbar({
         </a>
         <a href="#datenquelle" className="topbar-link">Datenquelle</a>
       </nav>
-      <ThemeSwitcher themes={themes} activeTheme={activeTheme} onChange={onThemeChange} />
+      {process.env.NEXT_PUBLIC_SHOW_THEME_SWITCHER === "true" && (
+        <ThemeSwitcher themes={themes} activeTheme={activeTheme} onChange={onThemeChange} />
+      )}
     </div>
   );
 }

@@ -8,21 +8,21 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://emploi-agences-next.v
 const showcaseQueries = [
   { keyword: "Softwareentwickler", location: "Berlin" },
   { keyword: "Pflegefachkraft", location: "Hamburg" },
-  { keyword: "Elektriker", location: "Koeln" },
+  { keyword: "Elektriker", location: "Köln" },
   { keyword: "Projektmanager", location: "Frankfurt am Main" },
 ];
 
 export const metadata = {
-  title: "Deutsches Stellenregister | KhalfaJobs",
+  title: "Deutsches Stellenregister | Live-Stellensuche für Recruiting-Teams",
   description:
-    "Durchsuchen Sie aktuelle Stellenangebote der Bundesagentur fuer Arbeit in Echtzeit, exportieren Sie passende Treffer als CSV und aktivieren Sie Job-Alarme fuer Recruiting-Teams.",
+    "Durchsuchen Sie aktuelle Stellenangebote der Bundesagentur für Arbeit in Echtzeit, exportieren Sie passende Treffer als CSV und aktivieren Sie Job-Alarme für Recruiting-Teams.",
   alternates: {
     canonical: appUrl,
   },
   openGraph: {
-    title: "Deutsches Stellenregister | KhalfaJobs",
+    title: "Deutsches Stellenregister | Live-Stellensuche für Recruiting-Teams",
     description:
-      "Live-Suche, CSV-Export und Job-Alarme fuer Stellenangebote der Bundesagentur fuer Arbeit.",
+      "Live-Suche, CSV-Export und Job-Alarme für Stellenangebote der Bundesagentur für Arbeit.",
     url: appUrl,
     siteName: "KhalfaJobs",
     locale: "de_DE",
@@ -75,7 +75,7 @@ async function getShowcaseData() {
     return {
       jobs: [],
       positions: showcaseQueries.map((entry) => `${entry.keyword} in ${entry.location}`),
-      regions: ["Berlin", "Hamburg", "Koeln", "Frankfurt am Main"],
+      regions: ["Berlin", "Hamburg", "Köln", "Frankfurt am Main"],
       trends: [],
       metrics: {
         activeProfiles: showcaseQueries.length,
@@ -138,7 +138,7 @@ async function getShowcaseData() {
     return {
       jobs: [],
       positions: showcaseQueries.map((entry) => `${entry.keyword} in ${entry.location}`),
-      regions: ["Berlin", "Hamburg", "Koeln", "Frankfurt am Main"],
+      regions: ["Berlin", "Hamburg", "Köln", "Frankfurt am Main"],
       trends: [],
       metrics: {
         activeProfiles: showcaseQueries.length,
@@ -167,8 +167,8 @@ export default async function Page() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData()) }}
       />
       <ClientErrorBoundary
-        title="Die Recruiting-Oberflaeche konnte nicht vollstaendig geladen werden."
-        description="Der Fehler wurde auf die Portalansicht begrenzt. Bitte laden Sie diesen Bereich erneut oder pruefen Sie das Deployment-Protokoll."
+        title="Die Recruiting-Oberfläche konnte nicht vollständig geladen werden."
+        description="Der Fehler wurde auf die Portalansicht begrenzt. Bitte laden Sie diesen Bereich erneut oder prüfen Sie das Deployment-Protokoll."
       >
         <JobPortalClient initialShowcase={showcase} platformInsights={platformInsights} />
       </ClientErrorBoundary>

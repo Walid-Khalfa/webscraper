@@ -27,6 +27,7 @@ type SearchPanelProps = {
   consoleLogs: string[];
   liveSearchStatus: SearchStatus;
   onToggleStatus: () => void;
+  hasSearched: boolean;
 };
 
 export default function SearchPanel({
@@ -39,22 +40,25 @@ export default function SearchPanel({
   consoleLogs,
   liveSearchStatus,
   onToggleStatus,
+  hasSearched,
 }: SearchPanelProps) {
   return (
     <section className="search-stage" id="suche">
       {form}
 
-      <div className="trust-strip" id="datenquelle" aria-label="Produkt- und API-Informationen">
-        {trustItems.map((item) => (
-          <div className="trust-item" key={item.label}>
-            <span>{item.label}</span>
-            <strong>{item.value}</strong>
-          </div>
-        ))}
-      </div>
+      {hasSearched && (
+        <div className="trust-strip" id="datenquelle" aria-label="Produkt- und API-Informationen">
+          {trustItems.map((item) => (
+            <div className="trust-item" key={item.label}>
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="quick-searches">
-        <span className="quick-search-label">Beliebte Suchanfragen</span>
+        <span className="quick-search-label">Demo-Recherchen (1-Klick-Suche)</span>
         {quickSearches.map((entry) => (
           <button
             key={`${entry.keyword}-${entry.location}`}

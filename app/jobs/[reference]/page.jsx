@@ -54,7 +54,7 @@ function buildJobPosting({ job, raw, reference }) {
     description: buildDescription(job, raw),
     identifier: {
       "@type": "PropertyValue",
-      name: "Bundesagentur fuer Arbeit",
+      name: "Bundesagentur für Arbeit",
       value: reference,
     },
     datePosted: getDate(raw, ["datumErsteVeroeffentlichung", "veroeffentlichungszeitraum.von", "aenderungsdatum"]),
@@ -132,14 +132,14 @@ export default async function JobDetailPage({ params }) {
   return (
     <main className="app-shell">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <aside className="registry-rail" aria-label="Anwendungsidentitaet">
+      <aside className="registry-rail" aria-label="Anwendungsidentität">
         <span>BA</span>
         <span>SEO</span>
         <span>JOB</span>
       </aside>
       <article className="workspace job-detail-page">
         <a className="back-link" href="/">
-          Zurueck zur Recruiting-Suche
+          Zurück zur Recruiting-Suche
         </a>
         <header className="job-detail-hero">
           <p className="eyebrow">Google Jobs optimierte Detailseite</p>
@@ -148,7 +148,7 @@ export default async function JobDetailPage({ params }) {
           <div className="job-detail-actions">
             <a className="primary-action apply-link-large" href={officialUrl} target="_blank" rel="noopener noreferrer">
               <ExternalLink size={19} aria-hidden="true" />
-              Originalanzeige oeffnen
+              Originalanzeige öffnen
             </a>
           </div>
         </header>
@@ -167,7 +167,7 @@ export default async function JobDetailPage({ params }) {
           <div className="job-detail-card">
             <WalletCards size={22} aria-hidden="true" />
             <span>Gehalt</span>
-            <strong>{job.Gehalt || "Keine Verguetung angegeben"}</strong>
+            <strong>{job.Gehalt || "Keine Vergütung angegeben"}</strong>
           </div>
           <div className="job-detail-card">
             <BriefcaseBusiness size={22} aria-hidden="true" />
@@ -176,7 +176,7 @@ export default async function JobDetailPage({ params }) {
           </div>
           <div className="job-detail-card">
             <CalendarDays size={22} aria-hidden="true" />
-            <span>Veroeffentlicht</span>
+            <span>Veröffentlicht</span>
             <strong>{datePosted || "Nicht genannt"}</strong>
           </div>
           <div className="job-detail-card">
@@ -192,7 +192,7 @@ export default async function JobDetailPage({ params }) {
             Referenznummer: <strong>{reference}</strong>
           </p>
           <p>
-            Diese Detailseite strukturiert die oeffentlichen Daten der Bundesagentur fuer Arbeit fuer Recruiting-Teams und Suchmaschinen. Die Originalanzeige bleibt die massgebliche Quelle.
+            Diese Detailseite strukturiert die öffentlichen Daten der Bundesagentur für Arbeit für Recruiting-Teams und Suchmaschinen. Die Originalanzeige bleibt die maßgebliche Quelle.
           </p>
         </section>
       </article>

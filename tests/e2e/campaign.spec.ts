@@ -428,4 +428,40 @@ test.describe("Campagne de Test E2E - Emploi Agences App", () => {
       expect(data.detail).toBe("Ungueltiger Cron-Schluessel");
     });
   });
+
+  test.describe("5. Conformité Légale & i18n Allemand", () => {
+    test("TC_E2E_15 - Accessibilité des mentions légales", async ({ page }) => {
+      // 1. Impressum
+      await page.goto("/impressum");
+      await expect(page).toHaveTitle(/Impressum/i);
+      await expect(page.locator("h1")).toContainText("Impressum");
+      await expect(page.getByText("Diensteanbieter")).toBeVisible();
+      
+      // 2. Datenschutz
+      await page.goto("/datenschutz");
+      await expect(page).toHaveTitle(/Datenschutzerklärung/i);
+      await expect(page.locator("h1")).toContainText("Datenschutzerklärung");
+      await expect(page.getByText("Verantwortlichen")).toBeVisible();
+    });
+
+    test("TC_E2E_16 - Rendu correct des Umlauts (Non-régression fuer/ueber)", async ({ page }) => {
+      await page.goto("/");
+      // Le titre du hero doit avoir "für" au lieu de "fuer"
+      const heroText = await page.locator("h1").innerText();
+      expect(heroText.toLowerCase()).toContain("für");
+      expect(heroText.toLowerCase()).not.toContain("fuer");
+
+      // La topbar doit afficher "für"
+      const brandText = await page.locator(".product-brand").innerText();
+      expect(brandText.toLowerCase()).toContain("für");
+      expect(brandText.toLowerCase()).not.toContain("fuer");
+    });
+
+    test("TC_E2E_17 - Absence du Theme Switcher par défaut", async ({ page }) => {
+      await page.goto("/");
+      // Par défaut, le switcher de thèmes ne doit pas être affiché
+      const switcher = page.locator(".theme-switcher");
+      await expect(switcher).not.toBeVisible();
+    });
+  });
 });

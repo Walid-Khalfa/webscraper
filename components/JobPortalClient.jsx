@@ -110,53 +110,53 @@ const keywordSuggestions = [
   "Maurer",
   "Bauingenieur",
   "Lagerarbeiter",
-  "Fachkraft fuer Lagerlogistik",
+  "Fachkraft für Lagerlogistik",
   "Kommissionierer",
   "Staplerfahrer",
   "Berufskraftfahrer",
   "Disponent",
   "Koch",
   "Restaurantfachmann",
-  "Verkaeufer",
+  "Verkäufer",
   "Filialleiter",
 ];
 const quickSearches = [
   { keyword: "Softwareentwickler", location: "Berlin" },
   { keyword: "Pflegefachkraft", location: "Hamburg" },
-  { keyword: "Elektriker", location: "Koeln" },
+  { keyword: "Elektriker", location: "Köln" },
   { keyword: "Projektmanager", location: "Frankfurt am Main" },
 ];
 const fallbackLocalities = [
   { name: "Berlin", state: "Berlin" },
   { name: "Hamburg", state: "Hamburg" },
-  { name: "Muenchen", state: "Bayern" },
-  { name: "Koeln", state: "Nordrhein-Westfalen" },
+  { name: "München", state: "Bayern" },
+  { name: "Köln", state: "Nordrhein-Westfalen" },
   { name: "Frankfurt am Main", state: "Hessen" },
-  { name: "Stuttgart", state: "Baden-Wuerttemberg" },
-  { name: "Duesseldorf", state: "Nordrhein-Westfalen" },
+  { name: "Stuttgart", state: "Baden-Württemberg" },
+  { name: "Düsseldorf", state: "Nordrhein-Westfalen" },
   { name: "Dortmund", state: "Nordrhein-Westfalen" },
   { name: "Essen", state: "Nordrhein-Westfalen" },
   { name: "Leipzig", state: "Sachsen" },
   { name: "Bremen", state: "Bremen" },
   { name: "Dresden", state: "Sachsen" },
   { name: "Hannover", state: "Niedersachsen" },
-  { name: "Nuernberg", state: "Bayern" },
+  { name: "Nürnberg", state: "Bayern" },
   { name: "Duisburg", state: "Nordrhein-Westfalen" },
   { name: "Bochum", state: "Nordrhein-Westfalen" },
   { name: "Wuppertal", state: "Nordrhein-Westfalen" },
   { name: "Bielefeld", state: "Nordrhein-Westfalen" },
   { name: "Bonn", state: "Nordrhein-Westfalen" },
-  { name: "Mannheim", state: "Baden-Wuerttemberg" },
-  { name: "Karlsruhe", state: "Baden-Wuerttemberg" },
+  { name: "Mannheim", state: "Baden-Württemberg" },
+  { name: "Karlsruhe", state: "Baden-Württemberg" },
   { name: "Wiesbaden", state: "Hessen" },
-  { name: "Muenster", state: "Nordrhein-Westfalen" },
+  { name: "Münster", state: "Nordrhein-Westfalen" },
   { name: "Augsburg", state: "Bayern" },
   { name: "Gelsenkirchen", state: "Nordrhein-Westfalen" },
   { name: "Aachen", state: "Nordrhein-Westfalen" },
   { name: "Braunschweig", state: "Niedersachsen" },
   { name: "Kiel", state: "Schleswig-Holstein" },
   { name: "Magdeburg", state: "Sachsen-Anhalt" },
-  { name: "Freiburg im Breisgau", state: "Baden-Wuerttemberg" },
+  { name: "Freiburg im Breisgau", state: "Baden-Württemberg" },
 ];
 const statusCycle = ["interested", "applied", "interview", "closed"];
 const statusLabels = {
@@ -570,9 +570,9 @@ export default function Home({ initialShowcase, platformInsights }) {
   const activeFavorite = activeFavoriteRef ? favorites[activeFavoriteRef] : null;
   const trustItems = useMemo(
     () => [
-      { label: "Datenquelle", value: "Bundesagentur fuer Arbeit" },
-      { label: "Suchstatus", value: hasSearched ? `${totalResults || rawJobs.length} Treffer verfuegbar` : "Bereit fuer Ihre Recherche" },
-      { label: "Aktualisierung", value: hasSearched ? formatLastUpdated(lastSearchAt) : platformInsights?.lastActivityLabel || "Noch keine Aktivitaet" },
+      { label: "Datenquelle", value: "Bundesagentur für Arbeit" },
+      { label: "Suchstatus", value: hasSearched ? `${totalResults || rawJobs.length} Treffer verfügbar` : "Bereit für Ihre Recherche" },
+      { label: "Aktualisierung", value: hasSearched ? formatLastUpdated(lastSearchAt) : platformInsights?.lastActivityLabel || "Noch keine Aktivität" },
       { label: "Recruiting-Tools", value: "CSV-Export, Job-Tracker, Job-Alarme" },
       { label: "Synchronisierte Treffer diese Woche", value: `${platformInsights?.searchHitsWeek || 0} Treffer erfasst` },
     ],
@@ -583,16 +583,16 @@ export default function Home({ initialShowcase, platformInsights }) {
       return {
         badge: "Aktiv",
         title: "Suchstatus",
-        summary: "Die Suche laeuft. Aktuelle BA-Stellenangebote werden gerade geladen.",
-        meta: "Live-Aktualisierung laeuft",
+        summary: "Die Suche läuft. Aktuelle BA-Stellenangebote werden gerade geladen.",
+        meta: "Live-Aktualisierung läuft",
       };
     }
 
     if (error) {
       return {
-        badge: "Stoerung",
+        badge: "Störung",
         title: "Suchstatus",
-        summary: "Die letzte Suche konnte nicht vollstaendig geladen werden.",
+        summary: "Die letzte Suche konnte nicht vollständig geladen werden.",
         meta: "Bitte erneut versuchen",
       };
     }
@@ -611,7 +611,7 @@ export default function Home({ initialShowcase, platformInsights }) {
       badge: "Bereit",
       title: "Suchstatus",
       summary: "Starten Sie eine Suche, um passende Stellenangebote direkt anzuzeigen.",
-      meta: "Bereit fuer die naechste Suche",
+      meta: "Bereit für die nächste Suche",
     };
   }, [loading, error, hasSearched, jobsWithClientFilters.length, rawJobs.length]);
   const workspaceData = workspaceOverview?.workspace || null;
@@ -626,8 +626,8 @@ export default function Home({ initialShowcase, platformInsights }) {
     () => [
       {
         label: "Datenquelle",
-        value: "Bundesagentur fuer Arbeit",
-        description: "Offizielle Stellenangebote als Basis fuer professionelle Recruiting-Recherchen.",
+        value: "Bundesagentur für Arbeit",
+        description: "Offizielle Stellenangebote als Basis für professionelle Recruiting-Recherchen.",
       },
       {
         label: "API-Status",
@@ -637,22 +637,22 @@ export default function Home({ initialShowcase, platformInsights }) {
       {
         label: "Aktive Job-Alarme",
         value: platformInsights?.activeAlerts ? `${platformInsights.activeAlerts} aktiv` : "Sofort einrichtbar",
-        description: "Passende Stellenangebote koennen taeglich automatisiert per E-Mail zugestellt werden.",
+        description: "Passende Stellenangebote können täglich automatisiert per E-Mail zugestellt werden.",
       },
       {
-        label: "Agentur-Zugaenge",
+        label: "Agentur-Zugänge",
         value: platformInsights?.activeAgencies ? `${platformInsights.activeAgencies} aktiv` : "SaaS-bereit",
         description: "Mehrere Recruiting-Arbeitsbereiche lassen sich zentral verwalten und absichern.",
       },
       {
         label: "Standortfilter",
         value: "Nur exakte Treffer",
-        description: "Recruiting-Teams koennen Ergebnisse strikt auf den gewuenschten Ort begrenzen.",
+        description: "Recruiting-Teams können Ergebnisse strikt auf den gewünschten Ort begrenzen.",
       },
       {
         label: "CSV-Export",
         value: "Bis zu 200 Treffer",
-        description: "Serverseitiger Export fuer Outreach, Shortlists und interne Recruiting-Workflows.",
+        description: "Serverseitiger Export für Outreach, Shortlists und interne Recruiting-Workflows.",
       },
     ],
     [platformInsights?.activeAlerts, platformInsights?.activeAgencies],
@@ -998,13 +998,13 @@ export default function Home({ initialShowcase, platformInsights }) {
   async function simulateConsoleBeforeFetch(pageNumber = 1) {
     setIsConsoleOpen(true);
     setConsoleLogs([]);
-    appendConsole("Verbindung zur Bundesagentur fuer Arbeit wird aufgebaut...");
+    appendConsole("Verbindung zur Bundesagentur für Arbeit wird aufgebaut...");
     await sleep(220);
-    appendConsole(`Abfrage fuer Beruf "${keyword || "alle"}" und Ort "${location || "deutschland"}" vorbereitet...`);
+    appendConsole(`Abfrage für Beruf "${keyword || "alle"}" und Ort "${location || "deutschland"}" vorbereitet...`);
     await sleep(180);
     appendConsole(`Stellenangebote Seite ${pageNumber} werden geladen...`);
     await sleep(180);
-    appendConsole("Verguetungsfelder werden normalisiert und Ergebnisstruktur aufgebaut...");
+    appendConsole("Vergütungsfelder werden normalisiert und Ergebnisstruktur aufgebaut...");
   }
 
   async function handleSearch(event) {
@@ -1116,7 +1116,7 @@ export default function Home({ initialShowcase, platformInsights }) {
       localStorage.setItem("agencyProfile", JSON.stringify(created));
       await loadWorkspace(created.api_key);
       setEmailTemplateOpts((current) => ({ ...current, agencyName: current.agencyName || created.name }));
-      setSaasStatus("Der Agentur-Zugang wurde eingerichtet. Bitte bestaetigen Sie jetzt zuerst die E-Mail-Adresse, bevor Job-Alarme aktiviert werden.");
+      setSaasStatus("Der Agentur-Zugang wurde eingerichtet. Bitte bestätigen Sie jetzt zuerst die E-Mail-Adresse, bevor Job-Alarme aktiviert werden.");
       trackEvent("agency_created", { plan: created.plan });
     } catch (err) {
       setSaasStatus(getErrorMessage(err, "Agentur-Erstellung"));
@@ -1138,7 +1138,7 @@ export default function Home({ initialShowcase, platformInsights }) {
       localStorage.setItem("agencyProfile", JSON.stringify(freshAgency));
       await loadWorkspace(freshAgency.api_key);
       setEmailTemplateOpts((current) => ({ ...current, agencyName: current.agencyName || freshAgency.name }));
-      setSaasStatus("Erfolgreich mit Agentur-Schluessel eingeloggt!");
+      setSaasStatus("Erfolgreich mit Agentur-Schlüssel eingeloggt!");
       trackEvent("agency_logged_in", { plan: freshAgency.plan });
     } catch (err) {
       setSaasStatus(getErrorMessage(err, "Login-Fehler"));
@@ -1311,8 +1311,8 @@ export default function Home({ initialShowcase, platformInsights }) {
       return;
     }
     if (!agency?.email_verified) {
-      setSaasStatus("Bitte bestaetigen Sie zuerst die E-Mail-Adresse Ihrer Agentur. Erst danach koennen Job-Alarme aktiviert werden.");
-      pushToast("error", "Bitte bestaetigen Sie zuerst die E-Mail-Adresse Ihrer Agentur.");
+      setSaasStatus("Bitte bestätigen Sie zuerst die E-Mail-Adresse Ihrer Agentur. Erst danach können Job-Alarme aktiviert werden.");
+      pushToast("error", "Bitte bestätigen Sie zuerst die E-Mail-Adresse Ihrer Agentur.");
       trackEvent("alert_creation_failed", { reason: "agency_email_not_verified", keyword: alertForm.keyword, location: alertForm.location });
       return;
     }
@@ -1338,7 +1338,7 @@ export default function Home({ initialShowcase, platformInsights }) {
 
   async function handleSendNow(subscriptionId) {
     if (!agency?.email_verified) {
-      setSaasStatus("Der manuelle Versand ist erst nach bestaetigter E-Mail-Adresse verfuegbar.");
+      setSaasStatus("Der manuelle Versand ist erst nach bestätigter E-Mail-Adresse verfügbar.");
       return;
     }
     setSaasLoading(true);
@@ -1352,7 +1352,7 @@ export default function Home({ initialShowcase, platformInsights }) {
       await loadWorkspace(agency.api_key);
       setSaasStatus(
         result.dry_run
-          ? `Die Zusammenfassung fuer ${result.recipient} wurde vorbereitet. Hinterlegen Sie einen Mail-Dienst, um reale Zustellungen zu aktivieren.`
+          ? `Die Zusammenfassung für ${result.recipient} wurde vorbereitet. Hinterlegen Sie einen Mail-Dienst, um reale Zustellungen zu aktivieren.`
           : `Die Zusammenfassung mit ${result.job_count} Treffern wurde an ${result.recipient} gesendet.`,
       );
       trackEvent("agency_alert_send_now", { subscriptionId, jobCount: result.job_count || 0, dryRun: Boolean(result.dry_run) });
@@ -1394,7 +1394,7 @@ export default function Home({ initialShowcase, platformInsights }) {
       setSaasStatus("Der Job-Alarm wurde entfernt.");
       trackEvent("agency_alert_deleted", { subscriptionId });
     } catch (err) {
-      setSaasStatus(getErrorMessage(err, "Loeschen des Job-Alarms"));
+      setSaasStatus(getErrorMessage(err, "Löschen des Job-Alarms"));
     } finally {
       setSaasLoading(false);
     }
@@ -1528,7 +1528,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                         }}
                       >
                         {isSyncing ? <LoaderCircle size={14} className="animate-spin" /> : <Send size={14} />}
-                        An {integration.display_name} uebertragen
+                        An {integration.display_name} übertragen
                       </button>
                     );
                   })}
@@ -1538,7 +1538,7 @@ export default function Home({ initialShowcase, platformInsights }) {
         </aside>
       ) : null}
 
-      <aside className="registry-rail" aria-label="Anwendungsidentitaet">
+      <aside className="registry-rail" aria-label="Anwendungsidentität">
         <span>BA</span>
         <span>LIVE</span>
         <span>SAAS</span>
@@ -1548,7 +1548,7 @@ export default function Home({ initialShowcase, platformInsights }) {
         <ClientErrorBoundary
           compact
           title="Die Topbar konnte nicht geladen werden."
-          description="Navigation und Theme-Umschaltung sind temporaer nicht verfuegbar."
+          description="Navigation und Theme-Umschaltung sind temporär nicht verfügbar."
         >
           <ProductTopbar
             themes={themes}
@@ -1562,20 +1562,25 @@ export default function Home({ initialShowcase, platformInsights }) {
           />
         </ClientErrorBoundary>
 
-        <header className="masthead hero-layout">
-          <div className="hero-primary">
-            <p className="eyebrow">LIVE-STELLENSUCHE FUER RECRUITING-TEAMS</p>
-            <h1>Relevante Stellenangebote fuer Ihr Recruiting in wenigen Sekunden.</h1>
-            <p className="hero-copy">
-              Durchsuchen Sie aktuelle Stellenangebote der Bundesagentur fuer Arbeit in Echtzeit, verwalten Sie Favoriten im Job-Tracker und exportieren Sie passende Treffer direkt als CSV.
+        <header className="masthead hero-layout" style={{ marginBottom: "12px" }}>
+          <div className="hero-primary" style={{ gap: "4px" }}>
+            <p className="eyebrow">LIVE-STELLENSUCHE FÜR RECRUITING-TEAMS</p>
+            <h1 style={{ margin: 0, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", lineHeight: "1.15" }}>
+              Relevante Stellenangebote für Ihr Recruiting.
+            </h1>
+            <p className="hero-copy" style={{ margin: "4px 0 0", fontSize: "15px" }}>
+              Live-Suche, CSV-Export bis zu 200 Treffer und automatisierte E-Mail-Alarme für Recruiting-Teams.
             </p>
           </div>
-          <div className="hero-proof">
-            <div className="sync-badge">
-              <Clock size={18} aria-hidden="true" />
-              Live-Daten
+          <div className="hero-proof" style={{ gap: "8px" }}>
+            <div className="sync-badge" style={{ padding: "6px 10px" }}>
+              <Clock size={16} aria-hidden="true" />
+              Live-Daten (BA)
             </div>
-            <p>Entwickelt fuer Arbeitsvermittler, Personalberater, Recruiting-Agenturen, Headhunter und HR-Dienstleister.</p>
+            <p style={{ fontSize: "13px", margin: 0 }}>
+              ⚡ <strong>+50</strong> Recruiting-Teams aktiv<br />
+              ⚡ <strong>+120.000</strong> Jobs täglich live indexiert
+            </p>
           </div>
         </header>
 
@@ -1721,6 +1726,7 @@ export default function Home({ initialShowcase, platformInsights }) {
             consoleLogs={consoleLogs}
             liveSearchStatus={liveSearchStatus}
             onToggleStatus={() => setIsConsoleOpen((value) => !value)}
+            hasSearched={hasSearched}
           />
         </ClientErrorBoundary>
 
@@ -1742,7 +1748,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                 <h2>{loading ? "Aktuelle Stellenangebote werden geladen..." : `${jobsWithClientFilters.length} Stellenangebote${totalResults ? ` von ${totalResults}` : ""}`}</h2>
               </div>
               <div className="results-actions">
-                <p>{loading ? "Die offiziellen BA-Daten werden live geladen." : "Filtern, sortieren, tracken und exportieren Sie relevante Treffer direkt fuer Ihr Recruiting-Team."}</p>
+                <p>{loading ? "Die offiziellen BA-Daten werden live geladen." : "Filtern, sortieren, tracken und exportieren Sie relevante Treffer direkt für Ihr Recruiting-Team."}</p>
                 <button className="ghost-action" type="button" onClick={handleExport} disabled={exporting || loading}>
                   {exporting ? <LoaderCircle className="spin" size={19} /> : <Download size={19} />}
                   CSV exportieren
@@ -1772,7 +1778,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                   <span>Sortierung</span>
                   <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
                     <option value="relevance">Relevanz</option>
-                    <option value="salary">Verguetung</option>
+                    <option value="salary">Vergütung</option>
                     <option value="title">Titel</option>
                     <option value="employer">Arbeitgeber</option>
                   </select>
@@ -1781,20 +1787,20 @@ export default function Home({ initialShowcase, platformInsights }) {
             </div>
 
             <div className="filter-note">
-              Die Bundesagentur fuer Arbeit kann Treffer aus dem Umkreis liefern. Mit "Nur exakte Standorte" werden nur Stellenangebote fuer den eingegebenen Ort angezeigt und exportiert.
+              Die Bundesagentur für Arbeit kann Treffer aus dem Umkreis liefern. Mit "Nur exakte Standorte" werden nur Stellenangebote für den eingegebenen Ort angezeigt und exportiert.
             </div>
 
             {rawJobs.length ? (
               <ClientErrorBoundary
                 compact
-                title="Die Recruiting-Analyse ist temporaer nicht verfuegbar."
+                title="Die Recruiting-Analyse ist temporär nicht verfügbar."
                 description="Die Ergebnisliste bleibt nutzbar. Laden Sie die Analytik bei Bedarf separat neu."
               >
                 <Dashboard>
                   <article className="dashboard-card">
                     <div className="dashboard-card-header">
                       <div>
-                        <p className="eyebrow">Verguetungsverteilung</p>
+                        <p className="eyebrow">Vergütungsverteilung</p>
                         <h3>Filter per Gehaltsklasse</h3>
                       </div>
                       <button className="toolbar-chip" type="button" onClick={() => setSalaryBucket("all")}>Zuruecksetzen</button>
@@ -1991,7 +1997,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                     <div className="subscription-actions">
                       <button className="secondary-action" type="button" onClick={() => handleDeleteAlert(subscription.id)} disabled={saasLoading}>
                         <Trash2 size={18} />
-                        Loeschen
+                        Löschen
                       </button>
                       <button className="secondary-action" type="button" onClick={() => handleSendNow(subscription.id)} disabled={saasLoading}>
                         <Send size={18} />
@@ -2007,7 +2013,7 @@ export default function Home({ initialShowcase, platformInsights }) {
             <div className="agent-body">
               <div className="agent-summary">
                 <strong>Einrichtung in zwei Schritten</strong>
-                <span>Legen Sie zuerst Ihren Agentur-Zugang an, definieren Sie anschliessend Beruf und Standort und pruefen Sie direkt die Vorschau Ihres taeglichen E-Mail-Digests.</span>
+                <span>Legen Sie zuerst Ihren Agentur-Zugang an, definieren Sie anschließend Beruf und Standort und prüfen Sie direkt die Vorschau Ihres täglichen E-Mail-Digests.</span>
               </div>
 
               <div className="saas-grid">
@@ -2054,7 +2060,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                     <form onSubmit={handleLoginAgency} style={{ display: "grid", gap: "14px" }}>
                       <div className="panel-title">
                         <KeyRound size={19} aria-hidden="true" />
-                        <h3>Agentur-Schluessel eingeben</h3>
+                        <h3>Agentur-Schlüssel eingeben</h3>
                       </div>
                       <label>
                         <span>Agentur-Schlüssel (API-Key)</span>
@@ -2079,9 +2085,9 @@ export default function Home({ initialShowcase, platformInsights }) {
                         <span>Aktiver Agentur-Zugang</span>
                         <strong>{agency.name}</strong>
                         <p style={{ margin: 0 }}>{agency.email}</p>
-                        <p style={{ margin: "4px 0 0 0", fontSize: "13px" }}>{agency.email_verified ? "E-Mail-Adresse bestaetigt" : "E-Mail-Adresse noch nicht bestaetigt"}</p>
+                        <p style={{ margin: "4px 0 0 0", fontSize: "13px" }}>{agency.email_verified ? "E-Mail-Adresse bestätigt" : "E-Mail-Adresse noch nicht bestätigt"}</p>
                         <details style={{ marginTop: "8px", fontSize: "12px", cursor: "pointer" }}>
-                          <summary style={{ color: "var(--muted)" }}>Schluessel anzeigen</summary>
+                          <summary style={{ color: "var(--muted)" }}>Schlüssel anzeigen</summary>
                           <code style={{ display: "block", marginTop: "4px", padding: "4px", backgroundColor: "var(--paper)", wordBreak: "break-all" }}>{agency.api_key}</code>
                         </details>
                       </div>
@@ -2217,12 +2223,12 @@ export default function Home({ initialShowcase, platformInsights }) {
                       </div>
                     ) : null}
                   </label>
-                  <p className="form-hint">Der Job-Alarm arbeitet mit exakten Standorten, damit nur wirklich relevante Treffer in Ihrer taeglichen Zusammenfassung erscheinen.</p>
+                  <p className="form-hint">Der Job-Alarm arbeitet mit exakten Standorten, damit nur wirklich relevante Treffer in Ihrer täglichen Zusammenfassung erscheinen.</p>
                   <button className="secondary-action" type="submit" disabled={saasLoading}>
                     <Plus size={19} />
                     Job-Alarm erstellen
                   </button>
-                  <div className="alarm-trust-line">Datenquelle: Bundesagentur fuer Arbeit · Versand nur nach bestaetigter Agentur-E-Mail · Starter = 1 Alarm, Agentur-Zugang = bis zu 200 CSV-Treffer</div>
+                  <div className="alarm-trust-line">Datenquelle: Bundesagentur für Arbeit · Versand nur nach bestätigter Agentur-E-Mail · Starter = 1 Alarm, Agentur-Zugang = bis zu 200 CSV-Treffer</div>
                 </form>
               </div>
 
@@ -2243,7 +2249,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                         <strong>{workspaceReporting?.active_members || 0}</strong>
                       </div>
                       <div>
-                        <span>Bestaetigte Absenderadresse</span>
+                        <span>Bestätigte Absenderadresse</span>
                         <strong>{agency.email_verified ? "Ja" : "Ausstehend"}</strong>
                       </div>
                     </div>
@@ -2365,7 +2371,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                     <div className="workspace-card-header">
                       <div>
                         <p className="eyebrow">Billing SaaS</p>
-                        <h3>Plan, Sitzplaetze und Laufzeit</h3>
+                        <h3>Plan, Sitzplätze und Laufzeit</h3>
                       </div>
                       <CreditCard size={18} />
                     </div>
@@ -2379,11 +2385,11 @@ export default function Home({ initialShowcase, platformInsights }) {
                         <strong>{workspaceBilling?.status || "TRIAL"}</strong>
                       </div>
                       <div>
-                        <span>Sitzplaetze</span>
+                        <span>Sitzplätze</span>
                         <strong>{workspaceBilling?.seats || 1}</strong>
                       </div>
                     </div>
-                    <p className="workspace-muted">Die Billing-Struktur ist fuer spaetere Stripe- oder Paddle-Anbindung vorbereitet.</p>
+                    <p className="workspace-muted">Die Billing-Struktur ist für spätere Stripe- oder Paddle-Anbindung vorbereitet.</p>
                   </article>
 
                   <article className="workspace-card">
@@ -2450,7 +2456,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                     <ul className="workspace-checks">
                       <li><BadgeCheck size={16} /> Audit Trail {workspaceTrust?.audit_trail ? "aktiv" : "inaktiv"}</li>
                       <li><BadgeCheck size={16} /> Double Opt-in {workspaceTrust?.double_opt_in ? "erzwingbar" : "deaktiviert"}</li>
-                      <li><BadgeCheck size={16} /> DSGVO-Basis {workspaceTrust?.gdpr_ready ? "bestaetigt" : "vorbereitet"}</li>
+                      <li><BadgeCheck size={16} /> DSGVO-Basis {workspaceTrust?.gdpr_ready ? "bestätigt" : "vorbereitet"}</li>
                       <li><BadgeCheck size={16} /> Verifizierter Versand {workspaceTrust?.verified_sender ? "aktiv" : "ausstehend"}</li>
                     </ul>
                   </article>
@@ -2459,7 +2465,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                     <div className="workspace-card-header">
                       <div>
                         <p className="eyebrow">CRM / ATS Integrationen</p>
-                        <h3>Verbindungsstatus fuer externe Systeme</h3>
+                        <h3>Verbindungsstatus für externe Systeme</h3>
                       </div>
                       <History size={18} />
                     </div>
@@ -2574,12 +2580,58 @@ export default function Home({ initialShowcase, platformInsights }) {
           </AlertManager>
         </ClientErrorBoundary>
 
+        <section className="pricing-section" style={{ marginTop: "40px", borderTop: "4px solid var(--line)", paddingTop: "30px", marginBottom: "40px" }} id="pricing">
+          <h2 style={{ fontSize: "2rem", marginBottom: "10px", textAlign: "center" }}>Transparente Preise für Recruiting-Teams</h2>
+          <p style={{ textAlign: "center", color: "var(--steel)", marginBottom: "28px", fontWeight: 700 }}>
+            Starten Sie kostenlos oder schalten Sie den vollen Funktionsumfang für Ihre Agentur frei.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px", maxWidth: "900px", margin: "0 auto" }}>
+            {/* Starter Card */}
+            <div style={{ border: "4px solid var(--line)", padding: "24px", background: "var(--white)", boxShadow: "8px 8px 0 var(--line)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div>
+                <h3 style={{ fontSize: "1.6rem", margin: "0 0 8px" }}>Starter</h3>
+                <p style={{ color: "var(--muted)", margin: "0 0 16px" }}>Für einzelne Personalvermittler und zum Testen.</p>
+                <div style={{ fontSize: "2rem", fontWeight: "900", margin: "0 0 20px" }}>0 € <span style={{ fontSize: "1rem", fontWeight: "bold", color: "var(--muted)" }}>/ dauerhaft</span></div>
+                <ul style={{ paddingLeft: "20px", margin: "0 0 20px", display: "grid", gap: "8px", lineHeight: "1.4" }}>
+                  <li>1 aktiver E-Mail-Alarm (täglich)</li>
+                  <li>CSV-Export limitiert auf max. 25 Treffer</li>
+                  <li>Live-Suche der Bundesagentur für Arbeit</li>
+                  <li>Lokaler Job-Tracker im Browser</li>
+                </ul>
+              </div>
+              <a href="#suche" className="primary-action" style={{ textAlign: "center", display: "block", textDecoration: "none", marginTop: "10px" }}>
+                Kostenlos starten
+              </a>
+            </div>
+
+            {/* Agency Card */}
+            <div style={{ border: "4px solid var(--line)", padding: "24px", background: "var(--bg)", boxShadow: "8px 8px 0 var(--line)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div>
+                <span style={{ background: "var(--signal)", border: "2px solid var(--line)", padding: "4px 8px", fontSize: "12px", fontWeight: "bold", textTransform: "uppercase", display: "inline-block", marginBottom: "12px" }}>Beliebt</span>
+                <h3 style={{ fontSize: "1.6rem", margin: "0 0 8px" }}>Agency</h3>
+                <p style={{ color: "var(--muted)", margin: "0 0 16px" }}>Für Recruiting-Teams und wachsende Agenturen.</p>
+                <div style={{ fontSize: "2rem", fontWeight: "900", margin: "0 0 20px" }}>149 € <span style={{ fontSize: "1rem", fontWeight: "bold", color: "var(--muted)" }}>/ Monat <br /><span style={{ fontSize: "12px", fontWeight: "normal" }}>zzgl. MwSt.</span></span></div>
+                <ul style={{ paddingLeft: "20px", margin: "0 0 20px", display: "grid", gap: "8px", lineHeight: "1.4" }}>
+                  <li><strong>Unbegrenzte</strong> E-Mail-Alarme</li>
+                  <li><strong>CSV-Export bis zu 200 Treffer</strong></li>
+                  <li>Vorbereitete CRM-Schnittstellen</li>
+                  <li>Erhöhtes Rate-Limit für Abfragen</li>
+                  <li>14 Tage kostenlos testen – keine Kreditkarte</li>
+                </ul>
+              </div>
+              <button className="primary-action" onClick={() => { setAgentOpen(true); trackEvent("pricing_agency_clicked"); }} style={{ width: "100%", marginTop: "10px" }}>
+                Agency-Zugang einrichten
+              </button>
+            </div>
+          </div>
+        </section>
+
         <footer className="site-footer" aria-label="KhalfaJobs Branding">
-          <p className="site-footer-title">KhalfaJobs fuer professionelle Personalvermittlung</p>
+          <p className="site-footer-title">KhalfaJobs für professionelle Personalvermittlung</p>
           <div className="site-footer-links">
-            <span>Datenquelle: Bundesagentur fuer Arbeit</span>
-            <a href="/">Impressum</a>
-            <a href="/">Datenschutz</a>
+            <span>Datenquelle: Bundesagentur für Arbeit</span>
+            <a href="/impressum">Impressum</a>
+            <a href="/datenschutz">Datenschutzerklärung</a>
             <a href="mailto:walid@khalfajobs.me">Kontakt</a>
             <a href="mailto:walid@khalfajobs.me">walid@khalfajobs.me</a>
             <span>Erstellt von Walid - Juni 2026</span>
