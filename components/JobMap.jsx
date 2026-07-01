@@ -117,45 +117,55 @@ export default function JobMap({ jobs = [] }) {
     let isMounted = true;
 
     const geocodeJobs = async () => {
+      // Group jobs by raw city name
+      const jobsByCity = {};
+      for (const job of jobs) {
+        if (!job.location) continue;
+        const rawOrt = job.location.split(',')[0].split('(')[0].trim();
+        const rawOrtKey = rawOrt.toLowerCase();
+        if (!jobsByCity[rawOrtKey]) {
+          jobsByCity[rawOrtKey] = {
+            cityName: rawOrt,
+            jobs: [],
+          };
+        }
+        jobsByCity[rawOrtKey].jobs.push(job);
+      }
+
       const newMarkers = [];
       
-      for (const job of jobs) {
-        if (!job.Ort) continue;
-        
-        const rawOrt = job.Ort.split(',')[0].split('(')[0].trim().toLowerCase();
+      for (const key in jobsByCity) {
+        const { cityName, jobs: cityJobs } = jobsByCity[key];
         let coords = null;
         
-        if (STATIC_COORDS[rawOrt]) {
-          coords = STATIC_COORDS[rawOrt];
-        } else if (geocodeCache.has(rawOrt)) {
-          coords = geocodeCache.get(rawOrt);
+        if (STATIC_COORDS[key]) {
+          coords = STATIC_COORDS[key];
+        } else if (geocodeCache.has(key)) {
+          coords = geocodeCache.get(key);
         } else {
           try {
             await new Promise(r => setTimeout(r, 250)); // rate limit nominatim
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(rawOrt + ', Germany')}`);
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName + ', Germany')}`);
             if (res.ok) {
               const data = await res.json();
               if (data && data.length > 0) {
                 coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-                geocodeCache.set(rawOrt, coords);
+                geocodeCache.set(key, coords);
               } else {
-                geocodeCache.set(rawOrt, null);
+                geocodeCache.set(key, null);
               }
             }
           } catch (e) {
-            console.warn("Geocoding failed for", rawOrt);
-            geocodeCache.set(rawOrt, null);
+            console.warn("Geocoding failed for", cityName);
+            geocodeCache.set(key, null);
           }
         }
 
         if (coords) {
-          // Add a tiny random offset so markers at the exact same city don't overlap completely
-          const offsetLat = coords[0] + (Math.random() - 0.5) * 0.02;
-          const offsetLng = coords[1] + (Math.random() - 0.5) * 0.02;
-          
           newMarkers.push({
-            ...job,
-            position: [offsetLat, offsetLng]
+            cityName,
+            position: coords,
+            jobs: cityJobs
           });
         }
       }
@@ -181,6 +191,23 @@ export default function JobMap({ jobs = [] }) {
   const center = markers.length > 0 ? markers[0].position : [51.1657, 10.4515]; // Center of Germany
   const positions = markers.map(m => m.position);
 
+  // Helper to create custom HTML markers similar to tunes.dtb360talent.com
+  const getCustomIcon = (cityName, count) => {
+    const initials = cityName.slice(0, 2).toUpperCase();
+    return L.divIcon({
+      className: "custom-map-marker",
+      html: `
+        <div class="marker-wrapper">
+          <div class="marker-circle">${initials}</div>
+          ${count > 1 ? `<div class="marker-badge">${count}</div>` : ''}
+        </div>
+      `,
+      iconSize: [42, 42],
+      iconAnchor: [21, 21],
+      popupAnchor: [0, -18]
+    });
+  };
+
   return (
     <div style={{ height: "100%", width: "100%", borderRadius: "12px", overflow: "hidden", border: "1px solid var(--line)" }}>
       <MapContainer 
@@ -191,35 +218,51 @@ export default function JobMap({ jobs = [] }) {
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
-        {markers.map((job, idx) => (
-          <Marker key={`${job.Referenz}-${idx}`} position={job.position}>
+        {markers.map((group, idx) => (
+          <Marker 
+            key={`${group.cityName}-${idx}`} 
+            position={group.position}
+            icon={getCustomIcon(group.cityName, group.jobs.length)}
+          >
             <Popup className="job-popup">
-              <div style={{ padding: "4px" }}>
-                <h4 style={{ margin: "0 0 4px 0", fontSize: "14px", fontWeight: "600" }}>{job.Titel}</h4>
-                <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: "var(--muted)" }}>{job.Arbeitgeber}</p>
-                <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", marginBottom: "8px" }}>
-                  <MapPin size={12} /> {job.Ort}
+              <div style={{ padding: "4px", width: "240px", maxHeight: "300px", overflowY: "auto" }}>
+                <h4 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "700", borderBottom: "1px solid var(--line)", paddingBottom: "6px" }}>
+                  {group.cityName} ({group.jobs.length} {group.jobs.length === 1 ? 'Stelle' : 'Stellen'})
+                </h4>
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {group.jobs.map((job, jIdx) => (
+                    <div 
+                      key={`${job.reference}-${jIdx}`}
+                      style={{ 
+                        paddingBottom: jIdx < group.jobs.length - 1 ? "8px" : "0", 
+                        borderBottom: jIdx < group.jobs.length - 1 ? "1px dashed var(--line)" : "none" 
+                      }}
+                    >
+                      <h5 style={{ margin: "0 0 2px 0", fontSize: "12px", fontWeight: "600", color: "var(--ink)" }}>{job.title}</h5>
+                      <p style={{ margin: "0 0 6px 0", fontSize: "11px", color: "var(--steel)" }}>{job.employer}</p>
+                      <a 
+                        href={job.url || `/jobs/${encodeURIComponent(job.reference)}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{
+                          display: "inline-block",
+                          padding: "4px 10px",
+                          background: "var(--accent)",
+                          color: "white",
+                          textDecoration: "none",
+                          borderRadius: "6px",
+                          fontWeight: "500",
+                          fontSize: "11px",
+                          textAlign: "center"
+                        }}
+                      >
+                        Ansehen
+                      </a>
+                    </div>
+                  ))}
                 </div>
-                <a 
-                  href={job.URL} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "block",
-                    padding: "6px 12px",
-                    background: "var(--accent-base)",
-                    color: "white",
-                    textDecoration: "none",
-                    borderRadius: "6px",
-                    textAlign: "center",
-                    fontWeight: "500",
-                    fontSize: "12px"
-                  }}
-                >
-                  Zur Stelle
-                </a>
               </div>
             </Popup>
           </Marker>

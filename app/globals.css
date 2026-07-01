@@ -2614,3 +2614,66 @@ button,
   }
 }
 
+/* Custom Map Marker styles similar to tunes.dtb360talent.com */
+.custom-map-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.marker-wrapper {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-circle {
+  width: 36px;
+  height: 36px;
+  background: #ffffff;
+  border: 2px solid var(--accent, #2563eb);
+  border-radius: 50% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--ink, #111827);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15), 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 150ms ease, border-color 150ms ease;
+}
+
+.custom-map-marker:hover .marker-circle {
+  transform: scale(1.1);
+  border-color: var(--accent-dark, #1d4ed8);
+}
+
+.marker-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #ef4444; /* red-500 */
+  color: #ffffff;
+  border-radius: 50% !important;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+  border: 1.5px solid #ffffff;
+}
+
+/* Fix popup styling */
+.job-popup .leaflet-popup-content-wrapper {
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-lg);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+
