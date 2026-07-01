@@ -1,31 +1,9 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-
-// Since react-leaflet relies on window, we must dynamically import the map components
-const MapContainer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.MapContainer),
-  { ssr: false }
-);
-const TileLayer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.TileLayer),
-  { ssr: false }
-);
-const Marker = dynamic(
-  () => import("react-leaflet").then((mod) => mod.Marker),
-  { ssr: false }
-);
-const Popup = dynamic(
-  () => import("react-leaflet").then((mod) => mod.Popup),
-  { ssr: false }
-);
-
-import "leaflet/dist/leaflet.css";
-import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
-import "leaflet-defaulticon-compatibility";
-import { MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 // Top German cities coordinates to avoid hitting Geocoding API too much
 const STATIC_COORDS = {
@@ -84,26 +62,20 @@ const STATIC_COORDS = {
 
 const geocodeCache = new Map();
 
-const MapBounds = dynamic(
-  () =>
-    import("react-leaflet").then((mod) => {
-      return function MapBoundsComponent({ positions }) {
-        const map = mod.useMap();
-        useEffect(() => {
-          if (positions.length > 0) {
-            if (positions.length === 1) {
-              map.setView(positions[0], 12);
-            } else {
-              const bounds = L.latLngBounds(positions);
-              map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
-            }
-          }
-        }, [map, positions]);
-        return null;
-      };
-    }),
-  { ssr: false }
-);
+function MapBounds({ positions }) {
+  const map = useMap();
+  useEffect(() => {
+    if (positions.length > 0) {
+      if (positions.length === 1) {
+        map.setView(positions[0], 12);
+      } else {
+        const bounds = L.latLngBounds(positions);
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+      }
+    }
+  }, [map, positions]);
+  return null;
+}
 
 export default function JobMap({ jobs = [] }) {
   const [markers, setMarkers] = useState([]);
