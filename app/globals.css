@@ -1,17 +1,19 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
-  --ink: #10212b;
-  --paper: #f5f3ed;
-  --paper-deep: #e7e1d6;
-  --line: #cbd3d9;
-  --accent: #153243;
-  --accent-dark: #0f2735;
-  --signal: #d7a43a;
-  --steel: #4e6775;
-  --muted: #667985;
+  --ink: #111827;
+  --paper: #ffffff;
+  --paper-deep: #f9fafb;
+  --line: #e5e7eb;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --signal: #f59e0b;
+  --steel: #6b7280;
+  --muted: #9ca3af;
   --white: #ffffff;
-  --shadow: 0 18px 40px rgba(16, 33, 43, 0.08);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --radius: 12px;
 }
 
 :root[data-theme="cyberpunk"] {
@@ -54,7 +56,7 @@ body {
   background:
     radial-gradient(circle at top left, rgba(215, 164, 58, 0.12), transparent 28%),
     linear-gradient(180deg, #fbfaf7 0%, var(--paper) 42%, #f0ede6 100%);
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 html {
@@ -84,7 +86,7 @@ textarea {
   color: var(--paper);
   background: var(--ink);
   border-right: 4px solid var(--accent);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
   text-align: center;
 }
@@ -109,7 +111,7 @@ textarea {
   padding-bottom: 14px;
   border-bottom: 1px solid rgba(21, 21, 21, 0.18);
   color: var(--steel);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.78rem;
   font-weight: 700;
 }
@@ -174,7 +176,7 @@ textarea {
 .reference {
   margin: 0 0 10px;
   color: var(--accent-dark);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -234,9 +236,9 @@ h1 {
   min-width: max-content;
   padding: 10px 14px;
   background: var(--signal);
-  border: 2px solid var(--line);
-  box-shadow: 3px 3px 0 var(--line);
-  font-family: "IBM Plex Mono", monospace;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
 }
 
@@ -246,7 +248,7 @@ h1 {
   gap: 14px;
   padding: 18px;
   background: var(--white);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   box-shadow: var(--shadow);
 }
 
@@ -264,7 +266,7 @@ h1 {
 .search-panel-prominent {
   gap: 16px;
   padding: 20px;
-  box-shadow: 6px 6px 0 rgba(21, 21, 21, 0.18);
+  box-shadow: var(--shadow);
 }
 
 label {
@@ -281,7 +283,7 @@ label {
 }
 
 label span {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.76rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -293,8 +295,8 @@ input {
   padding: 12px 13px;
   color: var(--ink);
   background: var(--paper);
-  border: 2px solid var(--line);
-  border-radius: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   outline: none;
 }
 
@@ -353,8 +355,8 @@ input:focus {
   overflow-y: auto;
   padding: 6px;
   background: var(--white);
-  border: 2px solid var(--line);
-  box-shadow: 6px 6px 0 rgba(21, 21, 21, 0.18);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
 }
 
 .suggest-menu::before {
@@ -381,7 +383,7 @@ input:focus {
   background: transparent;
   border: 0;
   box-shadow: none;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 800;
   text-align: left;
 }
@@ -417,7 +419,7 @@ input:focus {
   gap: 10px;
   min-height: 48px;
   padding: 0 10px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   background: var(--paper);
   white-space: nowrap;
 }
@@ -454,7 +456,7 @@ input:focus {
 
 .trust-item span {
   color: var(--accent-dark);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -474,7 +476,7 @@ input:focus {
 
 .quick-search-label {
   color: var(--steel);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -509,8 +511,8 @@ input:focus {
   gap: 10px;
   padding: 12px 14px;
   background: var(--white);
-  border: 2px solid var(--line);
-  box-shadow: 4px 4px 0 var(--line);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
   font-weight: 800;
 }
 
@@ -530,9 +532,9 @@ button {
   gap: 8px;
   min-height: 48px;
   padding: 0 18px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   cursor: pointer;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
   transition:
     transform 120ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
@@ -543,7 +545,7 @@ button {
 
 button:hover:not(:disabled) {
   transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0 var(--line);
+  box-shadow: var(--shadow);
 }
 
 button:disabled {
@@ -603,7 +605,7 @@ button:disabled {
   margin-top: 24px;
   padding: 14px 16px;
   background: #fff0e9;
-  border: 2px solid var(--accent-dark);
+  border: 1px solid var(--accent-dark);
   font-weight: 700;
 }
 
@@ -648,8 +650,8 @@ button:disabled {
   min-height: 258px;
   padding: 18px;
   background: var(--white);
-  border: 2px solid var(--line);
-  box-shadow: 4px 4px 0 rgba(21, 21, 21, 0.12);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
   content-visibility: auto;
   contain-intrinsic-size: 290px;
 }
@@ -699,7 +701,7 @@ button:disabled {
   margin: 8px 0 0;
   padding-top: 12px;
   border-top: 1px solid rgba(21, 21, 21, 0.22);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.82rem;
 }
 
@@ -718,7 +720,7 @@ button:disabled {
   color: var(--accent-dark);
   background: rgba(245, 197, 66, 0.32);
   border: 1px solid rgba(181, 54, 31, 0.34);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -750,9 +752,9 @@ button:disabled {
   padding: 0 14px;
   color: var(--white) !important;
   background: var(--accent);
-  border: 2px solid var(--line);
-  box-shadow: 3px 3px 0 var(--line);
-  font-family: "IBM Plex Mono", monospace;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 800;
   text-decoration: none;
 }
@@ -897,12 +899,12 @@ button:disabled {
   gap: 8px;
   padding: 18px;
   background: var(--white);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
 }
 
 .insight-card span {
   color: var(--accent-dark);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.74rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -955,7 +957,7 @@ button:disabled {
   gap: 12px;
   padding: 18px;
   background: var(--white);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
 }
 
 .showcase-list-card ul {
@@ -982,7 +984,7 @@ button:disabled {
   background: var(--paper);
   border: 1px solid rgba(21, 21, 21, 0.16);
   box-shadow: none;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.95rem;
   line-height: 1.35;
   font-weight: 700;
@@ -1022,7 +1024,7 @@ button:disabled {
 .secondary-zone {
   padding: 22px;
   background: #ebe7dd;
-  border: 2px solid rgba(28, 27, 24, 0.24);
+  border: 1px solid rgba(28, 27, 24, 0.24);
 }
 
 .agent-body {
@@ -1051,7 +1053,7 @@ button:disabled {
   gap: 6px;
   padding: 14px;
   background: var(--paper);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   font-weight: 700;
 }
 
@@ -1069,7 +1071,7 @@ button:disabled {
 }
 
 .saas-panel {
-  box-shadow: 4px 4px 0 rgba(21, 21, 21, 0.14);
+  box-shadow: var(--shadow);
 }
 
 .saas-panel-primary {
@@ -1109,7 +1111,7 @@ button:disabled {
   gap: 12px;
   padding: 14px;
   background: var(--paper);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
 }
 
 .agency-summary-card p {
@@ -1131,7 +1133,7 @@ button:disabled {
   margin-top: 16px;
   padding: 13px 15px;
   background: var(--signal);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   font-weight: 700;
 }
 
@@ -1152,8 +1154,8 @@ button:disabled {
   gap: 14px;
   padding: 18px;
   background: var(--white);
-  border: 2px solid var(--line);
-  box-shadow: 4px 4px 0 rgba(21, 21, 21, 0.14);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
 }
 
 .workspace-card-header {
@@ -1185,7 +1187,7 @@ button:disabled {
 
 .workspace-kpis span {
   color: var(--steel);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1250,8 +1252,8 @@ button:disabled {
   gap: 18px;
   padding: 18px;
   background: var(--white);
-  border: 2px solid var(--line);
-  box-shadow: 4px 4px 0 rgba(21, 21, 21, 0.14);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
 }
 
 .email-preview-copy {
@@ -1299,7 +1301,7 @@ button:disabled {
   display: grid;
   gap: 0;
   background: #fffdf7;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
 }
 
 .digest-mockup-header {
@@ -1314,7 +1316,7 @@ button:disabled {
 
 .digest-mockup-header span,
 .digest-mockup-footer span {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1334,8 +1336,8 @@ button:disabled {
   padding: 6px 10px;
   color: var(--ink);
   background: var(--signal);
-  border: 2px solid var(--line);
-  font-family: "IBM Plex Mono", monospace;
+  border: 1px solid var(--line);
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.74rem;
   font-weight: 700;
 }
@@ -1402,9 +1404,9 @@ button:disabled {
   padding: 0 12px;
   color: var(--white);
   background: var(--accent);
-  border: 2px solid var(--line);
-  box-shadow: 3px 3px 0 var(--line);
-  font-family: "IBM Plex Mono", monospace;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.78rem;
   font-weight: 700;
   white-space: nowrap;
@@ -1433,7 +1435,7 @@ button:disabled {
   align-items: center;
   padding: 16px 18px;
   background: var(--white);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
 }
 
 .subscription-copy {
@@ -1449,7 +1451,7 @@ button:disabled {
 
 .subscription-kicker {
   color: var(--accent-dark);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.74rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1470,8 +1472,8 @@ button:disabled {
   padding: 6px 10px;
   color: var(--steel);
   background: var(--paper);
-  border: 2px solid rgba(45, 42, 37, 0.2);
-  font-family: "IBM Plex Mono", monospace;
+  border: 1px solid rgba(45, 42, 37, 0.2);
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -1494,7 +1496,7 @@ button:disabled {
 
 .back-link {
   width: max-content;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
 }
 
@@ -1532,9 +1534,9 @@ button:disabled {
   width: max-content;
   min-height: 50px;
   padding: 0 18px;
-  border: 2px solid var(--line);
-  box-shadow: 5px 5px 0 var(--line);
-  font-family: "IBM Plex Mono", monospace;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
   text-decoration: none;
 }
@@ -1549,7 +1551,7 @@ button:disabled {
 .job-detail-section {
   padding: 18px;
   background: var(--white);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
 }
 
 .job-detail-card {
@@ -1559,7 +1561,7 @@ button:disabled {
 
 .job-detail-card span {
   color: var(--accent-dark);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.76rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1634,7 +1636,7 @@ button:disabled {
 
 .site-footer-title {
   margin: 0;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.9rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1747,7 +1749,7 @@ button:disabled {
   color: var(--accent);
   background: rgba(215, 164, 58, 0.18);
   border: 1px solid rgba(215, 164, 58, 0.45);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1778,7 +1780,7 @@ button:disabled {
   color: var(--white);
   background: var(--accent);
   border: 1px solid var(--accent);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
   text-decoration: none;
 }
@@ -1915,8 +1917,8 @@ textarea {
   padding: 12px 13px;
   color: var(--ink);
   background: var(--paper);
-  border: 2px solid var(--line);
-  border-radius: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   outline: none;
 }
 
@@ -1950,9 +1952,9 @@ textarea {
   padding: 0 12px;
   color: var(--ink);
   background: var(--paper);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   box-shadow: none;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.78rem;
   font-weight: 700;
 }
@@ -1968,9 +1970,9 @@ textarea {
 .search-status-panel {
   display: grid;
   gap: 0;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.58);
-  box-shadow: 4px 4px 0 rgba(21, 21, 21, 0.12);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 
@@ -2040,7 +2042,7 @@ textarea {
   padding: 7px 10px;
   border: 1px solid var(--line);
   background: var(--paper);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -2073,7 +2075,7 @@ textarea {
   overflow-y: auto;
   padding: 12px 16px 16px;
   color: var(--ink);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.8rem;
   background: rgba(255, 255, 255, 0.32);
   border-top: 1px solid rgba(33, 39, 33, 0.08);
@@ -2128,7 +2130,7 @@ textarea {
   gap: 14px;
   padding: 18px;
   background: var(--white);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
 }
 
 .dashboard-card-header {
@@ -2168,7 +2170,7 @@ textarea {
 .chart-label,
 .chart-value {
   fill: var(--ink);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 11px;
   font-weight: 700;
 }
@@ -2196,7 +2198,7 @@ textarea {
   color: var(--accent-dark);
   background: rgba(245, 197, 66, 0.22);
   border: 1px solid rgba(45, 42, 37, 0.18);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -2228,7 +2230,7 @@ textarea {
   min-height: 220px;
   padding: 16px;
   background: var(--white);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
 }
 
 .kanban-column-header {
@@ -2236,7 +2238,7 @@ textarea {
   justify-content: space-between;
   gap: 12px;
   align-items: center;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
 }
 
@@ -2273,8 +2275,8 @@ textarea {
   overflow-y: auto;
   padding: 18px;
   background: var(--white);
-  border: 2px solid var(--line);
-  box-shadow: 6px 6px 0 rgba(21, 21, 21, 0.18);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
 }
 
 .favorite-drawer-header {
@@ -2363,7 +2365,7 @@ button,
 :root:not([data-theme="cyberpunk"]):not([data-theme="hacker"]) .insight-card:hover,
 :root:not([data-theme="cyberpunk"]):not([data-theme="hacker"]) .search-panel:hover {
   transform: translate(-4px, -4px);
-  box-shadow: 14px 14px 0 var(--ink);
+  box-shadow: var(--shadow);
 }
 
 /* 3. Cyberpunk neon glow effects */
@@ -2516,7 +2518,7 @@ button,
   gap: 12px;
   min-height: 48px;
   padding: 0 14px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   background: var(--paper);
   white-space: nowrap;
   cursor: pointer;
@@ -2546,7 +2548,7 @@ button,
   width: 44px;
   height: 24px;
   background: var(--white);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -2573,3 +2575,42 @@ button,
   outline: 4px solid var(--signal);
   outline-offset: 3px;
 }
+
+/* Map Split Layout */
+.results-map-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+.results-map-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.results-map-container {
+  position: sticky;
+  top: 20px;
+  min-height: 500px;
+  height: calc(100vh - 100px);
+  background: var(--stone-50);
+  border: 1px solid var(--black);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+  z-index: 10;
+}
+
+@media (max-width: 900px) {
+  .results-map-split {
+    grid-template-columns: 1fr;
+  }
+  .results-map-container {
+    position: relative;
+    top: 0;
+    height: 400px;
+    margin-top: var(--space-lg);
+  }
+}
+

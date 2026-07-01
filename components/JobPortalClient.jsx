@@ -28,6 +28,7 @@ import {
   Trash2,
   Columns3,
   Users,
+  Map as MapIcon,
 } from "lucide-react";
 import JobCard from "./JobCard";
 import JobCardSkeleton from "./JobCardSkeleton";
@@ -42,6 +43,10 @@ import { pricingPlans, recruitingBenefits, recruitingUseCases } from "../lib/sit
 const Dashboard = dynamic(() => import("./Dashboard"));
 const KanbanBoard = dynamic(() => import("./KanbanBoard"), {
   loading: () => null,
+});
+const JobMap = dynamic(() => import("./JobMap"), {
+  ssr: false,
+  loading: () => <div style={{ height: "400px", width: "100%", background: "#f0f0f0", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center" }}>Karte wird geladen...</div>,
 });
 const AlertManager = dynamic(() => import("./AlertManager"), {
   loading: () => null,
@@ -171,6 +176,7 @@ const statusLabels = {
 const viewModes = [
   { id: "grid", label: "Gitter", icon: LayoutGrid },
   { id: "list", label: "Liste", icon: List },
+  { id: "map", label: "Karte", icon: MapIcon },
   { id: "kanban", label: "Job-Tracker", icon: Columns3 },
 ];
 const defaultEmailTemplate = {
@@ -1822,6 +1828,26 @@ export default function Home({ initialShowcase, platformInsights }) {
                   onCycleStatus={cycleFavoriteStatus}
                 />
               </ClientErrorBoundary>
+            ) : viewMode === "map" ? (
+              <section className="results-map-split">
+                <div className="results-map-list">
+                  {jobsWithClientFilters.map((job, index) => (
+                    <JobCard
+                      job={job}
+                      key={`${job.reference || job.title}-${index}`}
+                      viewMode="list"
+                      isFavorite={Boolean(favorites[job.reference])}
+                      favoriteData={favorites[job.reference]}
+                      onToggleFavorite={toggleFavorite}
+                      onOpenFavorite={setActiveFavoriteRef}
+                      onCycleStatus={cycleFavoriteStatus}
+                    />
+                  ))}
+                </div>
+                <div className="results-map-container">
+                  <JobMap jobs={jobsWithClientFilters} />
+                </div>
+              </section>
             ) : (
               <section className={`results-grid${viewMode === "list" ? " results-list" : ""}`}>
                 {jobsWithClientFilters.map((job, index) => (
