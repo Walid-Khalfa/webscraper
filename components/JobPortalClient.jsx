@@ -39,6 +39,7 @@ import ToastStack from "./ToastStack";
 import { trackEvent } from "./analytics";
 import ClientErrorBoundary from "./ClientErrorBoundary";
 import { pricingPlans, recruitingBenefits, recruitingUseCases } from "../lib/site-config";
+import { CITY_MARKET_NOTES, extractPrimaryCity, normalizeCityKey } from "../lib/german-city-map";
 
 const Dashboard = dynamic(() => import("./Dashboard"));
 const KanbanBoard = dynamic(() => import("./KanbanBoard"), {
@@ -188,6 +189,7 @@ const defaultEmailTemplate = {
   showLocation: true,
   showApplyLink: true,
 };
+const ALL_MAP_CITIES = "__all_map_cities__";
 
 const locationSuggestionCache = new Map();
 const localityCollator = new Intl.Collator("de-DE");
@@ -420,6 +422,12 @@ function buildSalaryBuckets(jobs) {
   }));
 }
 
+function getCityMarketSignal(count) {
+  if (count >= 8) return "Marche tres actif";
+  if (count >= 4) return "Flux regulier";
+  return "Selection ciblee";
+}
+
 export default function Home({ initialShowcase, platformInsights }) {
   const [keyword, setKeyword] = useState("Softwareentwickler");
   const [location, setLocation] = useState("Berlin");
@@ -501,6 +509,49 @@ export default function Home({ initialShowcase, platformInsights }) {
 
     return sortJobs(next, sortBy);
   }, [rawJobs, searchTerm, salaryBucket, sortBy]);
+  const cityGuide = useMemo(() => {
+    const grouped = new Map();
+    for (const job of jobsWithClientFilters) {
+      const cityName = extractPrimaryCity(job.location);
+      const cityKey = normalizeCityKey(cityName);
+      if (!cityKey) continue;
+      const current = grouped.get(cityKey) || {
+        cityKey,
+        cityName,
+        jobs: [],
+      };
+      current.jobs.push(job);
+      grouped.set(cityKey, current);
+    }
+
+    return [...grouped.values()]
+      .map((entry) => ({
+        ...entry,
+        count: entry.jobs.length,
+        note: CITY_MARKET_NOTES[entry.cityKey] || "Opportunites transverses et vivier local",
+        signal: getCityMarketSignal(entry.jobs.length),
+      }))
+      .sort((left, right) => right.count - left.count || left.cityName.localeCompare(right.cityName, "de-DE"));
+  }, [jobsWithClientFilters]);
+  const [selectedMapCity, setSelectedMapCity] = useState("");
+
+  useEffect(() => {
+    if (!cityGuide.length) {
+      if (selectedMapCity !== ALL_MAP_CITIES) setSelectedMapCity(ALL_MAP_CITIES);
+      return;
+    }
+
+    const hasSelection = cityGuide.some((entry) => entry.cityName === selectedMapCity);
+    if (!selectedMapCity || (!hasSelection && selectedMapCity !== ALL_MAP_CITIES)) {
+      setSelectedMapCity(ALL_MAP_CITIES);
+    }
+  }, [cityGuide, selectedMapCity]);
+
+  const selectedCityGuide = useMemo(
+    () => cityGuide.find((entry) => entry.cityName === selectedMapCity) || null,
+    [cityGuide, selectedMapCity],
+  );
+  const mapJobs = selectedCityGuide?.jobs?.length ? selectedCityGuide.jobs : jobsWithClientFilters;
 
   const jobPostingJsonLd = useMemo(() => {
     if (!jobsWithClientFilters.length) return null;
@@ -1829,23 +1880,109 @@ export default function Home({ initialShowcase, platformInsights }) {
                 />
               </ClientErrorBoundary>
             ) : viewMode === "map" ? (
-              <section className="results-map-split">
-                <div className="results-map-list">
-                  {jobsWithClientFilters.map((job, index) => (
-                    <JobCard
-                      job={job}
-                      key={`${job.reference || job.title}-${index}`}
-                      viewMode="list"
-                      isFavorite={Boolean(favorites[job.reference])}
-                      favoriteData={favorites[job.reference]}
-                      onToggleFavorite={toggleFavorite}
-                      onOpenFavorite={setActiveFavoriteRef}
-                      onCycleStatus={cycleFavoriteStatus}
-                    />
-                  ))}
-                </div>
-                <div className="results-map-container">
-                  <JobMap jobs={jobsWithClientFilters} />
+              <section className="map-explorer" aria-label="Guide des villes allemandes">
+                <div className="map-explorer-shell">
+                  <aside className="map-guide-panel">
+                    <div className="map-guide-header">
+                      <p className="eyebrow">Guide villes DE</p>
+                      <h3>Reperez les marches ou il faut candidater vite</h3>
+                      <p>Vue inspiree d&apos;une carte de repertoire: la carte donne la densite, le panneau vous aide a choisir la bonne ville allemande.</p>
+                    </div>
+
+                    <div className="map-guide-stats">
+                      <div className="map-guide-stat">
+                        <span>Villes visibles</span>
+                        <strong>{cityGuide.length}</strong>
+                      </div>
+                      <div className="map-guide-stat">
+                        <span>Offres cartographiees</span>
+                        <strong>{jobsWithClientFilters.length}</strong>
+                      </div>
+                    </div>
+
+                    <div className="map-city-list" role="list">
+                      <button
+                        type="button"
+                        className={`map-city-card map-city-card-overview${selectedMapCity === ALL_MAP_CITIES ? " active" : ""}`}
+                        onClick={() => setSelectedMapCity(ALL_MAP_CITIES)}
+                      >
+                        <span className="map-city-rank">DE</span>
+                        <div className="map-city-copy">
+                          <strong>Toute l&apos;Allemagne</strong>
+                          <span>Vue generale pour comparer les bassins d&apos;emploi avant de cibler une ville.</span>
+                        </div>
+                        <span className="map-city-signal">{cityGuide.length} villes actives</span>
+                      </button>
+                      {cityGuide.map((entry) => (
+                        <button
+                          key={entry.cityKey}
+                          type="button"
+                          className={`map-city-card${selectedMapCity === entry.cityName ? " active" : ""}`}
+                          onClick={() => setSelectedMapCity(entry.cityName)}
+                        >
+                          <span className="map-city-rank">{String(entry.count).padStart(2, "0")}</span>
+                          <div className="map-city-copy">
+                            <strong>{entry.cityName}</strong>
+                            <span>{entry.note}</span>
+                          </div>
+                          <span className="map-city-signal">{entry.signal}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </aside>
+
+                  <div className="map-stage">
+                    <div className="map-stage-overlay map-stage-overlay-left">
+                      <p className="map-kicker">KhalfaJobs Map</p>
+                      <h3>Trouvez les bons bassins d&apos;emploi allemands.</h3>
+                      <p>Selectionnez une ville pour afficher les offres associees et prioriser vos candidatures.</p>
+                    </div>
+
+                    <div className="map-stage-overlay map-stage-overlay-right">
+                      <div className="map-search-pill">
+                        <Search size={18} />
+                        <span>{keyword || "Recherche libre"} · {selectedMapCity === ALL_MAP_CITIES ? "Allemagne" : (selectedMapCity || location || "Allemagne")}</span>
+                      </div>
+                      <div className="map-stage-toggles">
+                        <span className="map-stage-chip">Carte live</span>
+                        <span className="map-stage-chip">{selectedCityGuide ? `${selectedCityGuide.count} offres` : `${jobsWithClientFilters.length} offres`}</span>
+                      </div>
+                    </div>
+
+                    <div className="results-map-container">
+                      <JobMap jobs={jobsWithClientFilters} selectedCity={selectedMapCity} onSelectCity={setSelectedMapCity} />
+                    </div>
+
+                    <div className="map-results-panel">
+                      <div className="map-results-header">
+                        <div>
+                          <p className="eyebrow">Ville focus</p>
+                          <h3>{selectedCityGuide?.cityName || "Toutes les villes"}</h3>
+                          <p>{selectedCityGuide?.note || "Les offres disponibles pour votre recherche actuelle."}</p>
+                        </div>
+                        {selectedCityGuide ? (
+                          <button className="toolbar-chip" type="button" onClick={() => setSelectedMapCity(ALL_MAP_CITIES)}>
+                            Reinitialiser
+                          </button>
+                        ) : null}
+                      </div>
+
+                      <div className="map-results-grid">
+                        {mapJobs.slice(0, 6).map((job, index) => (
+                          <JobCard
+                            job={job}
+                            key={`${job.reference || job.title}-${index}`}
+                            viewMode="list"
+                            isFavorite={Boolean(favorites[job.reference])}
+                            favoriteData={favorites[job.reference]}
+                            onToggleFavorite={toggleFavorite}
+                            onOpenFavorite={setActiveFavoriteRef}
+                            onCycleStatus={cycleFavoriteStatus}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </section>
             ) : (
