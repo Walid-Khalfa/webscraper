@@ -105,7 +105,7 @@ test.describe("Campagne de Test E2E - Emploi Agences App", () => {
       // - Vérifier le formatage en EUR
       await expect(page.locator("text=65.000")).toBeVisible(); // 65.000,00 € /Jahr
       await expect(page.locator("text=32,50")).toBeVisible();  // 32,50 € /Std.
-      await expect(page.locator("text=Keine Verguetung angegeben")).toBeVisible();
+      await expect(page.locator("text=Keine Vergütung angegeben")).toBeVisible();
     });
 
     test("TC_E2E_03 - Pagination des offres", async ({ page }) => {

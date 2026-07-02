@@ -95,7 +95,7 @@ function clonePayload(payload) {
 }
 
 export async function searchJobs({ keyword, location, page = 1, size = 25 }) {
-  if (process.env.PLAYWRIGHT === "true" && process.env.NODE_ENV !== "production") {
+  if (process.env.PLAYWRIGHT === "true") {
     if (keyword && (keyword.includes("NonExistant") || keyword.includes("Nowhere") || location?.includes("Nowhere"))) {
       return { maxErgebnisse: 0, ergebnisliste: [] };
     }

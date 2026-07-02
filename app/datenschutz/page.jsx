@@ -3,11 +3,11 @@ import SiteFooter from "../../components/SiteFooter";
 import { legalContact, legalFieldsMissing } from "../../lib/site-config";
 
 export const metadata = {
-  title: "Datenschutz",
+  title: "Datenschutzerklärung",
   description: "Datenschutzhinweise für KhalfaJobs nach DSGVO.",
   alternates: { canonical: "/datenschutz" },
   openGraph: {
-    title: "Datenschutz | KhalfaJobs",
+    title: "Datenschutzerklärung | KhalfaJobs",
     description: "Datenschutzhinweise für KhalfaJobs nach DSGVO.",
     url: "/datenschutz",
   },
@@ -25,7 +25,7 @@ export default function DatenschutzPage() {
         <ProductTopbar />
         <header className="job-detail-hero legal-hero">
           <p className="eyebrow">Datenschutzhinweise</p>
-          <h1>Datenschutz</h1>
+          <h1>Datenschutzerklärung</h1>
           <p>Die Datenschutzerklärung ist auf die im Projekt erkennbare technische Architektur abgestimmt und markiert Felder, die vor dem Launch mit den tatsächlichen Rechts- und Kontaktdaten ergänzt werden müssen.</p>
         </header>
 
