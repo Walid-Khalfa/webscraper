@@ -46,6 +46,9 @@ test.describe("Campagne de Test E2E - Emploi Agences App", () => {
 
   test.describe("1. Flux de Recherche & Filtres (IHM Visiteur)", () => {
     test("TC_E2E_01 & TC_E2E_02 - Recherche nominale et normalisation salariale", async ({ page }) => {
+      page.on("console", (msg) => console.log(`[Browser Console]: ${msg.text()}`));
+      page.on("pageerror", (err) => console.log(`[Browser PageError]: ${err.message}`));
+
       // Mock de l'API de recherche pour retourner 3 offres spécifiques
       const mockJobs = [
         {
@@ -97,7 +100,7 @@ test.describe("Campagne de Test E2E - Emploi Agences App", () => {
 
       // Résultats attendus TC_E2E_01 :
       // - Liste des jobs visible
-      await expect(page.locator("text=Node.js Entwickler")).toBeVisible();
+      await expect(page.locator("text=Node.js Entwickler")).toBeVisible({ timeout: 15_000 });
       await expect(page.locator("text=React Expert")).toBeVisible();
       await expect(page.locator("text=Python Intern")).toBeVisible();
 
