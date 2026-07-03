@@ -30,10 +30,10 @@ export default function SearchStatusPanel({ isOpen, loading, logs, status, onTog
       </div>
 
       <div className="search-status-meta">
-        <span>{status.meta || (loading ? "Live-Aktualisierung laeuft" : "Zuletzt aktualisiert")}</span>
+        <span>{status.meta || (loading ? "Recherche wird aktualisiert" : "Zuletzt aktualisiert")}</span>
         {hasTechnicalDetails ? (
           <button className="search-status-details-toggle" type="button" onClick={onToggle} aria-expanded={isOpen}>
-            {isOpen ? "Details schließen" : "Technische Details"}
+            {isOpen ? "Details ausblenden" : "Technische Details anzeigen"}
           </button>
         ) : null}
       </div>

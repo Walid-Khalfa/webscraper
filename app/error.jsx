@@ -11,14 +11,14 @@ export default function GlobalError({ error, reset }) {
       <section className="workspace">
         <div className="error-surface" role="alert">
           <p className="eyebrow">Anwendungsfehler</p>
-          <h1>Die Seite konnte nicht korrekt geladen werden.</h1>
+          <h1>Diese Seite ist momentan nicht verfügbar.</h1>
           <p>
             {error?.message ||
-              "Ein unerwarteter Fehler ist aufgetreten. Bitte laden Sie die Seite neu oder versuchen Sie es in wenigen Minuten erneut."}
+              "Beim Laden ist ein unerwartetes Problem aufgetreten. Bitte versuchen Sie es erneut oder kehren Sie zur Startseite zurück."}
           </p>
           <div className="error-surface-actions">
             <button className="primary-action" type="button" onClick={() => reset()}>
-              Erneut versuchen
+              Neu laden
             </button>
             <a className="secondary-action error-link-button" href="/">
               Zur Startseite

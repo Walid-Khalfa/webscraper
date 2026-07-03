@@ -78,6 +78,20 @@ export const inviteMemberSchema = z.object({
 
 export const numericIdSchema = z.coerce.number().int().positive();
 
+export const adminImportRunSchema = z.object({
+  mode: z.enum(["test", "full"]).optional().default("test"),
+  queries: z
+    .array(
+      z.object({
+        keyword: z.string().trim().max(120).optional().default(""),
+        location: z.string().trim().max(120).optional().default(""),
+      }),
+    )
+    .max(200)
+    .optional()
+    .default([]),
+});
+
 export function parseWithSchema(schema, input) {
   const result = schema.safeParse(input);
   if (result.success) return result.data;

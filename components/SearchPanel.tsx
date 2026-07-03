@@ -47,7 +47,7 @@ export default function SearchPanel({
       {form}
 
       {hasSearched && (
-        <div className="trust-strip" id="datenquelle" aria-label="Produkt- und API-Informationen">
+        <div className="trust-strip" id="datenquelle" aria-label="Produkt- und Vertrauensmerkmale">
           {trustItems.map((item) => (
             <div className="trust-item" key={item.label}>
               <span>{item.label}</span>
@@ -58,7 +58,7 @@ export default function SearchPanel({
       )}
 
       <div className="quick-searches">
-        <span className="quick-search-label">Demo-Recherchen (1-Klick-Suche)</span>
+        <span className="quick-search-label">Beispielrecherchen</span>
         {quickSearches.map((entry) => (
           <button
             key={`${entry.keyword}-${entry.location}`}

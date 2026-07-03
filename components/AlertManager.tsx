@@ -14,12 +14,12 @@ export default function AlertManager({ agentOpen, onToggle, children, statusBann
     <section className="saas-section secondary-zone" id="job-alarm">
       <div className="saas-header">
         <div>
-          <p className="eyebrow">Job-Alarm für Recruiting-Teams</p>
-          <h2>Neue passende Stellenangebote automatisch per E-Mail erhalten.</h2>
+          <p className="eyebrow">Automatisches Monitoring</p>
+          <h2>Neue relevante BA-Stellenanzeigen automatisch per E-Mail verfolgen.</h2>
         </div>
         <button className="secondary-action" type="button" onClick={onToggle} aria-expanded={agentOpen}>
           <Mail size={18} aria-hidden="true" />
-          {agentOpen ? "Job-Alarm ausblenden" : "Job-Alarm einrichten"}
+          {agentOpen ? "Alert-Bereich schließen" : "Alert einrichten"}
         </button>
       </div>
 
@@ -29,4 +29,3 @@ export default function AlertManager({ agentOpen, onToggle, children, statusBann
     </section>
   );
 }
-

@@ -1,8 +1,8 @@
 export default function manifest() {
   return {
-    name: "KhalfaJobs – Jobsuche für Recruiting-Agenturen",
+    name: "KhalfaJobs – BA-Stellenanzeigen für Recruiting-Agenturen",
     short_name: "KhalfaJobs",
-    description: "Jobsuche, Job-Alarme und CSV-Export für Recruiting-Agenturen auf Basis der Bundesagentur für Arbeit.",
+    description: "Recherche, Alerts und CSV-Export für Recruiting-Agenturen auf Basis öffentlicher Stellenanzeigen der Bundesagentur für Arbeit.",
     start_url: "/",
     display: "standalone",
     background_color: "#f5f3ed",

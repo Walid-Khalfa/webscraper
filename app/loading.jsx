@@ -11,11 +11,11 @@ export default function Loading() {
       <section className="workspace">
         <header className="masthead">
           <div>
-            <p className="eyebrow">Jobsuche für Recruiting-Agenturen</p>
-            <h1>KhalfaJobs wird geladen</h1>
+            <p className="eyebrow">Recherche für Recruiting-Agenturen</p>
+            <h1>KhalfaJobs wird vorbereitet</h1>
           </div>
         </header>
-        <section className="results-grid" aria-label="Anwendung wird geladen">
+        <section className="results-grid" aria-label="Inhalte werden geladen">
           {Array.from({ length: 6 }).map((_, index) => (
             <JobCardSkeleton key={index} />
           ))}

@@ -12,13 +12,13 @@ const showcaseQueries = [
 ];
 
 export const metadata = {
-  title: "KhalfaJobs – Jobsuche für Recruiting-Agenturen",
+  title: "KhalfaJobs – BA-Stellenanzeigen für Recruiting-Agenturen effizient recherchieren",
   description: defaultDescription,
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "KhalfaJobs – Jobsuche für Recruiting-Agenturen",
+    title: "KhalfaJobs – BA-Stellenanzeigen effizient recherchieren und überwachen",
     description: defaultDescription,
     url: "/",
     siteName,
@@ -152,7 +152,7 @@ export default async function Page() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData()) }}
       />
       <ClientErrorBoundary
-        title="Die Recruiting-Oberfläche konnte nicht vollständig geladen werden."
+        title="Die Rechercheoberfläche konnte nicht vollständig geladen werden."
         description="Der Fehler wurde auf die Portalansicht begrenzt. Bitte laden Sie diesen Bereich erneut oder prüfen Sie das Deployment-Protokoll."
       >
         <JobPortalClient initialShowcase={showcase} platformInsights={platformInsights} />

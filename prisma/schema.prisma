@@ -27,6 +27,19 @@ enum IntegrationStatus {
   ERROR
 }
 
+enum ImportedJobStatus {
+  ACTIVE
+  EXPIRED
+  REMOVED
+  UNKNOWN
+}
+
+enum ImportRunStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
 model Agency {
   id                      Int                  @id @default(autoincrement())
   name                    String
@@ -206,4 +219,75 @@ model AgencyComplianceProfile {
   agency                Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
 
   @@map("agency_compliance_profiles")
+}
+
+model ImportedJob {
+  id                 Int               @id @default(autoincrement())
+  source             String            @default("bundesagentur")
+  sourceKey          String            @unique @map("source_key")
+  externalId         String?           @map("external_id")
+  reference          String?
+  title              String
+  employer           String?
+  location           String?
+  postalCode         String?           @map("postal_code")
+  city               String?
+  country            String            @default("DE")
+  contractType       String?           @map("contract_type")
+  workTime           String?           @map("work_time")
+  salary             String?
+  publishedAt        DateTime?         @map("published_at")
+  expiresAt          DateTime?         @map("expires_at")
+  description        String?
+  sourceUrl          String?           @map("source_url")
+  sourceName         String            @default("Bundesagentur für Arbeit") @map("source_name")
+  remoteMode         String?           @map("remote_mode")
+  category           String?
+  experienceLevel    String?           @map("experience_level")
+  status             ImportedJobStatus @default(UNKNOWN)
+  contentHash        String            @map("content_hash")
+  rawPayload         Json?             @map("raw_payload")
+  firstImportedAt    DateTime          @default(now()) @map("first_imported_at")
+  lastImportedAt     DateTime          @default(now()) @map("last_imported_at")
+  lastUpdatedAtSource DateTime?        @map("last_updated_at_source")
+  lastSeenAt         DateTime          @default(now()) @map("last_seen_at")
+  removedAt          DateTime?         @map("removed_at")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+
+  @@index([source, status])
+  @@index([lastSeenAt])
+  @@index([reference])
+  @@index([city])
+  @@map("imported_jobs")
+}
+
+model ImportRun {
+  id                Int             @id @default(autoincrement())
+  source            String          @default("bundesagentur")
+  mode              String          @default("full")
+  status            ImportRunStatus @default(RUNNING)
+  sourceUsed        String?         @map("source_used")
+  queriesExecuted   Json?           @map("queries_executed")
+  totalFound        Int             @default(0) @map("total_found")
+  totalFetched      Int             @default(0) @map("total_fetched")
+  newCount          Int             @default(0) @map("new_count")
+  updatedCount      Int             @default(0) @map("updated_count")
+  unchangedCount    Int             @default(0) @map("unchanged_count")
+  duplicateCount    Int             @default(0) @map("duplicate_count")
+  errorCount        Int             @default(0) @map("error_count")
+  expiredCount      Int             @default(0) @map("expired_count")
+  removedCount      Int             @default(0) @map("removed_count")
+  lastPageFetched   Int             @default(0) @map("last_page_fetched")
+  durationMs        Int?            @map("duration_ms")
+  recentErrors      Json?           @map("recent_errors")
+  notes             Json?
+  startedAt         DateTime        @default(now()) @map("started_at")
+  completedAt       DateTime?       @map("completed_at")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  @@index([source, startedAt])
+  @@index([status, startedAt])
+  @@map("import_runs")
 }

@@ -138,16 +138,16 @@ export default async function JobDetailPage({ params }) {
       </aside>
       <article className="workspace job-detail-page">
         <a className="back-link" href="/">
-          Zurück zur Recruiting-Suche
+          Zurück zur Recherche
         </a>
         <header className="job-detail-hero">
-          <p className="eyebrow">Google Jobs optimierte Detailseite</p>
+          <p className="eyebrow">Strukturierte Detailansicht</p>
           <h1>{job.Titel || "Stellenangebot"}</h1>
           <p>{buildDescription(job, raw)}</p>
           <div className="job-detail-actions">
             <a className="primary-action apply-link-large" href={officialUrl} target="_blank" rel="noopener noreferrer">
               <ExternalLink size={19} aria-hidden="true" />
-              Originalanzeige öffnen
+              Originalanzeige bei der BA öffnen
             </a>
           </div>
         </header>
@@ -191,7 +191,7 @@ export default async function JobDetailPage({ params }) {
             Referenznummer: <strong>{reference}</strong>
           </p>
           <p>
-            Diese Detailseite strukturiert die öffentlichen Daten der Bundesagentur für Arbeit für Recruiting-Teams und Suchmaschinen. Die Originalanzeige bleibt die maßgebliche Quelle.
+            Diese Detailseite strukturiert die öffentlichen Daten der Bundesagentur für Arbeit für Recruiting-Teams und Suchmaschinen. Die Originalanzeige bleibt die maßgebliche Primärquelle.
           </p>
         </section>
       </article>

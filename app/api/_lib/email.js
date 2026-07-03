@@ -107,12 +107,12 @@ export function buildAgencyVerificationHtml({ agency }) {
             <tr>
               <td style="padding: 26px 32px 32px; color:#1f1d1a; font:16px Arial, sans-serif; line-height:1.6;">
                 <p style="margin:0 0 16px;">Guten Tag ${escapedAgency},</p>
-                <p style="margin:0 0 16px;">bitte bestätigen Sie zuerst Ihre E-Mail-Adresse, bevor für Ihre Agentur automatische Job-Alarme aktiviert werden.</p>
-                <p style="margin:0 0 24px;">Ohne diese Verifizierung werden keine Recruiting-Digests von KhalfaJobs versendet.</p>
+                <p style="margin:0 0 16px;">bitte bestätigen Sie Ihre E-Mail-Adresse, bevor automatische Alerts für Ihre Agentur aktiviert werden.</p>
+                <p style="margin:0 0 24px;">Ohne diese Bestätigung werden keine automatisierten KhalfaJobs E-Mails versendet.</p>
                 <a href="${verificationUrl}" style="display:inline-block; background:#df4829; color:#ffffff; font:700 15px Arial, sans-serif; text-decoration:none; padding:14px 18px; border:2px solid #1f1d1a;">
                   E-Mail-Adresse bestätigen
                 </a>
-                <p style="margin:24px 0 0; color:#6b665c; font-size:13px;">Falls Sie diese Registrierung nicht gestartet haben, können Sie diese E-Mail ignorieren.</p>
+                <p style="margin:24px 0 0; color:#6b665c; font-size:13px;">Falls Sie diese Registrierung nicht angestoßen haben, können Sie diese E-Mail ignorieren.</p>
               </td>
             </tr>
           </table>
@@ -129,18 +129,18 @@ export function buildDigestHtml({ agency, subscription, rows }) {
   const escapedKeyword = escapeHtml(subscription.keyword);
   const escapedLocation = escapeHtml(subscription.location);
   const preheader = rows.length
-    ? `${rows.length} neue Stellenangebote für ${subscription.keyword} in ${subscription.location}`
-    : `Keine neuen Stellenangebote für ${subscription.keyword} in ${subscription.location}`;
+    ? `${rows.length} neue BA-Stellenanzeigen für ${subscription.keyword} in ${subscription.location}`
+    : `Keine neuen BA-Stellenanzeigen für ${subscription.keyword} in ${subscription.location}`;
 
   const footer = `
     <tr>
       <td style="padding: 24px 32px 32px; color: #6b665c; font: 13px Arial, sans-serif; line-height: 1.6; border-top: 1px solid #e3ded3;">
         <strong>KhalfaJobs</strong><br />
-        Automatisierte Stellenangebote aus der Bundesagentur für Arbeit für registrierte Agenturen.<br />
-        Sie erhalten diese E-Mail, weil für Ihre Agentur ein Job-Alarm aktiv ist.
-        <a href="${unsubscribeUrl}" style="color: #b5361f; text-decoration: underline;">Job-Alarm abbestellen</a>.<br /><br />
+        Automatisierte BA-Stellenanzeigen für registrierte Recruiting-Agenturen.<br />
+        Sie erhalten diese E-Mail, weil für Ihre Agentur ein Alert aktiv ist.
+        <a href="${unsubscribeUrl}" style="color: #b5361f; text-decoration: underline;">Alert abbestellen</a>.<br /><br />
         <a href="${appBaseUrl}" style="display:inline-block; background:#f5c542; color:#1f1d1a; font:700 13px Arial, sans-serif; text-decoration:none; padding:10px 14px; border:2px solid #1f1d1a;">
-          Eigenen Recruiting-Job-Alarm einrichten
+          Eigenen Alert einrichten
         </a>
       </td>
     </tr>
@@ -155,15 +155,15 @@ export function buildDigestHtml({ agency, subscription, rows }) {
             <table role="presentation" width="640" cellspacing="0" cellpadding="0" style="width:640px; max-width:100%; background:#fffaf1; border:2px solid #1f1d1a;">
               <tr>
                 <td style="padding: 28px 32px 18px; background:#1f1d1a; color:#fffaf1;">
-                  <div style="font: 700 13px Arial, sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#ffce45;">KhalfaJobs Job-Alarm</div>
-                  <h1 style="margin:10px 0 0; font: 700 28px Arial, sans-serif;">Keine neuen Treffer heute</h1>
+                  <div style="font: 700 13px Arial, sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#ffce45;">KhalfaJobs Alert</div>
+                  <h1 style="margin:10px 0 0; font: 700 28px Arial, sans-serif;">Heute keine neuen Treffer</h1>
                 </td>
               </tr>
               <tr>
                 <td style="padding: 28px 32px; color:#1f1d1a; font:16px Arial, sans-serif; line-height:1.6;">
                   <p style="margin:0 0 16px;">Guten Morgen ${escapedAgency},</p>
-                  <p style="margin:0 0 16px;">für Ihre Suche <strong>${escapedKeyword}</strong> in <strong>${escapedLocation}</strong> wurden heute keine neuen passenden Stellenangebote gefunden.</p>
-                  <p style="margin:0;">Wir pruefen morgen automatisch erneut und senden Ihnen nur Ergebnisse aus dem exakt angegebenen Ort.</p>
+                  <p style="margin:0 0 16px;">für Ihre Suche nach <strong>${escapedKeyword}</strong> in <strong>${escapedLocation}</strong> wurden heute keine neuen passenden Stellenanzeigen gefunden.</p>
+                  <p style="margin:0;">Wir prüfen morgen automatisch erneut und senden Ihnen nur Treffer für den exakt angegebenen Standort.</p>
                 </td>
               </tr>
               ${footer}
@@ -211,15 +211,15 @@ export function buildDigestHtml({ agency, subscription, rows }) {
           <table role="presentation" width="640" cellspacing="0" cellpadding="0" style="width:640px; max-width:100%; background:#fffaf1; border:2px solid #1f1d1a;">
             <tr>
               <td style="padding: 28px 32px 18px; background:#1f1d1a; color:#fffaf1;">
-                <div style="font: 700 13px Arial, sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#ffce45;">KhalfaJobs Job-Alarm</div>
-                <h1 style="margin:10px 0 0; font: 700 30px Arial, sans-serif;">${rows.length} neue Stellenangebote</h1>
+                  <div style="font: 700 13px Arial, sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#ffce45;">KhalfaJobs Alert</div>
+                <h1 style="margin:10px 0 0; font: 700 30px Arial, sans-serif;">${rows.length} neue Stellenanzeigen</h1>
                 <p style="margin:12px 0 0; font:16px Arial, sans-serif; color:#f4f1ea;">${escapedKeyword} in ${escapedLocation}</p>
               </td>
             </tr>
             <tr>
               <td style="padding: 26px 32px 10px; color:#1f1d1a; font:16px Arial, sans-serif; line-height:1.6;">
                 <p style="margin:0 0 16px;">Guten Morgen ${escapedAgency},</p>
-                <p style="margin:0;">wir haben ${rows.length} passende Stellenangebote gefunden. Angezeigt werden nur Treffer mit exakt dem Ort <strong>${escapedLocation}</strong>.</p>
+                <p style="margin:0;">wir haben ${rows.length} passende Stellenanzeigen gefunden. Angezeigt werden ausschließlich Treffer mit dem exakten Standort <strong>${escapedLocation}</strong>.</p>
               </td>
             </tr>
             <tr>

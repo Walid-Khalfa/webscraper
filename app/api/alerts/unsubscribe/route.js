@@ -23,7 +23,7 @@ export async function GET(request) {
         <head>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <title>Job-Alarm abbestellt</title>
+          <title>Alert deaktiviert</title>
           <style>
             body { margin: 0; font-family: Arial, sans-serif; background: #f4f1ea; color: #1f1d1a; }
             main { max-width: 640px; margin: 12vh auto; padding: 32px; background: #fffaf1; border: 2px solid #1f1d1a; }
@@ -33,8 +33,8 @@ export async function GET(request) {
         </head>
         <body>
           <main>
-            <h1>Job-Alarm abbestellt</h1>
-            <p>Dieser KhalfaJobs Job-Alarm wurde deaktiviert. Sie erhalten dafür keine weiteren automatischen Stellenangebote per E-Mail.</p>
+            <h1>Alert erfolgreich deaktiviert</h1>
+            <p>Dieser KhalfaJobs Alert wurde beendet. Für dieses Suchprofil erhalten Sie keine weiteren automatischen E-Mails mehr.</p>
           </main>
         </body>
       </html>`,

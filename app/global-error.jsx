@@ -13,14 +13,14 @@ export default function GlobalError({ error, reset }) {
           <section className="workspace">
             <div className="error-surface" role="alert">
               <p className="eyebrow">Kritischer Anwendungsfehler</p>
-              <h1>Die Anwendung konnte nicht korrekt initialisiert werden.</h1>
+              <h1>Die Anwendung konnte nicht korrekt gestartet werden.</h1>
               <p>
                 {error?.message ||
-                  "Bitte laden Sie die Seite erneut. Falls der Fehler bestehen bleibt, pruefen Sie die produktiven Umgebungsvariablen und das Deployment-Log."}
+                  "Bitte laden Sie die Seite erneut. Falls das Problem bestehen bleibt, prüfen Sie die produktiven Umgebungsvariablen und das Deployment-Log."}
               </p>
               <div className="error-surface-actions">
                 <button className="primary-action" type="button" onClick={() => reset()}>
-                  Erneut versuchen
+                  Neu laden
                 </button>
                 <a className="secondary-action error-link-button" href="/">
                   Zur Startseite

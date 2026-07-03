@@ -624,11 +624,11 @@ export default function Home({ initialShowcase, platformInsights }) {
   const activeFavorite = activeFavoriteRef ? favorites[activeFavoriteRef] : null;
   const trustItems = useMemo(
     () => [
-      { label: "Datenquelle", value: "Bundesagentur für Arbeit" },
-      { label: "Suchstatus", value: hasSearched ? `${totalResults || rawJobs.length} Treffer verfügbar` : "Bereit für Ihre Recherche" },
-      { label: "Aktualisierung", value: hasSearched ? formatLastUpdated(lastSearchAt) : platformInsights?.lastActivityLabel || "Noch keine Aktivität" },
-      { label: "Recruiting-Tools", value: "CSV-Export, Job-Tracker, Job-Alarme" },
-      { label: "Synchronisierte Treffer diese Woche", value: `${platformInsights?.searchHitsWeek || 0} Treffer erfasst` },
+      { label: "Datenbasis", value: "Bundesagentur für Arbeit" },
+      { label: "Recherchestatus", value: hasSearched ? `${totalResults || rawJobs.length} Treffer verfügbar` : "Bereit für die erste Suche" },
+      { label: "Letzte Aktualisierung", value: hasSearched ? formatLastUpdated(lastSearchAt) : platformInsights?.lastActivityLabel || "Noch keine Aktivität" },
+      { label: "Workflow", value: "Filter, Export, Alerts, Tracker" },
+      { label: "Treffer diese Woche", value: `${platformInsights?.searchHitsWeek || 0} Datensätze erfasst` },
     ],
     [hasSearched, rawJobs.length, lastSearchAt, totalResults, platformInsights?.lastActivityLabel, platformInsights?.searchHitsWeek],
   );
@@ -636,18 +636,18 @@ export default function Home({ initialShowcase, platformInsights }) {
     if (loading) {
       return {
         badge: "Aktiv",
-        title: "Suchstatus",
-        summary: "Die Suche läuft. Aktuelle BA-Stellenangebote werden gerade geladen.",
-        meta: "Live-Aktualisierung läuft",
+        title: "Recherchestatus",
+        summary: "Die Suche läuft. Aktuelle BA-Stellenanzeigen werden geladen.",
+        meta: "Live-Aktualisierung aktiv",
       };
     }
 
     if (error) {
       return {
         badge: "Störung",
-        title: "Suchstatus",
-        summary: "Die letzte Suche konnte nicht vollständig geladen werden.",
-        meta: "Bitte erneut versuchen",
+        title: "Recherchestatus",
+        summary: "Die letzte Recherche konnte nicht vollständig geladen werden.",
+        meta: "Bitte erneut ausführen",
       };
     }
 
@@ -655,17 +655,17 @@ export default function Home({ initialShowcase, platformInsights }) {
       const resultCount = jobsWithClientFilters.length || rawJobs.length;
       return {
         badge: "Abgeschlossen",
-        title: "Suchstatus",
-        summary: `${resultCount} passende Stellenangebote gefunden.`,
+        title: "Recherchestatus",
+        summary: `${resultCount} passende Stellenanzeigen gefunden.`,
         meta: `Zuletzt aktualisiert: ${formatLastUpdated(lastSearchAt)}`,
       };
     }
 
     return {
       badge: "Bereit",
-      title: "Suchstatus",
-      summary: "Starten Sie eine Suche, um passende Stellenangebote direkt anzuzeigen.",
-      meta: "Bereit für die nächste Suche",
+      title: "Recherchestatus",
+      summary: "Starten Sie eine Suche, um passende BA-Stellenanzeigen direkt auszuwerten.",
+      meta: "Bereit für die nächste Recherche",
     };
   }, [loading, error, hasSearched, jobsWithClientFilters.length, rawJobs.length]);
   const workspaceData = workspaceOverview?.workspace || null;
@@ -681,18 +681,18 @@ export default function Home({ initialShowcase, platformInsights }) {
       ...recruitingBenefits,
       {
         label: "Job-Alarm",
-        value: platformInsights?.activeAlerts ? `${platformInsights.activeAlerts} aktiv` : "Sofort einrichtbar",
-        description: "Wiederkehrende Recherchen lassen sich per E-Mail automatisch überwachen.",
+        value: platformInsights?.activeAlerts ? `${platformInsights.activeAlerts} aktiv` : "Sofort verfügbar",
+        description: "Wiederkehrende Recherchen lassen sich automatisch überwachen, ohne manuell erneut zu suchen.",
       },
       {
         label: "Standortfilter",
-        value: "Exakt oder regional",
-        description: "Ergebnisse können streng nach Ort oder breiter für Marktbeobachtung bewertet werden.",
+        value: "Präzise oder breit",
+        description: "Ergebnisse lassen sich für exakte Standortrecherche oder regionale Marktbeobachtung steuern.",
       },
       {
         label: "CSV-Export",
-        value: "Bis zu 200 Treffer",
-        description: "Trefferlisten lassen sich für Outreach, Shortlists und internes Reporting exportieren.",
+        value: "Direkt weiterverwendbar",
+        description: "Exportieren Sie Trefferlisten sofort für Kundenprojekte, Reporting oder interne Abstimmung.",
       },
     ],
     [platformInsights?.activeAlerts],
@@ -1033,11 +1033,11 @@ export default function Home({ initialShowcase, platformInsights }) {
     setConsoleLogs([]);
     appendConsole("Verbindung zur Bundesagentur für Arbeit wird aufgebaut...");
     await sleep(220);
-    appendConsole(`Abfrage für Beruf "${keyword || "alle"}" und Ort "${location || "deutschland"}" vorbereitet...`);
+    appendConsole(`Recherche für Suchprofil "${keyword || "alle"}" und Standort "${location || "Deutschland"}" vorbereitet...`);
     await sleep(180);
-    appendConsole(`Stellenangebote Seite ${pageNumber} werden geladen...`);
+    appendConsole(`Trefferseite ${pageNumber} wird geladen...`);
     await sleep(180);
-    appendConsole("Vergütungsfelder werden normalisiert und Ergebnisstruktur aufgebaut...");
+    appendConsole("Vergütung, Arbeitgeber und Standortdaten werden aufbereitet...");
   }
 
   async function handleSearch(event) {
@@ -1046,7 +1046,7 @@ export default function Home({ initialShowcase, platformInsights }) {
     setError("");
     setHasSearched(true);
     setPage(1);
-    pushToast("loading", "Suchergebnisse werden geladen...", true);
+    pushToast("loading", "Recherche wird gestartet...", true);
     await simulateConsoleBeforeFetch(1);
     try {
       const params = new URLSearchParams({ keyword, location, page: "1", size: "25", exactLocation: String(exactLocation) });
@@ -1061,20 +1061,20 @@ export default function Home({ initialShowcase, platformInsights }) {
           updateFavoriteField(job.reference, { job });
         }
       });
-      appendConsole(`${normalized.length} Stellenangebote erfolgreich geladen.`);
+      appendConsole(`${normalized.length} Stellenanzeigen erfolgreich geladen.`);
       trackEvent("search_completed", {
         keyword,
         location,
         exactLocation,
         resultCount: normalized.length,
       });
-      pushToast("success", normalized.length ? `${normalized.length} relevante Stellenangebote geladen` : "Keine passenden Stellenangebote gefunden");
+      pushToast("success", normalized.length ? `${normalized.length} relevante Stellenanzeigen geladen` : "Keine passenden Stellenanzeigen gefunden");
     } catch (err) {
       setPayload(null);
       const message = getErrorMessage(err, "Suche");
       setError(message);
       appendConsole(`Fehler: ${message}`);
-      pushToast("error", `API-Fehler: ${message}`);
+      pushToast("error", `Recherchefehler: ${message}`);
     } finally {
       setLoading(false);
     }
@@ -1093,13 +1093,13 @@ export default function Home({ initialShowcase, platformInsights }) {
       setPayload((current) => mergePayload(current, result));
       setPage(nextPage);
       setLastSearchAt(Date.now());
-      appendConsole(`${nextCount} weitere Stellenangebote wurden angefuegt.`);
+      appendConsole(`${nextCount} weitere Treffer wurden ergänzt.`);
       pushToast("success", nextCount ? `${nextCount} weitere Treffer geladen` : "Keine weiteren Treffer gefunden");
     } catch (err) {
       const message = getErrorMessage(err, "Suche");
       setError(message);
       appendConsole(`Fehler: ${message}`);
-      pushToast("error", `API-Fehler: ${message}`);
+      pushToast("error", `Recherchefehler: ${message}`);
     } finally {
       setLoadingMore(false);
     }
@@ -1580,8 +1580,8 @@ export default function Home({ initialShowcase, platformInsights }) {
       <section className="workspace">
         <ClientErrorBoundary
           compact
-          title="Die Topbar konnte nicht geladen werden."
-          description="Die Hauptnavigation ist temporär nicht verfügbar."
+          title="Die Navigation ist momentan nicht verfügbar."
+          description="Bitte laden Sie nur diesen Abschnitt neu, um die Navigation wiederherzustellen."
         >
           <ProductTopbar
             onToggleWorkspace={() => {
@@ -1593,12 +1593,12 @@ export default function Home({ initialShowcase, platformInsights }) {
 
         <header className="masthead hero-layout" style={{ marginBottom: "12px" }}>
           <div className="hero-primary" style={{ gap: "4px" }}>
-            <p className="eyebrow">Jobsuche für Recruiting-Agenturen</p>
+            <p className="eyebrow">BA-Recherche für Recruiting-Agenturen</p>
             <h1 style={{ margin: 0, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", lineHeight: "1.15" }}>
-              Relevante Stellenangebote für Ihr Recruiting
+              BA-Stellenanzeigen schneller recherchieren, bewerten und organisieren
             </h1>
             <p className="hero-copy" style={{ margin: "4px 0 0", fontSize: "15px" }}>
-              Durchsuchen Sie aktuelle BA-Stellenangebote, speichern Sie relevante Treffer und exportieren Sie Shortlists für Kundenmandate, Marktbeobachtung und Active Sourcing.
+              KhalfaJobs bündelt Recherche, Filter, Alerts und Export in einem Workflow, damit Recruiting-Agenturen relevante BA-Stellenanzeigen ohne manuelle Einzelsuche auswerten können.
             </p>
           </div>
           <div className="hero-proof" style={{ gap: "8px" }}>
@@ -1607,16 +1607,16 @@ export default function Home({ initialShowcase, platformInsights }) {
               Live-Daten der BA
             </div>
             <p style={{ fontSize: "13px", margin: 0 }}>
-              Für Recruiting-Teams, Personalberater und HR-Dienstleister entwickelt.
+              Entwickelt für Recruiting-Agenturen, Personalberater und Executive-Search-Teams.
               <br />
-              Klare Suche, exportierbare Ergebnisse und strukturierte Job-Alarme.
+              Weniger manuelle Recherche, mehr Struktur in Shortlists und Monitoring.
             </p>
           </div>
         </header>
 
         <ClientErrorBoundary
           compact
-          title="Die Suchoberflaeche konnte nicht geladen werden."
+          title="Die Rechercheoberfläche konnte nicht geladen werden."
           description="Bitte laden Sie nur diesen Bereich neu, um die Suche fortzusetzen."
         >
           <SearchPanel
@@ -1628,7 +1628,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                 }
               }}>
               <label className="suggest-field">
-                <span>Gesuchte Position oder Suchbegriff</span>
+                <span>Position, Rolle oder Suchbegriff</span>
                 <div className="suggest-input-wrap">
                   <input
                     value={keyword}
@@ -1648,7 +1648,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                     aria-expanded={openSuggest === "keyword"}
                     aria-controls="keyword-suggestion-list"
                   />
-                  <button className="suggest-toggle" type="button" aria-label="Berufsvorschläge anzeigen" aria-expanded={openSuggest === "keyword"} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+                  <button className="suggest-toggle" type="button" aria-label="Suchvorschläge anzeigen" aria-expanded={openSuggest === "keyword"} onMouseDown={(event) => event.preventDefault()} onClick={() => {
                     if (openSuggest === "keyword") {
                       setOpenSuggest(null);
                       setShowAllSuggestions(true);
@@ -1713,7 +1713,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                     {loadingLocationSuggestions ? (
                       <button className="suggest-option" type="button" disabled>
                         <LoaderCircle size={16} className="spin-icon" />
-                        Orte werden geladen...
+                        Standorte werden geladen...
                       </button>
                     ) : visibleLocationSuggestions.length ? (
                       visibleLocationSuggestions.map((suggestion) => (
@@ -1728,7 +1728,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                       ))
                     ) : (
                       <button className="suggest-option" type="button" disabled>
-                        Kein passender Standort gefunden
+                        Kein passender Standort verfügbar
                       </button>
                     )}
                   </div>
@@ -1744,7 +1744,7 @@ export default function Home({ initialShowcase, platformInsights }) {
               </label>
               <button className="primary-action" type="submit" disabled={loading}>
                 {loading ? <LoaderCircle className="spin" size={19} /> : <Search size={19} />}
-                Stellen finden
+                Recherche starten
               </button>
               </form>
             )}
@@ -1764,7 +1764,7 @@ export default function Home({ initialShowcase, platformInsights }) {
           <div className="error-banner error-panel" role="alert">
             <AlertTriangle size={20} aria-hidden="true" />
             <div>
-              <strong>Die Suche konnte nicht geladen werden.</strong>
+              <strong>Die Recherche konnte nicht geladen werden.</strong>
               <span>{error}</span>
             </div>
           </div>
@@ -1775,13 +1775,13 @@ export default function Home({ initialShowcase, platformInsights }) {
             <section className="results-header" id="ergebnisse" aria-live="polite">
               <div>
                 <p className="eyebrow">Ergebnisse</p>
-                <h2>{loading ? "Aktuelle Stellenangebote werden geladen..." : `${jobsWithClientFilters.length} Stellenangebote${totalResults ? ` von ${totalResults}` : ""}`}</h2>
+                <h2>{loading ? "Stellenanzeigen werden geladen..." : `${jobsWithClientFilters.length} Stellenanzeigen${totalResults ? ` von ${totalResults}` : ""}`}</h2>
               </div>
               <div className="results-actions">
-                <p>{loading ? "Die offiziellen BA-Daten werden live geladen." : "Filtern, sortieren, tracken und exportieren Sie relevante Treffer direkt für Ihr Recruiting-Team."}</p>
+                <p>{loading ? "Die offiziellen BA-Daten werden live geladen." : "Filtern, bewerten und exportieren Sie relevante Treffer direkt für Ihr Team oder Ihr Kundenmandat."}</p>
                 <button className="ghost-action" type="button" onClick={handleExport} disabled={exporting || loading}>
                   {exporting ? <LoaderCircle className="spin" size={19} /> : <Download size={19} />}
-                  CSV exportieren
+                  CSV herunterladen
                 </button>
               </div>
             </section>
@@ -1801,7 +1801,7 @@ export default function Home({ initialShowcase, platformInsights }) {
 
               <div className="results-filters">
                 <label>
-                  <span>Suche in Ergebnissen</span>
+                  <span>Treffer durchsuchen</span>
                   <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} />
                 </label>
                 <label>
@@ -1809,7 +1809,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                   <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
                     <option value="relevance">Relevanz</option>
                     <option value="salary">Vergütung</option>
-                    <option value="title">Titel</option>
+                    <option value="title">Stellentitel</option>
                     <option value="employer">Arbeitgeber</option>
                   </select>
                 </label>
@@ -1817,31 +1817,31 @@ export default function Home({ initialShowcase, platformInsights }) {
             </div>
 
             <div className="filter-note">
-              Die Bundesagentur für Arbeit kann Treffer aus dem Umkreis liefern. Mit "Nur exakte Standorte" werden nur Stellenangebote für den eingegebenen Ort angezeigt und exportiert.
+              Die Bundesagentur für Arbeit kann auch Treffer aus dem Umkreis liefern. Mit "Nur exakte Standorte" sehen und exportieren Sie ausschließlich Anzeigen für den angegebenen Ort.
             </div>
 
             {rawJobs.length ? (
               <ClientErrorBoundary
                 compact
-                title="Die Recruiting-Analyse ist temporär nicht verfügbar."
-                description="Die Ergebnisliste bleibt nutzbar. Laden Sie die Analytik bei Bedarf separat neu."
+                title="Die Analyseansicht ist momentan nicht verfügbar."
+                description="Die Ergebnisliste bleibt nutzbar. Laden Sie die Analyse bei Bedarf separat neu."
               >
                 <Dashboard>
                   <article className="dashboard-card">
                     <div className="dashboard-card-header">
                       <div>
-                        <p className="eyebrow">Vergütungsverteilung</p>
-                        <h3>Filter per Gehaltsklasse</h3>
+                        <p className="eyebrow">Vergütungsübersicht</p>
+                        <h3>Treffer nach Gehalt einordnen</h3>
                       </div>
-                      <button className="toolbar-chip" type="button" onClick={() => setSalaryBucket("all")}>Zuruecksetzen</button>
+                      <button className="toolbar-chip" type="button" onClick={() => setSalaryBucket("all")}>Filter zurücksetzen</button>
                     </div>
                     {renderSalaryChart()}
                   </article>
                   <article className="dashboard-card">
                     <div className="dashboard-card-header">
                       <div>
-                        <p className="eyebrow">Top-Arbeitgeber</p>
-                        <h3>Unternehmen im geladenen Datensatz</h3>
+                        <p className="eyebrow">Arbeitgeber im Fokus</p>
+                        <h3>Häufige Arbeitgeber im aktuellen Datensatz</h3>
                       </div>
                       <Sparkles size={18} />
                     </div>
@@ -1854,7 +1854,7 @@ export default function Home({ initialShowcase, platformInsights }) {
         ) : null}
 
         {loading ? (
-          <section className="results-grid" aria-label="Stellenangebote werden geladen">
+          <section className="results-grid" aria-label="Stellenanzeigen werden geladen">
             {Array.from({ length: 6 }).map((_, index) => (
               <JobCardSkeleton key={index} />
             ))}
@@ -1864,8 +1864,8 @@ export default function Home({ initialShowcase, platformInsights }) {
             {viewMode === "kanban" ? (
               <ClientErrorBoundary
                 compact
-                title="Der Job-Tracker konnte nicht geladen werden."
-                description="Wechseln Sie zur Gitter- oder Listenansicht, waehrend der Tracker neu initialisiert wird."
+                title="Der Tracker ist momentan nicht verfügbar."
+                description="Wechseln Sie vorübergehend zur Gitter-, Listen- oder Kartenansicht."
               >
                 <KanbanBoard
                   columns={kanbanJobs}
@@ -1884,18 +1884,18 @@ export default function Home({ initialShowcase, platformInsights }) {
                 <div className="map-explorer-shell">
                   <aside className="map-guide-panel">
                     <div className="map-guide-header">
-                      <p className="eyebrow">Guide villes DE</p>
-                      <h3>Reperez les marches ou il faut candidater vite</h3>
-                      <p>Vue inspiree d&apos;une carte de repertoire: la carte donne la densite, le panneau vous aide a choisir la bonne ville allemande.</p>
+                      <p className="eyebrow">Deutschlandkarte</p>
+                      <h3>Relevante Zielmärkte schneller erkennen</h3>
+                      <p>Die Karte zeigt, in welchen Städten Ihre aktuelle Recherche Schwerpunkte bildet. So priorisieren Sie Regionen und Arbeitgeber gezielter.</p>
                     </div>
 
                     <div className="map-guide-stats">
                       <div className="map-guide-stat">
-                        <span>Villes visibles</span>
+                        <span>Städte im Blick</span>
                         <strong>{cityGuide.length}</strong>
                       </div>
                       <div className="map-guide-stat">
-                        <span>Offres cartographiees</span>
+                        <span>Kartierte Treffer</span>
                         <strong>{jobsWithClientFilters.length}</strong>
                       </div>
                     </div>
@@ -1908,10 +1908,10 @@ export default function Home({ initialShowcase, platformInsights }) {
                       >
                         <span className="map-city-rank">DE</span>
                         <div className="map-city-copy">
-                          <strong>Toute l&apos;Allemagne</strong>
-                          <span>Vue generale pour comparer les bassins d&apos;emploi avant de cibler une ville.</span>
+                          <strong>Gesamtmarkt Deutschland</strong>
+                          <span>Gesamtüberblick über alle Städte Ihrer aktuellen Recherche, bevor Sie einzelne Regionen vertiefen.</span>
                         </div>
-                        <span className="map-city-signal">{cityGuide.length} villes actives</span>
+                        <span className="map-city-signal">{cityGuide.length} aktive Städte</span>
                       </button>
                       {cityGuide.map((entry) => (
                         <button
@@ -1934,8 +1934,8 @@ export default function Home({ initialShowcase, platformInsights }) {
                   <div className="map-stage">
                     <div className="map-stage-overlay map-stage-overlay-left">
                       <p className="map-kicker">KhalfaJobs Map</p>
-                      <h3>Trouvez les bons bassins d&apos;emploi allemands.</h3>
-                      <p>Selectionnez une ville pour afficher les offres associees et prioriser vos candidatures.</p>
+                      <h3>BA-Stellenanzeigen geografisch einordnen</h3>
+                      <p>Wählen Sie eine Stadt, um passende Anzeigen direkt im Kontext Ihres Suchprofils zu prüfen.</p>
                     </div>
 
                     <div className="map-stage-overlay map-stage-overlay-right">
@@ -1944,8 +1944,8 @@ export default function Home({ initialShowcase, platformInsights }) {
                         <span>{keyword || "Recherche libre"} · {selectedMapCity === ALL_MAP_CITIES ? "Allemagne" : (selectedMapCity || location || "Allemagne")}</span>
                       </div>
                       <div className="map-stage-toggles">
-                        <span className="map-stage-chip">Carte live</span>
-                        <span className="map-stage-chip">{selectedCityGuide ? `${selectedCityGuide.count} offres` : `${jobsWithClientFilters.length} offres`}</span>
+                        <span className="map-stage-chip">Live-Karte</span>
+                        <span className="map-stage-chip">{selectedCityGuide ? `${selectedCityGuide.count} Treffer` : `${jobsWithClientFilters.length} Treffer`}</span>
                       </div>
                     </div>
 
@@ -1956,13 +1956,13 @@ export default function Home({ initialShowcase, platformInsights }) {
                     <div className="map-results-panel">
                       <div className="map-results-header">
                         <div>
-                          <p className="eyebrow">Ville focus</p>
-                          <h3>{selectedCityGuide?.cityName || "Toutes les villes"}</h3>
-                          <p>{selectedCityGuide?.note || "Les offres disponibles pour votre recherche actuelle."}</p>
+                          <p className="eyebrow">Fokusregion</p>
+                          <h3>{selectedCityGuide?.cityName || "Alle Städte"}</h3>
+                          <p>{selectedCityGuide?.note || "Alle aktuell verfügbaren Treffer zu Ihrer laufenden Recherche."}</p>
                         </div>
                         {selectedCityGuide ? (
                           <button className="toolbar-chip" type="button" onClick={() => setSelectedMapCity(ALL_MAP_CITIES)}>
-                            Reinitialiser
+                            Übersicht anzeigen
                           </button>
                         ) : null}
                       </div>
@@ -2013,12 +2013,12 @@ export default function Home({ initialShowcase, platformInsights }) {
             <div className="zero-illustration" aria-hidden="true">
               <AlertTriangle size={42} />
             </div>
-            <h3>Keine passenden Stellenangebote gefunden</h3>
-            <p>Die Suche wurde erfolgreich ausgeführt, liefert mit den aktuellen Kriterien jedoch keine passenden Treffer.</p>
+            <h3>Keine passenden Stellenanzeigen gefunden</h3>
+            <p>Die Recherche wurde erfolgreich ausgeführt, liefert mit den aktuellen Kriterien jedoch keine relevanten Treffer.</p>
             <ul className="zero-actions">
-              <li>Prüfen Sie die Schreibweise von Beruf und Standort.</li>
+              <li>Prüfen Sie die Schreibweise von Rolle und Standort.</li>
               <li>Deaktivieren Sie "Nur exakte Standorte", wenn auch angrenzende Orte relevant sind.</li>
-              <li>Verwenden Sie einen allgemeineren Suchbegriff für eine breitere Recherche.</li>
+              <li>Verwenden Sie einen allgemeineren Suchbegriff für eine breitere Marktübersicht.</li>
             </ul>
           </div>
         ) : (
@@ -2027,8 +2027,8 @@ export default function Home({ initialShowcase, platformInsights }) {
               <div className="zero-illustration" aria-hidden="true">
                 <Search size={42} />
               </div>
-              <h3>Aktuelle Stellenangebote</h3>
-              <p>Starten Sie eine Suche nach Beruf und Standort, um relevante Stellenangebote sofort zu prüfen, zu exportieren, als Favorit zu speichern oder per Job-Alarm zu verfolgen.</p>
+              <h3>Starten Sie mit Ihrer ersten Recherche</h3>
+              <p>Durchsuchen Sie BA-Stellenanzeigen nach Rolle und Standort, speichern Sie relevante Treffer und exportieren Sie Ihre Shortlist in wenigen Schritten.</p>
             </div>
 
             <section className="insights-strip" aria-label="Produkt- und Vertrauensmerkmale">
@@ -2045,8 +2045,8 @@ export default function Home({ initialShowcase, platformInsights }) {
               <div className="showcase-main">
                 <div className="showcase-header">
                   <div>
-                    <p className="eyebrow">Neueste Beispiel-Treffer</p>
-                    <h3>Direkter Einblick in aktuelle Stellenangebote</h3>
+                    <p className="eyebrow">Beispielhafte Treffer</p>
+                    <h3>So sehen strukturierte BA-Recherchen in KhalfaJobs aus</h3>
                   </div>
                 </div>
                 <div className="results-grid results-grid-showcase">
@@ -2095,7 +2095,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                 <article className="showcase-list-card">
                   <p className="eyebrow">Trends</p>
                   <ul>
-                    {(initialShowcase?.trends?.length ? initialShowcase.trends : ["Live-Daten stehen für Ihre Recruiting-Suche bereit."]).map((entry) => (
+                    {(initialShowcase?.trends?.length ? initialShowcase.trends : ["Live-Daten stehen für Ihre nächste Recherche bereit."]).map((entry) => (
                       <li key={entry}><span>{entry}</span></li>
                     ))}
                   </ul>
@@ -2107,9 +2107,9 @@ export default function Home({ initialShowcase, platformInsights }) {
 
         <section className="credibility-section" aria-label="Einsatzszenarien">
           <div className="section-heading">
-            <p className="eyebrow">Für Recruiting-Workflows</p>
-            <h2>Für Recruiting-Teams, Personalberater und HR-Dienstleister entwickelt</h2>
-            <p>Statt generischer Versprechen zeigt die Plattform konkrete Einsatzfälle für Recherche, Marktbeobachtung und exportierbare Shortlists.</p>
+            <p className="eyebrow">Einsatzszenarien</p>
+            <h2>Entwickelt für Recruiting-Agenturen, Personalberater und Executive Search</h2>
+            <p>KhalfaJobs unterstützt konkrete B2B-Workflows: von der Marktanalyse über Shortlists bis zum laufenden Monitoring neuer Ausschreibungen.</p>
           </div>
           <div className="use-case-grid">
             {recruitingUseCases.map((useCase) => (
@@ -2124,15 +2124,15 @@ export default function Home({ initialShowcase, platformInsights }) {
 
         <section className="pricing-section" id="pricing" aria-label="Preise">
           <div className="section-heading">
-            <p className="eyebrow">Preise</p>
-            <h2>Klare Pakete für Suche, Alerts und Export</h2>
-            <p>Alle Pakete sind auf Recruiting-Workflows ausgerichtet. Die Agentur-Variante bleibt absichtlich individuell, wenn Teamgröße oder Integrationen abgestimmt werden müssen.</p>
+            <p className="eyebrow">Tarife</p>
+            <h2>Tarife für strukturierte Recherche, Monitoring und Teamarbeit</h2>
+            <p>Jeder Tarif ist auf einen klaren Nutzungskontext ausgelegt: vom einzelnen Recruiter bis zur Agentur mit gemeinsamem Workflow und Integrationen.</p>
           </div>
           <div className="plan-grid">
             {pricingPlans.map((plan) => (
               <article key={plan.name} className={`plan-card${plan.highlighted ? " is-highlighted" : ""}`}>
                 <div>
-                  {plan.highlighted ? <span className="plan-badge">Empfohlen</span> : null}
+                  {plan.highlighted ? <span className="plan-badge">Für die meisten Agenturen</span> : null}
                   <h3>{plan.name}</h3>
                   <p className="plan-price">{plan.price}</p>
                   <p>{plan.description}</p>
@@ -2152,8 +2152,8 @@ export default function Home({ initialShowcase, platformInsights }) {
 
         <ClientErrorBoundary
           compact
-          title="Der Job-Alarm-Bereich ist temporär gestört."
-          description="Die Suche und der CSV-Export bleiben nutzbar. Laden Sie den Alarm-Bereich separat neu."
+          title="Der Alert-Bereich ist momentan nicht verfügbar."
+          description="Recherche und CSV-Export bleiben nutzbar. Laden Sie den Alert-Bereich bei Bedarf separat neu."
         >
           <AlertManager
             agentOpen={agentOpen}
@@ -2170,7 +2170,8 @@ export default function Home({ initialShowcase, platformInsights }) {
                 {subscriptions.map((subscription) => (
                   <article className="subscription-row" key={subscription.id}>
                     <div className="subscription-copy">
-                      <span className="subscription-kicker">Aktiver Job-Alarm</span>
+                      <span className="subscription-kicker">Aktiver Alert</span>
+                      
                       <strong>{normalizeSubscriptionText(subscription.keyword) || "Suchprofil fehlt"}</strong>
                       <span className="subscription-location">{normalizeSubscriptionText(subscription.location) || "Standort fehlt"}</span>
                     </div>
@@ -2178,11 +2179,11 @@ export default function Home({ initialShowcase, platformInsights }) {
                     <div className="subscription-actions">
                       <button className="secondary-action" type="button" onClick={() => handleDeleteAlert(subscription.id)} disabled={saasLoading}>
                         <Trash2 size={18} />
-                        Löschen
+                        Entfernen
                       </button>
                       <button className="secondary-action" type="button" onClick={() => handleSendNow(subscription.id)} disabled={saasLoading}>
                         <Send size={18} />
-                        Jetzt versenden
+                        Jetzt senden
                       </button>
                     </div>
                   </article>
@@ -2194,7 +2195,7 @@ export default function Home({ initialShowcase, platformInsights }) {
             <div className="agent-body">
               <div className="agent-summary">
                 <strong>Einrichtung in zwei Schritten</strong>
-                <span>Legen Sie zuerst Ihren Agentur-Zugang an, definieren Sie anschließend Beruf und Standort und prüfen Sie direkt die Vorschau Ihres täglichen E-Mail-Digests.</span>
+                <span>Legen Sie zuerst Ihren Zugang an, definieren Sie danach Suchprofil und Standort und prüfen Sie direkt die Vorschau Ihres Alerts.</span>
               </div>
 
               <div className="saas-grid">
@@ -2206,7 +2207,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                       onClick={() => setAuthMode("register")}
                       style={{ flex: 1, minHeight: "34px", fontSize: "0.78rem" }}
                     >
-                      Zugang erstellen
+                      Registrieren
                     </button>
                     <button
                       type="button"
@@ -2214,7 +2215,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                       onClick={() => setAuthMode("login")}
                       style={{ flex: 1, minHeight: "34px", fontSize: "0.78rem" }}
                     >
-                      Einloggen
+                      Anmelden
                     </button>
                   </div>
 
@@ -2222,40 +2223,40 @@ export default function Home({ initialShowcase, platformInsights }) {
                     <form onSubmit={handleCreateAgency} style={{ display: "grid", gap: "14px" }}>
                       <div className="panel-title">
                         <KeyRound size={19} aria-hidden="true" />
-                        <h3>1. Agentur-Zugang einrichten</h3>
+                        <h3>1. Zugang für Ihre Agentur anlegen</h3>
                       </div>
                       <label>
-                        <span>Agenturname</span>
+                        <span>Name der Agentur</span>
                         <input value={agencyForm.name} onChange={(event) => setAgencyForm({ ...agencyForm, name: event.target.value })} />
                       </label>
                       <label>
-                        <span>Kontakt-E-Mail</span>
+                        <span>Geschäftliche E-Mail-Adresse</span>
                         <input type="email" value={agencyForm.email} onChange={(event) => setAgencyForm({ ...agencyForm, email: event.target.value })} />
                       </label>
                       <button className="primary-action" type="submit" disabled={saasLoading}>
                         {saasLoading ? <LoaderCircle className="spin" size={19} /> : <Plus size={19} />}
-                        {agency ? "Weiteren Zugang anlegen" : "Agentur-Zugang erstellen"}
+                        {agency ? "Weiteren Zugang anlegen" : "Zugang anlegen"}
                       </button>
                     </form>
                   ) : (
                     <form onSubmit={handleLoginAgency} style={{ display: "grid", gap: "14px" }}>
                       <div className="panel-title">
                         <KeyRound size={19} aria-hidden="true" />
-                        <h3>Agentur-Schlüssel eingeben</h3>
+                        <h3>Vorhandenen Zugang öffnen</h3>
                       </div>
                       <label>
-                        <span>Agentur-Schlüssel (API-Key)</span>
+                        <span>Agentur-Schlüssel</span>
                         <input
                           type="password"
                           required
-                          placeholder="emp_..."
+                          placeholder="API-Schlüssel eingeben"
                           value={loginKey}
                           onChange={(event) => setLoginKey(event.target.value)}
                         />
                       </label>
                       <button className="primary-action" type="submit" disabled={saasLoading}>
                         {saasLoading ? <LoaderCircle className="spin" size={19} /> : <KeyRound size={19} />}
-                        Einloggen
+                        Anmelden
                       </button>
                     </form>
                   )}
@@ -2263,12 +2264,12 @@ export default function Home({ initialShowcase, platformInsights }) {
                   {agency ? (
                     <div className="agency-summary-card" style={{ marginTop: "16px" }}>
                       <div>
-                        <span>Aktiver Agentur-Zugang</span>
+                        <span>Aktiver Zugang</span>
                         <strong>{agency.name}</strong>
                         <p style={{ margin: 0 }}>{agency.email}</p>
-                        <p style={{ margin: "4px 0 0 0", fontSize: "13px" }}>{agency.email_verified ? "E-Mail-Adresse bestätigt" : "E-Mail-Adresse noch nicht bestätigt"}</p>
+                        <p style={{ margin: "4px 0 0 0", fontSize: "13px" }}>{agency.email_verified ? "E-Mail-Adresse bestätigt" : "Bestätigung der E-Mail-Adresse ausstehend"}</p>
                         <details style={{ marginTop: "8px", fontSize: "12px", cursor: "pointer" }}>
-                          <summary style={{ color: "var(--muted)" }}>Schlüssel anzeigen</summary>
+                          <summary style={{ color: "var(--muted)" }}>Zugangsschlüssel anzeigen</summary>
                           <code style={{ display: "block", marginTop: "4px", padding: "4px", backgroundColor: "var(--paper)", wordBreak: "break-all" }}>{agency.api_key}</code>
                         </details>
                       </div>
@@ -2276,12 +2277,12 @@ export default function Home({ initialShowcase, platformInsights }) {
                         {!agency.email_verified ? (
                           <button className="secondary-action" type="button" onClick={handleResendVerification} disabled={verificationSending}>
                             {verificationSending ? <LoaderCircle className="spin" size={17} /> : <Mail size={17} />}
-                            Verifizierung erneut senden
+                            Bestätigungs-E-Mail erneut senden
                           </button>
                         ) : null}
                         <button className="secondary-action" type="button" onClick={handleForgetAgency}>
                           <LogOut size={17} />
-                          Zugang entfernen
+                          Diesen Zugang entfernen
                         </button>
                       </div>
                     </div>
@@ -2296,10 +2297,10 @@ export default function Home({ initialShowcase, platformInsights }) {
                 }}>
                   <div className="panel-title">
                     <Mail size={19} aria-hidden="true" />
-                    <h3>2. Job-Alarm anlegen</h3>
+                    <h3>2. Alert anlegen</h3>
                   </div>
                   <label className="suggest-field">
-                    <span>Beruf oder Suchprofil</span>
+                    <span>Rolle oder Suchprofil</span>
                     <div className="suggest-input-wrap">
                       <input
                         value={alertForm.keyword}
@@ -2383,7 +2384,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                         {loadingAgentLocationSuggestions ? (
                           <button className="suggest-option" type="button" disabled>
                             <LoaderCircle size={16} className="spin-icon" />
-                            Orte werden geladen...
+                            Standorte werden geladen...
                           </button>
                         ) : visibleAgentLocationSuggestions.length ? (
                           visibleAgentLocationSuggestions.map((suggestion) => (
@@ -2398,18 +2399,18 @@ export default function Home({ initialShowcase, platformInsights }) {
                           ))
                         ) : (
                           <button className="suggest-option" type="button" disabled>
-                            Kein passender Standort gefunden
+                            Kein passender Standort verfügbar
                           </button>
                         )}
                       </div>
                     ) : null}
                   </label>
-                  <p className="form-hint">Der Job-Alarm arbeitet mit exakten Standorten, damit nur wirklich relevante Treffer in Ihrer täglichen Zusammenfassung erscheinen.</p>
+                  <p className="form-hint">Alerts arbeiten mit exakten Standorten, damit Ihre tägliche Zusammenfassung nur wirklich relevante Treffer enthält.</p>
                   <button className="cta-action" type="submit" disabled={saasLoading}>
                     <Plus size={19} />
-                    Job-Alarm erstellen
+                    Alert erstellen
                   </button>
-                  <div className="alarm-trust-line">Datenquelle: Bundesagentur für Arbeit · Versand nur nach bestätigter Agentur-E-Mail · Starter = 1 Alarm, Agentur-Zugang = bis zu 200 CSV-Treffer</div>
+                  <div className="alarm-trust-line">Datenquelle: Bundesagentur für Arbeit · Versand nur nach bestätigter E-Mail-Adresse · Starter = 1 Alert, Agentur-Zugang = bis zu 200 CSV-Treffer</div>
                 </form>
               </div>
 
@@ -2418,8 +2419,8 @@ export default function Home({ initialShowcase, platformInsights }) {
                   <article className="workspace-card">
                     <div className="workspace-card-header">
                       <div>
-                        <p className="eyebrow">Authentifizierung und Team</p>
-                        <h3>Multi-Agentur-Zugang mit Rollenmodell</h3>
+                        <p className="eyebrow">Zugang und Team</p>
+                        <h3>Gemeinsamer Agenturzugang mit Rollen</h3>
                       </div>
                       <Users size={18} />
                     </div>
@@ -2430,7 +2431,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                         <strong>{workspaceReporting?.active_members || 0}</strong>
                       </div>
                       <div>
-                        <span>Bestätigte Absenderadresse</span>
+                        <span>Verifizierte Absenderadresse</span>
                         <strong>{agency.email_verified ? "Ja" : "Ausstehend"}</strong>
                       </div>
                     </div>
@@ -2467,43 +2468,43 @@ export default function Home({ initialShowcase, platformInsights }) {
                             </div>
                           </li>
                         );
-                      }) : <li><span>Der erste Owner wird bei der Agentur-Anlage automatisch erzeugt.</span></li>}
+                      }) : <li><span>Der erste Owner wird bei der Registrierung automatisch angelegt.</span></li>}
                     </ul>
 
                     {/* Seat Limit Warning or Invite Controls */}
                     <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "2px solid #1f1d1a" }}>
                       {workspaceMembers.length >= (workspaceBilling?.seats || 1) ? (
                         <p style={{ fontSize: "12px", color: "#b5361f", margin: 0 }}>
-                          ⚠️ Maximale Anzahl an Sitzplätzen ({workspaceBilling?.seats || 1}) erreicht. Bitte upgraden Sie Ihren Billing-Plan, um mehr Mitglieder einzuladen.
+                          Maximale Anzahl an Sitzplätzen ({workspaceBilling?.seats || 1}) erreicht. Bitte wechseln Sie in einen größeren Tarif, um weitere Mitglieder einzuladen.
                         </p>
                       ) : (
                         <div>
                           {showInviteForm ? (
                             <form onSubmit={handleInviteMember} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                               <label style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                                <span style={{ fontSize: "12px", fontWeight: "bold" }}>Name:</span>
+                                <span style={{ fontSize: "12px", fontWeight: "bold" }}>Name</span>
                                 <input
                                   type="text"
                                   required
                                   value={inviteName}
                                   onChange={(e) => setInviteName(e.target.value)}
-                                  placeholder="Name des Mitglieds..."
+                                  placeholder="Vollständigen Namen eingeben"
                                   style={{ padding: "6px", fontSize: "13px", border: "1px solid #1f1d1a", backgroundColor: "#fffaf1" }}
                                 />
                               </label>
                               <label style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                                <span style={{ fontSize: "12px", fontWeight: "bold" }}>E-Mail:</span>
+                                <span style={{ fontSize: "12px", fontWeight: "bold" }}>E-Mail-Adresse</span>
                                 <input
                                   type="email"
                                   required
                                   value={inviteEmail}
                                   onChange={(e) => setInviteEmail(e.target.value)}
-                                  placeholder="recruiter@agency.de..."
+                                  placeholder="name@agentur.de"
                                   style={{ padding: "6px", fontSize: "13px", border: "1px solid #1f1d1a", backgroundColor: "#fffaf1" }}
                                 />
                               </label>
                               <label style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                                <span style={{ fontSize: "12px", fontWeight: "bold" }}>Rolle:</span>
+                                <span style={{ fontSize: "12px", fontWeight: "bold" }}>Rolle</span>
                                 <select
                                   value={inviteRole}
                                   onChange={(e) => setInviteRole(e.target.value)}
@@ -2521,7 +2522,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                                   disabled={inviteLoading}
                                   style={{ padding: "6px 14px", fontSize: "12px", backgroundColor: "#ffce45", border: "1px solid #1f1d1a" }}
                                 >
-                                  {inviteLoading ? "Einladen..." : "Einladung senden"}
+                                  {inviteLoading ? "Einladung wird gesendet..." : "Einladung senden"}
                                 </button>
                                 <button
                                   type="button"
@@ -2540,7 +2541,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                               onClick={() => setShowInviteForm(true)}
                               style={{ width: "100%", padding: "8px", fontSize: "13px", border: "1px solid #1f1d1a", backgroundColor: "#ffce45" }}
                             >
-                              Mitglied einladen
+                              Teammitglied einladen
                             </button>
                           )}
                         </div>
@@ -2551,8 +2552,8 @@ export default function Home({ initialShowcase, platformInsights }) {
                   <article className="workspace-card">
                     <div className="workspace-card-header">
                       <div>
-                        <p className="eyebrow">Billing SaaS</p>
-                        <h3>Plan, Sitzplätze und Laufzeit</h3>
+                        <p className="eyebrow">Tarif und Kapazität</p>
+                        <h3>Tarif, Plätze und Laufzeit</h3>
                       </div>
                       <CreditCard size={18} />
                     </div>
@@ -2570,14 +2571,14 @@ export default function Home({ initialShowcase, platformInsights }) {
                         <strong>{workspaceBilling?.seats || 1}</strong>
                       </div>
                     </div>
-                    <p className="workspace-muted">Die Billing-Struktur ist für spätere Stripe- oder Paddle-Anbindung vorbereitet.</p>
+                    <p className="workspace-muted">Die Abrechnungslogik ist vorbereitet und kann bei Bedarf um Zahlungsanbieter erweitert werden.</p>
                   </article>
 
                   <article className="workspace-card">
                     <div className="workspace-card-header">
                       <div>
-                        <p className="eyebrow">Suche und Reporting</p>
-                        <h3>Historie und Business-Metriken</h3>
+                        <p className="eyebrow">Recherche und Reporting</p>
+                        <h3>Aktivität und Verlauf</h3>
                       </div>
                       <BarChart3 size={18} />
                     </div>
@@ -2597,15 +2598,15 @@ export default function Home({ initialShowcase, platformInsights }) {
                           <strong>{entry.keyword || "Allgemeine Suche"}</strong>
                           <span>{entry.location || "Deutschland"} · {entry.result_count} Treffer</span>
                         </li>
-                      )) : <li><span>Noch keine gespeicherte Suchhistorie vorhanden.</span></li>}
+                      )) : <li><span>Noch keine gespeicherte Recherchehistorie vorhanden.</span></li>}
                     </ul>
                   </article>
 
                   <article className="workspace-card">
                     <div className="workspace-card-header">
                       <div>
-                        <p className="eyebrow">Pipeline und Kandidatendossiers</p>
-                        <h3>Geteilte Recruiting-Pipeline</h3>
+                        <p className="eyebrow">Pipeline und Dossiers</p>
+                        <h3>Geteilte Arbeitsliste für Ihr Team</h3>
                       </div>
                       <FolderKanban size={18} />
                     </div>
@@ -2622,15 +2623,15 @@ export default function Home({ initialShowcase, platformInsights }) {
                           <span>{dossier.location}</span>
                           <em>{statusLabels[dossier.status] || dossier.status}</em>
                         </li>
-                      )) : <li><span>Favoriten aus dem Job-Tracker werden hier als gemeinsame Dossiers gespeichert.</span></li>}
+                      )) : <li><span>Favoriten aus dem Tracker werden hier als gemeinsame Dossiers gespeichert.</span></li>}
                     </ul>
                   </article>
 
                   <article className="workspace-card">
                     <div className="workspace-card-header">
                       <div>
-                        <p className="eyebrow">DSGVO und E-Mail-Governance</p>
-                        <h3>Vertrauen, Audit Trail und Double Opt-in</h3>
+                        <p className="eyebrow">Datenschutz und Versand</p>
+                        <h3>Vertrauen, Nachvollziehbarkeit und Double Opt-in</h3>
                       </div>
                       <ShieldCheck size={18} />
                     </div>
@@ -2645,8 +2646,8 @@ export default function Home({ initialShowcase, platformInsights }) {
                   <article className="workspace-card">
                     <div className="workspace-card-header">
                       <div>
-                        <p className="eyebrow">CRM / ATS Integrationen</p>
-                        <h3>Verbindungsstatus für externe Systeme</h3>
+                        <p className="eyebrow">CRM- und ATS-Integrationen</p>
+                        <h3>Verbindungen zu externen Systemen</h3>
                       </div>
                       <History size={18} />
                     </div>
@@ -2675,7 +2676,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                               {integration.last_sync_at ? (
                                 <span style={{ fontSize: "11px", color: "#6b665c" }}>Letzter Abgleich: {new Date(integration.last_sync_at).toLocaleString("de-DE")}</span>
                               ) : (
-                                <span style={{ fontSize: "11px", color: "#6b665c" }}>Bisher keine Syncs</span>
+                                <span style={{ fontSize: "11px", color: "#6b665c" }}>Noch keine Synchronisation</span>
                               )}
                               <button
                                 type="button"
@@ -2691,11 +2692,11 @@ export default function Home({ initialShowcase, platformInsights }) {
                               {connectingCrm?.provider === integration.provider ? (
                                 <form onSubmit={handleConnectCrm} style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px", width: "100%" }}>
                                   <label style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                                    <span style={{ fontSize: "12px", fontWeight: "bold" }}>API-Schlüssel eingeben:</span>
+                                    <span style={{ fontSize: "12px", fontWeight: "bold" }}>API-Schlüssel</span>
                                     <input
                                       type="password"
                                       required
-                                      placeholder="Schlüssel eingeben..."
+                                      placeholder="API-Schlüssel einfügen"
                                       value={crmApiKey}
                                       onChange={(e) => setCrmApiKey(e.target.value)}
                                       style={{ padding: "6px", fontSize: "13px", border: "1px solid #1f1d1a", backgroundColor: "#fffaf1" }}
@@ -2708,7 +2709,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                                       disabled={crmActionLoading}
                                       style={{ padding: "4px 12px", fontSize: "12px", backgroundColor: "#ffce45", border: "1px solid #1f1d1a" }}
                                     >
-                                      Aktivieren
+                                      Verbindung aktivieren
                                     </button>
                                     <button
                                       type="button"
@@ -2727,7 +2728,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                                   style={{ padding: "4px 12px", fontSize: "12px", border: "1px solid #1f1d1a", backgroundColor: "#ffce45" }}
                                   onClick={() => setConnectingCrm(integration)}
                                 >
-                                  Verbinden
+                                  Verbindung einrichten
                                 </button>
                               )}
                             </div>
@@ -2735,7 +2736,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                         </li>
                       )) : <li><span>Personio, HubSpot und Greenhouse können als Integrationsziele vorbereitet werden.</span></li>}
                     </ul>
-                    <p className="workspace-muted">Diese Integrationen sind als SaaS-Fundament angelegt. Sie können diese hier direkt verbinden und aktivieren.</p>
+                    <p className="workspace-muted">Diese Integrationen sind als Teil des Agentur-Workflows vorbereitet und können hier verbunden werden.</p>
                   </article>
                 </section>
               ) : null}
@@ -2743,7 +2744,7 @@ export default function Home({ initialShowcase, platformInsights }) {
               <ClientErrorBoundary
                 compact
                 title="Die E-Mail-Vorschau konnte nicht geladen werden."
-                description="Der Agentur-Bereich bleibt verfügbar. Laden Sie nur die Digest-Vorschau neu."
+                description="Der Agentur-Bereich bleibt verfügbar. Laden Sie nur die Vorschau neu."
               >
                 <EmailDigestPreview
                   agencyName={agency?.name}
@@ -2763,25 +2764,25 @@ export default function Home({ initialShowcase, platformInsights }) {
 
         <section className="data-source-section" id="datenquelle" aria-label="Datenquelle">
           <div className="section-heading">
-            <p className="eyebrow">Datenquelle</p>
-            <h2>Recherche auf Basis der Bundesagentur für Arbeit</h2>
-            <p>Die Plattform strukturiert öffentliche BA-Stellenangebote für Recruiting-Workflows. Die Originalanzeige bleibt dabei die maßgebliche Primärquelle.</p>
+            <p className="eyebrow">Datenbasis</p>
+            <h2>Recherche auf Basis öffentlicher BA-Stellenanzeigen</h2>
+            <p>KhalfaJobs strukturiert öffentliche BA-Daten für Recruiting-Agenturen. Die Originalanzeige bleibt dabei immer die maßgebliche Primärquelle.</p>
           </div>
           <div className="data-source-grid">
             <article className="use-case-card">
               <ShieldCheck size={20} aria-hidden="true" />
-              <h3>Öffentliche Primärquelle</h3>
-              <p>Suchanfragen werden live gegen die BA-Daten verarbeitet, statt mit statischen Beispielinhalten zu arbeiten.</p>
+              <h3>Verlässliche Primärquelle</h3>
+              <p>Suchanfragen werden live gegen die BA-Daten verarbeitet, statt mit statischen Beispieldaten zu arbeiten.</p>
             </article>
             <article className="use-case-card">
               <Download size={20} aria-hidden="true" />
               <h3>Export für Shortlists</h3>
-              <p>Treffer können gespeichert, bewertet und als CSV für Kundenprojekte oder interne Recherchen exportiert werden.</p>
+              <p>Treffer lassen sich speichern, priorisieren und als CSV für Kundenprojekte oder interne Übergaben exportieren.</p>
             </article>
             <article className="use-case-card">
               <Mail size={20} aria-hidden="true" />
-              <h3>Job-Alarm für Monitoring</h3>
-              <p>Wiederkehrende Suchen lassen sich über E-Mail-Digests überwachen, sobald Agenturzugang und Versand eingerichtet sind.</p>
+              <h3>Alerts für Monitoring</h3>
+              <p>Wiederkehrende Recherchen lassen sich per E-Mail überwachen, sobald Zugang und Versand eingerichtet sind.</p>
             </article>
           </div>
         </section>

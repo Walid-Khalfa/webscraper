@@ -3,12 +3,12 @@ import SiteFooter from "../../components/SiteFooter";
 import { dataSourceHighlights } from "../../lib/site-config";
 
 export const metadata = {
-  title: "Datenquelle",
-  description: "Informationen zur Datenquelle und technischen Einordnung von KhalfaJobs.",
+  title: "Datenbasis",
+  description: "Informationen zur Datenbasis, Verarbeitung und Einordnung von KhalfaJobs.",
   alternates: { canonical: "/datenquelle" },
   openGraph: {
-    title: "Datenquelle | KhalfaJobs",
-    description: "Informationen zur Datenquelle und technischen Einordnung von KhalfaJobs.",
+    title: "Datenbasis | KhalfaJobs",
+    description: "Informationen zur Datenbasis, Verarbeitung und Einordnung von KhalfaJobs.",
     url: "/datenquelle",
   },
 };
@@ -25,23 +25,23 @@ export default function DatenquellePage() {
         <ProductTopbar />
         <header className="job-detail-hero legal-hero">
           <p className="eyebrow">Datenbasis</p>
-          <h1>Datenquelle und Einordnung</h1>
-          <p>KhalfaJobs richtet sich an Recruiting-Agenturen, nutzt aber keine eigenen Stelleninhalte. Die Plattform strukturiert die öffentlich zugänglichen Stellenangebote der Bundesagentur für Arbeit für Suche, Favoriten, Alerts und Export.</p>
+          <h1>Die Datenbasis hinter KhalfaJobs</h1>
+          <p>KhalfaJobs veröffentlicht keine eigenen Stelleninhalte. Die Plattform strukturiert öffentlich verfügbare BA-Stellenanzeigen für einen schnelleren, professionellen Recruiting-Workflow.</p>
         </header>
 
         <section className="job-detail-section legal-grid">
           <div>
-            <h2>Was die Plattform macht</h2>
+            <h2>Wofür die Plattform genutzt wird</h2>
             <ul className="legal-list">
-              <li>Stellenangebote live durchsuchen</li>
-              <li>Treffer nach Region und Rolle filtern</li>
-              <li>Favoriten und Shortlists vorbereiten</li>
-              <li>Job-Alarme für wiederkehrende Recherchen verwalten</li>
+              <li>BA-Stellenanzeigen live recherchieren</li>
+              <li>Treffer nach Rolle, Region und Arbeitgeber eingrenzen</li>
+              <li>Relevante Ergebnisse als Shortlist speichern</li>
+              <li>Wiederkehrende Recherchen per Alert überwachen</li>
             </ul>
           </div>
 
           <div>
-            <h2>Technische Hinweise</h2>
+            <h2>Technische Einordnung</h2>
             <ul className="legal-list">
               {dataSourceHighlights.map((item) => (
                 <li key={item}>{item}</li>
@@ -51,7 +51,7 @@ export default function DatenquellePage() {
 
           <div>
             <h2>Wichtige Abgrenzung</h2>
-            <p>Die Originalanzeige bei der Bundesagentur für Arbeit bleibt die maßgebliche Quelle. KhalfaJobs ergänzt die Recherche um einen effizienteren B2B-Workflow, ersetzt aber nicht die Primärquelle.</p>
+            <p>Die Originalanzeige bei der Bundesagentur für Arbeit bleibt die maßgebliche Primärquelle. KhalfaJobs beschleunigt Recherche, Monitoring und Export, ersetzt aber nicht die Quelle selbst.</p>
           </div>
         </section>
 

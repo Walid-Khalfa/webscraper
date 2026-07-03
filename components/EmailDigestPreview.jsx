@@ -23,9 +23,9 @@ export default function EmailDigestPreview({
   const rows = previewRows(jobs);
   const resolvedKeyword = keyword || "Softwareentwickler";
   const resolvedLocation = location || "Berlin";
-  const resolvedAgency = options.agencyName || agencyName || "Ihre Agentur";
+  const resolvedAgency = options.agencyName || agencyName || "Ihr Recruiting-Team";
   const greeting = options.greeting || "Guten Morgen";
-  const subject = options.subject || `Neue Stellenangebote für ${resolvedKeyword} in ${resolvedLocation}`;
+  const subject = options.subject || `Neue BA-Stellenanzeigen für ${resolvedKeyword} in ${resolvedLocation}`;
 
   function update(field, value) {
     onChange?.({ ...options, [field]: value });
@@ -36,29 +36,28 @@ export default function EmailDigestPreview({
   }
 
   return (
-    <section className="email-preview-band" aria-label="Vorschau des täglichen Job-Alarms">
+    <section className="email-preview-band" aria-label="Vorschau Ihres E-Mail-Alerts">
       <div className="email-preview-copy">
         <div>
-          <p className="eyebrow">WYSIWYG E-Mail-Digest</p>
-          <h3>Job-Alarm live anpassen und sofort als Digest-Vorschau sehen.</h3>
+          <p className="eyebrow">E-Mail-Vorschau</p>
+          <h3>Alert-Inhalt live anpassen und sofort als Vorschau prüfen.</h3>
         </div>
         <p>
-          Passen Sie Betreff, Begruessung und sichtbare Informationsbausteine an. Die Vorschau aktualisiert sich direkt
-          neben den Eingaben.
+          Passen Sie Betreff, Begrüßung und sichtbare Inhaltsbausteine an. Die Vorschau aktualisiert sich direkt neben den Eingaben.
         </p>
 
         <div className="email-editor-grid">
           <label>
             <span>Betreffzeile</span>
-            <input value={options.subject} onChange={(event) => update("subject", event.target.value)} />
+            <input value={options.subject} placeholder={subject} onChange={(event) => update("subject", event.target.value)} />
           </label>
           <label>
-            <span>Agenturname im Digest</span>
-            <input value={options.agencyName} onChange={(event) => update("agencyName", event.target.value)} />
+            <span>Agenturname im Alert</span>
+            <input value={options.agencyName} placeholder={resolvedAgency} onChange={(event) => update("agencyName", event.target.value)} />
           </label>
           <label>
-            <span>Begruessung</span>
-            <input value={options.greeting} onChange={(event) => update("greeting", event.target.value)} />
+            <span>Begrüßung</span>
+            <input value={options.greeting} placeholder={greeting} onChange={(event) => update("greeting", event.target.value)} />
           </label>
           <label>
             <span>Einleitung</span>
@@ -70,7 +69,7 @@ export default function EmailDigestPreview({
           {[
             ["showSalary", "Gehaltsangabe anzeigen"],
             ["showLocation", "Standort anzeigen"],
-            ["showApplyLink", "Bewerbungslink anzeigen"],
+            ["showApplyLink", "Quelllink anzeigen"],
           ].map(([field, label]) => (
             <button className="toggle-chip" type="button" key={field} onClick={() => toggle(field)}>
               <ToggleLeft size={18} className={options[field] ? "toggle-on" : ""} />
@@ -81,14 +80,14 @@ export default function EmailDigestPreview({
 
         <button className="primary-action" type="button" onClick={onSimulateSend} disabled={simulating}>
           <SendHorizontal size={18} />
-          {simulating ? "Versand wird simuliert..." : "Versand simulieren"}
+          {simulating ? "E-Mail wird vorbereitet..." : "E-Mail-Vorschau testen"}
         </button>
       </div>
 
       <div className="digest-mockup" role="presentation">
         <div className="digest-mockup-header">
           <div>
-            <span>KhalfaJobs Job-Alarm</span>
+            <span>KhalfaJobs Alert</span>
             <strong>{subject}</strong>
           </div>
           <div className="digest-mockup-badge">
@@ -134,8 +133,8 @@ export default function EmailDigestPreview({
         </div>
 
         <div className="digest-mockup-footer">
-          <span>Exakter Ort aktiv</span>
-          <span>Datenquelle Bundesagentur für Arbeit</span>
+          <span>Exakter Standort aktiv</span>
+          <span>Datenquelle: Bundesagentur für Arbeit</span>
         </div>
       </div>
     </section>

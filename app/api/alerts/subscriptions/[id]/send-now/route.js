@@ -1,5 +1,6 @@
 import { agencyKey, errorResponse, json } from "../../../../_lib/http";
-import { extractJobItems, filterJobsByExactLocation, normalizeJob, searchJobs } from "../../../../_lib/ba";
+import { filterJobsByExactLocation, normalizeJob } from "../../../../_lib/ba";
+import { collectSearchResults } from "../../../../_lib/ba-import";
 import { assertRateLimit } from "../../../../_lib/rate-limit";
 import { getSubscription, recordDelivery } from "../../../../_lib/store";
 import { numericIdSchema, parseWithSchema } from "../../../../_lib/validation";
@@ -13,31 +14,15 @@ export async function POST(request, { params }) {
     const parsedId = parseWithSchema(numericIdSchema, id);
     await assertRateLimit(request, "subscription-send-now", { max: 5, windowMs: 10 * 60_000, keySuffix: `${agencyKey(request) || ""}:${parsedId}` });
     const { agency, subscription } = await getSubscription(agencyKey(request), parsedId, { requireVerified: true });
-    const firstPayload = await searchJobs({
+    const collected = await collectSearchResults({
       keyword: subscription.keyword,
       location: subscription.location,
-      page: 1,
-      size: 100,
+    }, {
+      mode: "full",
+      startPage: 1,
+      maxPages: 6,
     });
-    const maxErgebnisse = Number(firstPayload.maxErgebnisse || 0);
-    let rawItems = extractJobItems(firstPayload);
-    if (maxErgebnisse > 100) {
-      const additionalPagesCount = Math.min(5, Math.ceil((maxErgebnisse - 100) / 100));
-      const promises = [];
-      for (let i = 1; i <= additionalPagesCount; i++) {
-        promises.push(
-          searchJobs({
-            keyword: subscription.keyword,
-            location: subscription.location,
-            page: 1 + i,
-            size: 100,
-          })
-        );
-      }
-      const additionalPayloads = await Promise.all(promises);
-      rawItems = [rawItems, additionalPayloads.flatMap(extractJobItems)].flat();
-    }
-    const rows = filterJobsByExactLocation(rawItems, subscription.location)
+    const rows = filterJobsByExactLocation(collected.items, subscription.location)
       .map(normalizeJob)
       .slice(0, subscription.max_results);
     const subject = `${rows.length} neue BA-Stellenangebote: ${subscription.keyword} in ${subscription.location}`;

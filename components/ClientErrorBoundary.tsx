@@ -24,7 +24,7 @@ export default class ClientErrorBoundary extends React.Component<Props, State> {
   static getDerivedStateFromError(error: Error): State {
     return {
       hasError: true,
-      errorMessage: error?.message || "Unbekannter Client-Fehler",
+      errorMessage: error?.message || "Unbekannter Darstellungsfehler",
     };
   }
 
@@ -42,10 +42,10 @@ export default class ClientErrorBoundary extends React.Component<Props, State> {
   render() {
     if (!this.state.hasError) return this.props.children;
 
-    const title = this.props.title || "Dieser Bereich konnte nicht geladen werden.";
+    const title = this.props.title || "Dieser Bereich ist momentan nicht verfügbar.";
     const description =
       this.props.description ||
-      "Bitte laden Sie diesen Bereich erneut. Falls der Fehler wieder auftritt, pruefen Sie die Browser-Konsole oder das Deployment-Log.";
+      "Bitte laden Sie diesen Abschnitt erneut. Falls das Problem bestehen bleibt, prüfen Sie die Browser-Konsole oder das Deployment-Log.";
 
     if (this.props.compact) {
       return (
@@ -60,7 +60,7 @@ export default class ClientErrorBoundary extends React.Component<Props, State> {
           </p>
           <button className="primary-action" type="button" onClick={this.handleReset}>
             <RefreshCw size={18} />
-            Bereich neu laden
+            Abschnitt neu laden
           </button>
         </section>
       );
@@ -68,7 +68,7 @@ export default class ClientErrorBoundary extends React.Component<Props, State> {
 
     return (
       <div className="error-surface" role="alert">
-        <p className="eyebrow">Client-Fehler isoliert</p>
+        <p className="eyebrow">Fehlerbehandlung aktiv</p>
         <h2>{title}</h2>
         <p>{description}</p>
         <p style={{ fontSize: "0.92rem", color: "#6b665c", marginTop: "0.25rem" }}>
@@ -77,7 +77,7 @@ export default class ClientErrorBoundary extends React.Component<Props, State> {
         <div className="error-surface-actions">
           <button className="primary-action" type="button" onClick={this.handleReset}>
             <RefreshCw size={18} />
-            Bereich neu laden
+            Abschnitt neu laden
           </button>
         </div>
       </div>
