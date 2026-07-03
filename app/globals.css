@@ -1,19 +1,24 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap");
 
 :root {
-  --ink: #111827;
+  --background: #fbf8ff;
+  --ink: #1a1b22;
   --paper: #ffffff;
-  --paper-deep: #f9fafb;
-  --line: #e5e7eb;
-  --accent: #2563eb;
-  --accent-dark: #1d4ed8;
-  --signal: #f59e0b;
-  --steel: #6b7280;
-  --muted: #9ca3af;
+  --paper-deep: #f4f2fc;
+  --line: #e3e1eb;
+  --accent: #00288e;
+  --accent-dark: #173bab;
+  --secondary: #006a61;
+  --secondary-dark: #005049;
+  --signal: #ffa929;
+  --steel: #374151;
+  --muted: #757684;
   --white: #ffffff;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --radius: 12px;
+  --shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  --radius: 8px;
+  --font-display: "Geist", "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
 }
 
 :root[data-theme="cyberpunk"] {
@@ -53,14 +58,16 @@ body {
   min-width: 320px;
   min-height: 100vh;
   color: var(--ink);
-  background:
-    radial-gradient(circle at top left, rgba(215, 164, 58, 0.12), transparent 28%),
-    linear-gradient(180deg, #fbfaf7 0%, var(--paper) 42%, #f0ede6 100%);
-  font-family: "Inter", system-ui, sans-serif;
+  background: var(--background);
+  font-family: var(--font-body);
 }
 
 html {
   scroll-behavior: smooth;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
 }
 
 button,
@@ -86,7 +93,7 @@ textarea {
   color: var(--paper);
   background: var(--ink);
   border-right: 4px solid var(--accent);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-display);
   font-weight: 700;
   text-align: center;
 }
@@ -94,6 +101,7 @@ textarea {
 .registry-rail span {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
+  background-color: var(--ink);
 }
 
 .workspace {
@@ -111,7 +119,7 @@ textarea {
   padding-bottom: 14px;
   border-bottom: 1px solid rgba(21, 21, 21, 0.18);
   color: var(--steel);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-display);
   font-size: 0.78rem;
   font-weight: 700;
 }
@@ -176,7 +184,7 @@ textarea {
 .reference {
   margin: 0 0 10px;
   color: var(--accent-dark);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-display);
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -238,7 +246,7 @@ h1 {
   background: var(--signal);
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-display);
   font-weight: 700;
 }
 
@@ -283,7 +291,7 @@ label {
 }
 
 label span {
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-display);
   font-size: 0.76rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -383,7 +391,7 @@ input:focus {
   background: transparent;
   border: 0;
   box-shadow: none;
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-display);
   font-weight: 800;
   text-align: left;
 }
@@ -456,7 +464,7 @@ input:focus {
 
 .trust-item span {
   color: var(--accent-dark);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-display);
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -476,7 +484,7 @@ input:focus {
 
 .quick-search-label {
   color: var(--steel);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-display);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -534,7 +542,7 @@ button {
   padding: 0 18px;
   border: 1px solid var(--line);
   cursor: pointer;
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-display);
   font-weight: 700;
   transition:
     transform 120ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
@@ -559,8 +567,9 @@ button:disabled {
 }
 
 .secondary-action {
-  color: var(--ink);
-  background: var(--paper-deep);
+  color: var(--white);
+  background: var(--secondary);
+  border-color: var(--secondary-dark);
 }
 
 .ghost-action {
@@ -720,7 +729,7 @@ button:disabled {
   color: var(--accent-dark);
   background: rgba(245, 197, 66, 0.32);
   border: 1px solid rgba(181, 54, 31, 0.34);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-display);
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -754,7 +763,7 @@ button:disabled {
   background: var(--accent);
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-display);
   font-weight: 800;
   text-decoration: none;
 }
@@ -2579,8 +2588,8 @@ button,
 /* Map Explorer */
 .map-explorer {
   margin-top: 10px;
-  --map-display-font: "Space Grotesk", "Segoe UI", sans-serif;
-  --map-body-font: "Manrope", "Segoe UI", sans-serif;
+  --map-display-font: var(--font-display);
+  --map-body-font: var(--font-body);
 }
 
 .map-explorer-shell {
@@ -2955,5 +2964,33 @@ button,
   border-radius: var(--radius);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-lg);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--font-body);
+}
+
+/* Nexus B2B Theme Override Font Assigns */
+h1, h2, h3, h4, h5, h6,
+button,
+input[type="submit"],
+.button,
+.apply-link,
+.topbar-link,
+.product-brand,
+.registry-rail,
+.eyebrow,
+.reference,
+.sync-badge,
+label span,
+.quick-search-label,
+.subscription-kicker,
+.workspace-kpis span,
+.insight-card span,
+.trust-item span,
+.salary-badge,
+.suggest-option,
+.tab-button,
+.nav-link,
+.saas-header h2,
+.zero-actions h3,
+.workspace-card-header h3 {
+  font-family: var(--font-display) !important;
 }
