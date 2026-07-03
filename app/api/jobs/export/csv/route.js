@@ -27,20 +27,26 @@ export async function GET(request) {
 
     let rawItems = [];
     if (exactLocation) {
-      const pages = await Promise.all([
-        searchJobs({ keyword, location, page: 1, size: 100 }),
-        searchJobs({ keyword, location, page: 2, size: 100 }),
-        searchJobs({ keyword, location, page: 3, size: 100 }),
-        searchJobs({ keyword, location, page: 4, size: 100 }),
-        searchJobs({ keyword, location, page: 5, size: 100 }),
-      ]);
-      rawItems = pages.flatMap(extractJobItems);
+      const firstPayload = await searchJobs({ keyword, location, page: 1, size: 100 });
+      const maxErgebnisse = Number(firstPayload.maxErgebnisse || 0);
+      rawItems = extractJobItems(firstPayload);
+      if (maxErgebnisse > 100) {
+        const additionalPagesCount = Math.min(9, Math.ceil((maxErgebnisse - 100) / 100));
+        const promises = [];
+        for (let i = 1; i <= additionalPagesCount; i++) {
+          promises.push(searchJobs({ keyword, location, page: 1 + i, size: 100 }));
+        }
+        const additionalPayloads = await Promise.all(promises);
+        rawItems = [rawItems, additionalPayloads.flatMap(extractJobItems)].flat();
+      }
     } else {
-      const pages = await Promise.all([
-        searchJobs({ keyword, location, page: 1, size: 100 }),
-        searchJobs({ keyword, location, page: 2, size: 100 }),
-      ]);
-      rawItems = pages.flatMap(extractJobItems).slice(0, 200);
+      const firstPayload = await searchJobs({ keyword, location, page: 1, size: 100 });
+      const maxErgebnisse = Number(firstPayload.maxErgebnisse || 0);
+      rawItems = extractJobItems(firstPayload);
+      if (maxErgebnisse > 100) {
+        const additionalPayload = await searchJobs({ keyword, location, page: 2, size: 100 });
+        rawItems = [rawItems, extractJobItems(additionalPayload)].flat();
+      }
     }
     const filteredItems = exactLocation ? filterJobsByExactLocation(rawItems, location) : rawItems;
     const rows = filteredItems.map(normalizeJob).slice(0, exportLimit);

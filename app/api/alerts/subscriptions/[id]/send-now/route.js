@@ -13,21 +13,30 @@ export async function POST(request, { params }) {
     const parsedId = parseWithSchema(numericIdSchema, id);
     await assertRateLimit(request, "subscription-send-now", { max: 5, windowMs: 10 * 60_000, keySuffix: `${agencyKey(request) || ""}:${parsedId}` });
     const { agency, subscription } = await getSubscription(agencyKey(request), parsedId, { requireVerified: true });
-    const pages = await Promise.all([
-      searchJobs({
-        keyword: subscription.keyword,
-        location: subscription.location,
-        page: 1,
-        size: 100,
-      }),
-      searchJobs({
-        keyword: subscription.keyword,
-        location: subscription.location,
-        page: 2,
-        size: 100,
-      }),
-    ]);
-    const rawItems = pages.flatMap(extractJobItems);
+    const firstPayload = await searchJobs({
+      keyword: subscription.keyword,
+      location: subscription.location,
+      page: 1,
+      size: 100,
+    });
+    const maxErgebnisse = Number(firstPayload.maxErgebnisse || 0);
+    let rawItems = extractJobItems(firstPayload);
+    if (maxErgebnisse > 100) {
+      const additionalPagesCount = Math.min(5, Math.ceil((maxErgebnisse - 100) / 100));
+      const promises = [];
+      for (let i = 1; i <= additionalPagesCount; i++) {
+        promises.push(
+          searchJobs({
+            keyword: subscription.keyword,
+            location: subscription.location,
+            page: 1 + i,
+            size: 100,
+          })
+        );
+      }
+      const additionalPayloads = await Promise.all(promises);
+      rawItems = [rawItems, additionalPayloads.flatMap(extractJobItems)].flat();
+    }
     const rows = filterJobsByExactLocation(rawItems, subscription.location)
       .map(normalizeJob)
       .slice(0, subscription.max_results);
