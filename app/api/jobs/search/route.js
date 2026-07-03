@@ -12,13 +12,14 @@ export async function GET(request) {
     await assertRateLimit(request, "jobs-search", { max: 60, windowMs: 60_000 });
     const params = parseWithSchema(searchQuerySchema, Object.fromEntries(request.nextUrl.searchParams.entries()));
     const { exactLocation, location, keyword, page, size } = params;
-    const payload = await searchJobs({
-      keyword,
-      location,
-      page,
-      size,
-    });
+
     if (!exactLocation) {
+      const payload = await searchJobs({
+        keyword,
+        location,
+        page,
+        size,
+      });
       if (page === 1) {
         await recordSearchHistory(agencyKey(request), {
           keyword,
@@ -30,11 +31,22 @@ export async function GET(request) {
       return json(payload);
     }
 
+    // For exactLocation, fetch page (2P-1) and (2P) with size 100 to maximize scraping yield
+    const targetPage = Number(page) || 1;
+    const pages = await Promise.all([
+      searchJobs({ keyword, location, page: 2 * targetPage - 1, size: 100 }),
+      searchJobs({ keyword, location, page: 2 * targetPage, size: 100 }),
+    ]);
+    const rawItems = pages.flatMap(extractJobItems);
+    const filteredItems = filterJobsByExactLocation(rawItems, location);
+    const slicedItems = filteredItems.slice(0, size || 25);
+
     const exactPayload = {
-      ...payload,
-      ergebnisliste: filterJobsByExactLocation(extractJobItems(payload), location),
+      ...pages[0],
+      ergebnisliste: slicedItems,
       exactLocation: true,
     };
+
     if (page === 1) {
       await recordSearchHistory(agencyKey(request), {
         keyword,

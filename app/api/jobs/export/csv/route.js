@@ -25,12 +25,24 @@ export async function GET(request) {
       } catch {}
     }
 
-    const pages = await Promise.all([
-      searchJobs({ keyword, location, page: 1, size: 100 }),
-      searchJobs({ keyword, location, page: 2, size: 100 }),
-    ]);
-    const items = pages.flatMap(extractJobItems).slice(0, 200);
-    const filteredItems = exactLocation ? filterJobsByExactLocation(items, location) : items;
+    let rawItems = [];
+    if (exactLocation) {
+      const pages = await Promise.all([
+        searchJobs({ keyword, location, page: 1, size: 100 }),
+        searchJobs({ keyword, location, page: 2, size: 100 }),
+        searchJobs({ keyword, location, page: 3, size: 100 }),
+        searchJobs({ keyword, location, page: 4, size: 100 }),
+        searchJobs({ keyword, location, page: 5, size: 100 }),
+      ]);
+      rawItems = pages.flatMap(extractJobItems);
+    } else {
+      const pages = await Promise.all([
+        searchJobs({ keyword, location, page: 1, size: 100 }),
+        searchJobs({ keyword, location, page: 2, size: 100 }),
+      ]);
+      rawItems = pages.flatMap(extractJobItems).slice(0, 200);
+    }
+    const filteredItems = exactLocation ? filterJobsByExactLocation(rawItems, location) : rawItems;
     const rows = filteredItems.map(normalizeJob).slice(0, exportLimit);
     if (rawAgencyKey) {
       await recordSearchHistory(rawAgencyKey, {

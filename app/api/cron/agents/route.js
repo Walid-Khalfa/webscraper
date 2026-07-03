@@ -22,13 +22,24 @@ export async function GET(request) {
     const jobs = await listAllAgencySubscriptions();
     const concurrency = Number(process.env.CRON_AGENT_CONCURRENCY || 4);
     const settled = await mapWithConcurrency(jobs, concurrency, async ({ agency, subscription }) => {
-        const payload = await searchJobs({
-          keyword: subscription.keyword,
-          location: subscription.location,
-          page: 1,
-          size: subscription.max_results,
-        });
-        const rows = filterJobsByExactLocation(extractJobItems(payload), subscription.location).map(normalizeJob);
+        const pages = await Promise.all([
+          searchJobs({
+            keyword: subscription.keyword,
+            location: subscription.location,
+            page: 1,
+            size: 100,
+          }),
+          searchJobs({
+            keyword: subscription.keyword,
+            location: subscription.location,
+            page: 2,
+            size: 100,
+          }),
+        ]);
+        const rawItems = pages.flatMap(extractJobItems);
+        const rows = filterJobsByExactLocation(rawItems, subscription.location)
+          .map(normalizeJob)
+          .slice(0, subscription.max_results);
         const subject = rows.length
           ? `${rows.length} neue BA-Stellenangebote: ${subscription.keyword} in ${subscription.location}`
           : `Keine neuen BA-Stellenangebote: ${subscription.keyword} in ${subscription.location}`;
