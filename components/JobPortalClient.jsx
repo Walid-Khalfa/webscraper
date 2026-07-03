@@ -2405,7 +2405,7 @@ export default function Home({ initialShowcase, platformInsights }) {
                     ) : null}
                   </label>
                   <p className="form-hint">Der Job-Alarm arbeitet mit exakten Standorten, damit nur wirklich relevante Treffer in Ihrer täglichen Zusammenfassung erscheinen.</p>
-                  <button className="secondary-action" type="submit" disabled={saasLoading}>
+                  <button className="cta-action" type="submit" disabled={saasLoading}>
                     <Plus size={19} />
                     Job-Alarm erstellen
                   </button>

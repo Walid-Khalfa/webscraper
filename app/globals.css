@@ -317,7 +317,7 @@ a:focus-visible {
 
 input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(245, 197, 66, 0.45);
+  box-shadow: 0 0 0 3px rgba(0, 40, 142, 0.15);
 }
 
 .suggest-input-wrap input {
@@ -493,14 +493,21 @@ input:focus {
 .quick-search-chip {
   min-height: 40px;
   padding: 0 14px;
-  background: rgba(255, 250, 240, 0.8);
-  border: 1px solid rgba(21, 21, 21, 0.22);
+  background: rgba(0, 40, 142, 0.08);
+  color: var(--accent);
+  border: 1px solid rgba(0, 40, 142, 0.15);
+  border-radius: 9999px;
   box-shadow: none;
   font-size: 0.84rem;
+  font-weight: 600;
 }
 
 .quick-search-chip:hover:not(:disabled) {
+  background: rgba(0, 40, 142, 0.14);
+  color: var(--accent-dark);
+  border-color: rgba(0, 40, 142, 0.25);
   box-shadow: none;
+  transform: none;
 }
 
 .toast-stack {
@@ -567,9 +574,25 @@ button:disabled {
 }
 
 .secondary-action {
+  color: var(--accent);
+  background: var(--white);
+  border-color: var(--accent);
+}
+
+.secondary-action:hover:not(:disabled) {
+  background: rgba(0, 40, 142, 0.04);
+  color: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+
+.cta-action {
   color: var(--white);
   background: var(--secondary);
   border-color: var(--secondary-dark);
+}
+
+.cta-action:hover:not(:disabled) {
+  background: var(--secondary-dark);
 }
 
 .ghost-action {
@@ -2373,8 +2396,8 @@ button,
 :root:not([data-theme="cyberpunk"]):not([data-theme="hacker"]) .dashboard-card:hover,
 :root:not([data-theme="cyberpunk"]):not([data-theme="hacker"]) .insight-card:hover,
 :root:not([data-theme="cyberpunk"]):not([data-theme="hacker"]) .search-panel:hover {
-  transform: translate(-4px, -4px);
-  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.08);
 }
 
 /* 3. Cyberpunk neon glow effects */
