@@ -1,12 +1,22 @@
 import { AlertTriangle, CheckCircle2, LoaderCircle } from "lucide-react";
 
-const icons = {
+const icons: Record<string, React.ComponentType<any>> = {
   error: AlertTriangle,
   loading: LoaderCircle,
   success: CheckCircle2,
 };
 
-export default function ToastStack({ toasts }) {
+interface Toast {
+  id: string;
+  type: string;
+  message: string;
+}
+
+interface ToastStackProps {
+  toasts: Toast[];
+}
+
+export default function ToastStack({ toasts }: ToastStackProps) {
   if (!toasts.length) return null;
 
   return (
@@ -23,4 +33,3 @@ export default function ToastStack({ toasts }) {
     </div>
   );
 }
-

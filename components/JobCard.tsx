@@ -1,11 +1,33 @@
 import { Building2, ExternalLink, Heart, MapPin, MessageSquareText, MoveRight, Star, WalletCards } from "lucide-react";
 
-const statusLabels = {
+const statusLabels: Record<string, string> = {
   interested: "Interessiert",
   applied: "Beworben",
   interview: "Interview",
   closed: "Abgelehnt / Angebot",
 };
+
+interface JobCardProps {
+  job: {
+    reference: string;
+    title: string;
+    employer: string;
+    location: string;
+    salary?: string;
+    occupation?: string;
+    url?: string;
+  };
+  viewMode?: string;
+  isFavorite?: boolean;
+  favoriteData?: {
+    status?: string;
+    notes?: string;
+    tags?: string[];
+  };
+  onToggleFavorite?: (job: any) => void;
+  onOpenFavorite?: (reference: string) => void;
+  onCycleStatus?: (reference: string) => void;
+}
 
 export default function JobCard({
   job,
@@ -15,7 +37,7 @@ export default function JobCard({
   onToggleFavorite,
   onOpenFavorite,
   onCycleStatus,
-}) {
+}: JobCardProps) {
   const detailUrl = job.reference ? `/jobs/${encodeURIComponent(job.reference)}` : "";
   const hasSalary = job.salary && job.salary !== "Keine Vergütung angegeben";
   const compact = viewMode === "list" || viewMode === "kanban";

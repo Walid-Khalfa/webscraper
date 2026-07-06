@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { dataSourceHighlights, legalContact } from "../lib/site-config";
+import { legalContact } from "../lib/site-config";
 
 export default function SiteFooter() {
   return (

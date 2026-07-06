@@ -5,7 +5,7 @@ test("homepage satisfies core accessibility checks", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.getByRole("button", { name: /stellen finden/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /recherche starten/i })).toBeVisible();
 
   const accessibilityScanResults = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa"])

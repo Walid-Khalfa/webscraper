@@ -163,127 +163,23 @@ export async function findJobByReference(reference) {
   return extractJobItems(payload).find((item) => normalizeJob(item).Referenz === safeReference) || null;
 }
 
-export function extractJobItems(payload) {
-  if (Array.isArray(payload)) return payload.filter((item) => item && typeof item === "object");
-  if (!payload || typeof payload !== "object") return [];
+import {
+  extractJobItems as sharedExtractJobItems,
+  valueAt as sharedValueAt,
+  flatten as sharedFlatten,
+  normalizeJob as sharedNormalizeJob,
+  toCsv as sharedToCsv,
+  getLocationCandidates as sharedGetLocationCandidates,
+} from "../../../lib/shared";
 
-  const keys = ["ergebnisliste", "stellenangebote", "angebote", "jobs", "items", "results", "content", "data"];
-  for (const key of keys) {
-    const value = payload[key];
-    if (Array.isArray(value)) return value.filter((item) => item && typeof item === "object");
-    if (value && typeof value === "object") {
-      const nested = extractJobItems(value);
-      if (nested.length) return nested;
-    }
-  }
-
-  return Object.values(payload).reduce((best, value) => {
-    const nested = extractJobItems(value);
-    return nested.length > best.length ? nested : best;
-  }, []);
-}
-
-export function valueAt(item, paths) {
-  for (const path of paths) {
-    let current = item;
-    for (const part of path.split(".")) {
-      if (Array.isArray(current)) {
-        current = current
-          .map((entry) => (entry && typeof entry === "object" ? entry[part] : undefined))
-          .filter((value) => value !== undefined && value !== null && value !== "");
-      } else {
-        current = current && typeof current === "object" ? current[part] : undefined;
-      }
-      if (current === undefined || current === null) break;
-    }
-    if (current !== undefined && current !== null && current !== "") return current;
-  }
-  return "";
-}
-
-export function flatten(value) {
-  if (!value) return "";
-  if (typeof value === "string") return value.trim();
-  if (typeof value === "number") return String(value);
-  if (Array.isArray(value)) return value.map(flatten).filter(Boolean).join(", ");
-  if (typeof value === "object") {
-    const preferred = ["name", "bezeichnung", "ort", "plz", "strasse", "region"];
-    const parts = preferred.map((key) => flatten(value[key])).filter(Boolean);
-    return parts.length ? parts.join(", ") : Object.values(value).map(flatten).filter(Boolean).join(", ");
-  }
-  return String(value);
-}
-
-function formatEuro(value) {
-  const number = Number(value);
-  if (!Number.isFinite(number)) return "";
-  return new Intl.NumberFormat("de-DE", {
-    maximumFractionDigits: number % 1 === 0 ? 0 : 2,
-    style: "currency",
-    currency: "EUR",
-  }).format(number);
-}
-
-function normalizeSalary(item) {
-  const type = valueAt(item, ["verguetungsangabe"]);
-  const fixed = valueAt(item, ["festgehalt"]);
-  const from = valueAt(item, ["gehaltsspanneVon"]);
-  const to = valueAt(item, ["gehaltsspanneBis"]);
-  const unit = String(type || valueAt(item, ["artDerVerguetung"]) || "").toLocaleLowerCase("de-DE");
-  const suffix = unit.includes("stunde") ? "/Std." : unit.includes("jahr") ? "/Jahr" : "";
-
-  if (from || to) return `${from ? formatEuro(from) : ""}${from && to ? " - " : ""}${to ? formatEuro(to) : ""} ${suffix}`.trim();
-  if (fixed) return `${formatEuro(fixed)} ${suffix}`.trim();
-  return "Keine Vergütung angegeben";
-}
-
-function collectUniqueStrings(values) {
-  const seen = new Set();
-  const items = [];
-
-  for (const value of values) {
-    const text = flatten(value);
-    if (!text) continue;
-    if (seen.has(text)) continue;
-    seen.add(text);
-    items.push(text);
-  }
-
-  return items;
-}
-
-function getLocationCandidates(item) {
-  const directCandidates = collectUniqueStrings([
-    valueAt(item, ["arbeitsort.ort", "ort", "standort", "adresse.ort", "stellenlokationen.adresse.ort"]),
-  ]);
-
-  const locationEntries = Array.isArray(item?.stellenlokationen)
-    ? item.stellenlokationen.flatMap((entry) => [entry?.adresse?.ort, entry?.adresse?.gemeinde, entry?.adresse?.kreis])
-    : [];
-
-  return collectUniqueStrings([...directCandidates, ...locationEntries]);
-}
+export const extractJobItems = sharedExtractJobItems;
+export const valueAt = sharedValueAt;
+export const flatten = sharedFlatten;
+export const toCsv = sharedToCsv;
+export const getLocationCandidates = sharedGetLocationCandidates;
 
 export function normalizeJob(item) {
-  const reference = valueAt(item, ["referenznummer", "refnr", "refNr", "reference", "id", "hashId", "stellenangebotsId"]);
-  const title = valueAt(item, ["titel", "title", "stellenangebotsTitel", "stellenbezeichnung", "beruf", "jobtitel"]);
-  const employer = valueAt(item, ["arbeitgeber", "arbeitgebername", "firma", "unternehmen", "company", "betrieb.name"]);
-  const location = valueAt(item, ["arbeitsort", "arbeitsorte", "stellenlokationen.adresse.ort", "ort", "standort", "adresse.ort"]);
-  const postalCode = valueAt(item, ["plz", "postleitzahl", "stellenlokationen.adresse.plz", "arbeitsort.plz", "adresse.plz"]);
-  const occupation = valueAt(item, ["beruf", "berufsbezeichnung", "hauptberuf", "occupation", "berufsfeld", "branche"]);
-  const url = flatten(valueAt(item, ["url", "link", "externeURL", "stellenangebotUrl", "detailUrl", "externalUrl"]));
-  const referenceText = flatten(reference);
-
-  return {
-    Referenz: referenceText,
-    Titel: flatten(title),
-    Arbeitgeber: flatten(employer),
-    Ort: getLocationCandidates(item)[0] || flatten(location),
-    Postleitzahl: flatten(postalCode),
-    Gehalt: normalizeSalary(item),
-    Beruf: flatten(occupation),
-    URL: url || (referenceText ? `https://www.arbeitsagentur.de/jobsuche/jobdetail/${referenceText}` : ""),
-  };
+  return sharedNormalizeJob(item, { capitalized: true });
 }
 
 function normalizeLocationName(value) {
@@ -317,12 +213,3 @@ export function filterJobsByExactLocation(items, location) {
   return items.filter((item) => getLocationCandidates(item).some((candidate) => isExactLocationMatch(candidate, expectedLocation)));
 }
 
-export function toCsv(rows) {
-  const headers = ["Referenz", "Titel", "Arbeitgeber", "Ort", "Postleitzahl", "Gehalt", "Beruf", "URL"];
-  const escapeCell = (value) => {
-    const text = String(value ?? "");
-    return /[";\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
-  };
-  const lines = [headers.join(";"), ...rows.map((row) => headers.map((header) => escapeCell(row[header])).join(";"))];
-  return `\uFEFF${lines.join("\r\n")}`;
-}

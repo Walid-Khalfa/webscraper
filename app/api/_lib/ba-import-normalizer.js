@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { flatten, normalizeJob, valueAt } from "./ba";
+import { flatten, normalizeJob, valueAt } from "../../../lib/shared";
 
 function normalizeText(value) {
   return String(value || "").trim();
@@ -84,10 +84,10 @@ export function normalizeImportedJob(rawItem, source = "bundesagentur") {
   const externalId = normalizeText(
     firstNonEmptyValue(rawItem, ["stellenangebotsId", "hashId", "referenznummer", "id", "refnr", "refNr"]),
   );
-  const city = normalizeText(base.Ort);
-  const title = normalizeText(base.Titel || "Stellenprofil ohne Titel");
-  const employer = normalizeText(base.Arbeitgeber || "Arbeitgeber nicht genannt");
-  const sourceUrl = normalizeText(base.URL);
+  const city = normalizeText(base.location);
+  const title = normalizeText(base.title || "Stellenprofil ohne Titel");
+  const employer = normalizeText(base.employer || "Arbeitgeber nicht genannt");
+  const sourceUrl = normalizeText(base.url);
   const publishedAt =
     toDate(firstNonEmptyValue(rawItem, ["datumErsteVeroeffentlichung", "veroeffentlichungszeitraum.von", "erstelltAm"])) ||
     null;
@@ -121,7 +121,7 @@ export function normalizeImportedJob(rawItem, source = "bundesagentur") {
         title,
         employer,
         city,
-        salary: base.Gehalt,
+        salary: base.salary,
         contractType,
         workTime,
         sourceUrl,
@@ -136,16 +136,16 @@ export function normalizeImportedJob(rawItem, source = "bundesagentur") {
     source,
     sourceKey,
     externalId: externalId || null,
-    reference: normalizeText(base.Referenz) || null,
+    reference: normalizeText(base.reference) || null,
     title,
     employer: employer || null,
     location: city || null,
-    postalCode: normalizeText(base.Postleitzahl) || null,
+    postalCode: normalizeText(base.postalCode) || null,
     city: city || null,
     country: "DE",
     contractType: contractType || null,
     workTime: workTime || null,
-    salary: normalizeText(base.Gehalt) || null,
+    salary: normalizeText(base.salary) || null,
     publishedAt,
     expiresAt,
     description: description || null,

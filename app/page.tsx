@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import { extractJobItems, normalizeJob, searchJobs } from "./api/_lib/ba";
 import { getPlatformInsights } from "./api/_lib/product-insights";
 import { appUrl, defaultDescription, siteName } from "../lib/site-config";
+
 const showcaseQueries = [
   { keyword: "Softwareentwickler", location: "Berlin" },
   { keyword: "Pflegefachkraft", location: "Hamburg" },
@@ -58,10 +59,10 @@ function structuredData() {
 async function getShowcaseData() {
   if (process.env.CI === "true" || process.env.PLAYWRIGHT === "true") {
     return {
-      jobs: [],
+      jobs: [] as any[],
       positions: showcaseQueries.map((entry) => `${entry.keyword} in ${entry.location}`),
       regions: ["Berlin", "Hamburg", "Köln", "Frankfurt am Main"],
-      trends: [],
+      trends: [] as string[],
       metrics: {
         activeProfiles: showcaseQueries.length,
         sampleHits: 0,
@@ -90,8 +91,8 @@ async function getShowcaseData() {
     const jobs = payloads
       .flatMap(extractJobItems)
       .map(normalizeJob)
-      .filter((job) => job.reference || job.title)
-      .filter((job, index, list) => list.findIndex((entry) => entry.reference === job.reference || entry.title === job.title) === index)
+      .filter((job) => job.Referenz || job.Titel) // Fixed references to match capitalized keys from ba.js
+      .filter((job, index, list) => list.findIndex((entry) => entry.Referenz === job.Referenz || entry.Titel === job.Titel) === index)
       .slice(0, 6)
       .map((job) => ({
         reference: job.Referenz,
@@ -121,10 +122,10 @@ async function getShowcaseData() {
     };
   } catch {
     return {
-      jobs: [],
+      jobs: [] as any[],
       positions: showcaseQueries.map((entry) => `${entry.keyword} in ${entry.location}`),
       regions: ["Berlin", "Hamburg", "Köln", "Frankfurt am Main"],
-      trends: [],
+      trends: [] as string[],
       metrics: {
         activeProfiles: showcaseQueries.length,
         sampleHits: 0,

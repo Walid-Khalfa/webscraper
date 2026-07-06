@@ -96,7 +96,7 @@ test.describe("Campagne de Test E2E - Emploi Agences App", () => {
       // Étape 2 : Lancer la recherche
       await page.locator('input[role="combobox"]').first().fill("Softwareentwickler");
       await page.locator('input[role="combobox"]').nth(1).fill("Berlin");
-      await page.click("button:has-text('Stellen finden')");
+      await page.click("button:has-text('Recherche starten')");
 
       // Résultats attendus TC_E2E_01 :
       // - Liste des jobs visible
@@ -137,7 +137,7 @@ test.describe("Campagne de Test E2E - Emploi Agences App", () => {
       await page.goto("/");
       await page.locator('input[role="combobox"]').first().fill("PythonDeveloper");
       await page.locator('input[role="combobox"]').nth(1).fill("Munich");
-      await page.click("button:has-text('Stellen finden')");
+      await page.click("button:has-text('Recherche starten')");
 
       // Attendre que la première page se charge (25 éléments)
       await expect(page.getByText("Mock Job Titel 1", { exact: true })).toBeVisible();
@@ -167,7 +167,7 @@ test.describe("Campagne de Test E2E - Emploi Agences App", () => {
       await page.goto("/");
       await page.locator('input[role="combobox"]').first().fill("JavaDeveloper");
       await page.locator('input[role="combobox"]').nth(1).fill("Frankfurt");
-      await page.click("button:has-text('Stellen finden')");
+      await page.click("button:has-text('Recherche starten')");
 
       // Vérifier le message d'erreur de l'UI
       await expect(page.locator("text=Die Suche konnte nicht geladen werden")).toBeVisible();
@@ -192,7 +192,7 @@ test.describe("Campagne de Test E2E - Emploi Agences App", () => {
       await page.goto("/");
       await page.locator('input[role="combobox"]').first().fill("DevOpsDeveloper");
       await page.locator('input[role="combobox"]').nth(1).fill("Hamburg");
-      await page.click("button:has-text('Stellen finden')");
+      await page.click("button:has-text('Recherche starten')");
 
       // Attendre que la liste soit affichée
       await expect(page.getByText("Mock Job Titel 1", { exact: true })).toBeVisible();
