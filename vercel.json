@@ -1,6 +1,7 @@
 {
   "framework": "nextjs",
   "buildCommand": "npm run build",
+  "ignoreCommand": "git diff --quiet HEAD~1 HEAD -- ':!docs'",
   "crons": [
     {
       "path": "/api/cron/agents",
