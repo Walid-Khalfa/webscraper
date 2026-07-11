@@ -46,6 +46,7 @@ The most expensive no-op rebuild so far was deployment `5405999040` (Vercel's re
 | `6766843` | `docs/release-template/{HANDOFF,VERIFICATION,README}.template.md + placeholders.json` (added) | yes (this is the no-op rebuild we wanted to suppress) | `5405999040` | success (wasted) |
 | `fff44cf` | `vercel.json` `ignoreCommand` (added) | yes — rule itself is non-docs, so the boot deploys normally | `5406021582` | success — **installs the rule** |
 | `49399f2` | `docs/release-template/README.md` (one-line append) | **no** | _none — confirmed via GitHub Deployments API poll, 90 s window_ | confirms the rule works |
+| `8c276e8` | `docs/operations/vercel-deploy-gating.md` (added) | **no** | _none — confirmed via GitHub Deployments API poll, 90 s window_ | confirms the rule survives its own landing; serves as the audit baseline for §Evolution quarterly audit |
 
 Rule of thumb for future readers: if you see two consecutive commits where the second has docs/ paths and the first doesn't, the second is likely a touchstone. Current tip on `origin/main` is `49399f2` (touchstone) → `fff44cf` (boot) → `6766843` (templates).
 
