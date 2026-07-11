@@ -1906,6 +1906,36 @@ button:disabled {
     word-break: break-word;
   }
 
+  /* Second pass (commit on top of 5c00fb3): the residual 447px overflow
+     came from the .job-detail-hero grid children whose intrinsic min-width
+     still exceeded 354px on mobile:
+       - <h1>{job.Titel}</h1>        ~360-400px wide, unbreakable token
+       - <div class="job-detail-actions"> containing the CTA link with
+         `width: max-content`      ~340-380px wide
+     The fix is to (a) allow grid children to shrink below their intrinsic
+     content width, and (b) override the .apply-link-large button from
+     width:max-content to width:100% on mobile so its text wraps natively.
+     Replacing max-content with 100% also turns the CTA into a full-width
+     touch target — better mobile UX. */
+  .job-detail-hero h1,
+  .job-detail-actions {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .job-detail-hero h1 {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .apply-link-large {
+    width: 100%;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
   .masthead,
   .results-header,
   .saas-header {
