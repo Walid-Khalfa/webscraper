@@ -125,3 +125,5 @@ The round-1 *output* (HANDOFF.md, VERIFICATION.md, the signed tarball, the SHA s
 - Switching the lead platform (e.g. Notion → Gitbook): substitute `LEAD_PLATFORM` and re-run the round-trip check. The Gitbook Appendix already lives below the Lead Recipe in `HANDOFF.template.md`; you can swap the section order if Gitbook permanently becomes primary.
 - Switching the signing key from a throwaway to a stable team key: substitute `GPG_KEY_LIFECYCLE`, `GPG_KEY_UID`, `GPG_KEY_EMAIL`, `GPG_KEY_PUBFILE`, `GPG_FINGERPRINT`. Do NOT change the GPG signature mechanism itself — `gpg --armor --detach-sign SHA256SUMS.txt > SHA256SUMS.txt.asc` is the contract the recipient's verifier depends on.
 - Re-templatizing the email body (e.g. adding a "follow-up CI status link" line): edit the inline code-block in `HANDOFF.template.md` §"Email template for the sender (you)" once; future releases inherit the change.
+
+_Touchstone: 2026-07-11 -- vercel.json ignoreCommand now suppresses Vercel redeploys for docs-only commits. Boot deploy was 5406021582._
