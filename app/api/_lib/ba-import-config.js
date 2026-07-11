@@ -1,16 +1,40 @@
 export const DEFAULT_IMPORT_KEYWORDS = [
+  // IT / Software
   "Softwareentwickler",
   "Frontend-Entwickler",
   "Backend-Entwickler",
   "Full Stack Entwickler",
   "DevOps Engineer",
   "Data Engineer",
-  "Pflegefachkraft",
+  "Mobile-Entwickler",
+  "KI-Entwickler",
+  "Cloud-Architekt",
+  "Cybersecurity-Spezialist",
+  "SAP-Berater",
+  "Data Scientist",
+  // Engineering
   "Elektriker",
   "Mechatroniker",
+  "Maschinenbauingenieur",
+  "Bauingenieur",
+  "Servicetechniker",
+  "Ingenieur",
+  // Healthcare
+  "Pflegefachkraft",
+  "Arzt",
+  "Krankenschwester",
+  "Medizinische Fachangestellte",
+  "Physiotherapeut",
+  // Business / Finance / Admin
   "Projektmanager",
   "Recruiter",
   "Buchhalter",
+  "Sachbearbeiter",
+  "Controller",
+  "Vertriebsmitarbeiter",
+  "Office Manager",
+  // Hospitality
+  "Koch",
 ];
 
 export const DEFAULT_IMPORT_LOCATIONS = [
@@ -24,6 +48,16 @@ export const DEFAULT_IMPORT_LOCATIONS = [
   "Düsseldorf",
   "Leipzig",
   "Dresden",
+  "Bonn",
+  "Bremen",
+  "Dortmund",
+  "Essen",
+  "Hannover",
+  "Nürnberg",
+  "Duisburg",
+  "Mannheim",
+  "Bielefeld",
+  "Bochum",
 ];
 
 export function buildDefaultImportQueries() {
@@ -47,10 +81,10 @@ export function getImportRuntimeConfig(mode = "full") {
     pageSize: Math.min(Math.max(Number(process.env.BA_IMPORT_PAGE_SIZE || 100), 1), 100),
     maxPagesPerQuery: isTestMode
       ? Math.min(Math.max(Number(process.env.BA_IMPORT_TEST_MAX_PAGES || 2), 1), 10)
-      : Math.min(Math.max(Number(process.env.BA_IMPORT_MAX_PAGES || 40), 1), 200),
+      : Math.min(Math.max(Number(process.env.BA_IMPORT_MAX_PAGES || 60), 1), 200),
     maxItemsPerQuery: isTestMode
       ? Math.min(Math.max(Number(process.env.BA_IMPORT_TEST_MAX_ITEMS || 200), 1), 500)
-      : Math.min(Math.max(Number(process.env.BA_IMPORT_MAX_ITEMS || 4000), 1), 20000),
+      : Math.min(Math.max(Number(process.env.BA_IMPORT_MAX_ITEMS || 8000), 1), 20000),
     retryAttempts: Math.min(Math.max(Number(process.env.BA_IMPORT_RETRY_ATTEMPTS || 3), 1), 6),
     retryDelayMs: Math.min(Math.max(Number(process.env.BA_IMPORT_RETRY_DELAY_MS || 700), 100), 5000),
     interPageDelayMs: Math.min(Math.max(Number(process.env.BA_IMPORT_INTER_PAGE_DELAY_MS || 150), 0), 3000),
