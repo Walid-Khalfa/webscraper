@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { extractPrimaryCity, GERMAN_CITY_COORDS, normalizeCityKey } from "../lib/german-city-map";
+import { logWarn, clientPrefix } from "./logger";
 
 const geocodeCache = new Map();
 
@@ -73,7 +74,17 @@ export default function JobMap({ jobs = [], selectedCity = "", onSelectCity }) {
               }
             }
           } catch (e) {
-            console.warn("Geocoding failed for", cityName);
+            // Geocoding failures are not fatal — the marker just won't
+            // appear for that city. We log via the unified logfmt pipeline
+            // so a Vercel-side drain sees the failure alongside the
+            // server-side geocoding errors (if any). We deliberately omit
+            // the raw error blob — DevTools already showed the stack via
+            // the catch above, and the JSON-encoded stack would dominate
+            // the line.
+            logWarn(clientPrefix("jobmap"), "Geocoding failed", {
+              city: cityName,
+              error_message: e?.message,
+            });
             geocodeCache.set(key, null);
           }
         }

@@ -1,3 +1,9 @@
+// `.js` extension below is required: next.config.mjs evaluates validateStartupEnvironment
+// at next-lint boot via Node's strict ESM resolver (no implicit .js injection). Other
+// `_lib/*` modules use extensionless imports because they're loaded through webpack
+// (Next's runtime + build) or Vite (vitest), both of which auto-resolve extensions.
+import { logError, logWarn } from "./logger.js";
+
 const STARTUP_REQUIRED_VARS = [
   {
     name: "DATABASE_URL",
@@ -100,10 +106,10 @@ export function validateStartupEnvironment(options = {}) {
 
   if (log && env === process.env && !warnedForDefaultEnv) {
     if (report.missingRequired.length) {
-      console.error(`[env] Fehlende Pflichtvariablen erkannt: ${report.summary.missingRequired.join(", ")}`);
+      logError("env", "Fehlende Pflichtvariablen erkannt", { missing: report.summary.missingRequired });
     }
     if (report.warnings.length) {
-      console.warn(`[env] Empfohlene Variablen fehlen: ${report.summary.warnings.join(", ")}`);
+      logWarn("env", "Empfohlene Variablen fehlen", { warnings: report.summary.warnings });
     }
     warnedForDefaultEnv = true;
   }

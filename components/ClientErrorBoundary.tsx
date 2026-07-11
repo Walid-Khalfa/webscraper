@@ -2,6 +2,7 @@
 
 import React from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import { logError, clientPrefix } from "./logger";
 
 type Props = {
   children: React.ReactNode;
@@ -29,7 +30,18 @@ export default class ClientErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("[ui-boundary]", error, errorInfo);
+    // We pre-extract Error properties because JSON.stringify(error) returns
+    // `"{}"` (Error's own fields aren't enumerable). Stack is truncated to
+    // 1000 chars so a deeply crash-nested stack doesn't blow up the
+    // logfmt-keyed line that the unified Vercel drain parses.
+    const errorStack =
+      typeof error?.stack === "string" ? error.stack.slice(0, 1000) : undefined;
+    logError(clientPrefix("ui-boundary"), "React error boundary caught", {
+      error_message: error?.message,
+      error_name: error?.name,
+      error_stack: errorStack,
+      component_stack: errorInfo?.componentStack,
+    });
   }
 
   handleReset = () => {

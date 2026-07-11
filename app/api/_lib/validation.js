@@ -78,6 +78,51 @@ export const inviteMemberSchema = z.object({
 
 export const numericIdSchema = z.coerce.number().int().positive();
 
+// Client-side log relay (`/api/logs`) payload schema. Strictly limits the
+// shape so the server can re-emit into the unified Vercel drain without
+// accepting arbitrarily nested JSON that would bloat log lines or lock
+// serialization on a circle-ref.
+//
+// IMPORTANT: `ts` uses `.refine()` rather than `.max(Date.now() + ...)` so
+// the time threshold is evaluated per-request — `.max(...)` would capture
+// Date.now() at module-load and the schema would (silently) start rejecting
+// every payload within ~60s of server boot.
+export const clientLogEventSchema = z.object({
+  level: z.enum(["info", "warn", "error"]),
+  prefix: z
+    .string()
+    .trim()
+    .min(1)
+    .max(80)
+    .regex(/^browser-[a-z0-9][a-z0-9-]*$/i, "prefix muss mit 'browser-' beginnen"),
+  message: z.string().trim().max(500).optional(),
+  // Flat primitives only — nested objects/arrays would JSON.stringify to
+  // multi-line blobs that defeat logfmt's single-line invariant. Strings
+  // capped at 200 chars to prevent one field from dominating.
+  fields: z
+    .record(
+      z.string().max(80),
+      z.union([
+        z.string().max(200),
+        z.number().finite(),
+        z.boolean(),
+        z.null(),
+      ]),
+    )
+    .optional()
+    .default({}),
+  ts: z
+    .number()
+    .int()
+    .nonnegative()
+    .optional()
+    .refine((val) => val === undefined || val <= Date.now() + 60_000, "ts darf nicht in der Zukunft liegen"),
+});
+
+export const clientLogsBatchSchema = z.object({
+  events: z.array(clientLogEventSchema).min(1).max(50),
+});
+
 export const adminImportRunSchema = z.object({
   mode: z.enum(["test", "full"]).optional().default("test"),
   queries: z
