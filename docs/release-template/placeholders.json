@@ -1,0 +1,27 @@
+{
+  "_comment": "Example placeholders.json populated with the round-4 (post-rebase SHA 830f5db) values. Operators copy this file to e.g. round-N.json per release, edit the SHA / feature / channel fields, and run the python substitution example from README.md Option C against HANDOFF.template.md + VERIFICATION.template.md.",
+
+  "BUNDLE_SHA256":        "0e3648fc4a23cc3a541e7196724cc7bdb16f3ef9a06ffe5ef25c52c88f54fe97",
+  "HANDOFF_SHA256":       "531f2bee6ba7234c2899738850ab55cfe939a82a0d32db9588b25519c42bafb8",
+  "PUBKEY_SHA256":        "12ac18bf072cd89a12d53321b6d85ce0f127abb7ac790ef491fbaa3ab2e2b2b0",
+  "POST_REBASE_SHA":      "830f5db",
+  "PRE_REBASE_SHA":       "e0a47fb",
+  "BASELINE_SHA":         "8977620",
+  "DROPPED_COMMIT":       "d533e34",
+  "VERCEL_DEPLOY_ID":     "5405873233",
+  "GPG_FINGERPRINT":      "D81F 6477 4285 D6C1 9CFF 03F7 A857 C708 6847 7B26",
+  "GPG_KEY_UID":          "Webscraper Release Signer 2026-07-11",
+  "GPG_KEY_EMAIL":        "release-signer@webscraper.example",
+  "GPG_KEY_PUBFILE":      "release-signer-2026-07-11.pub.asc",
+  "GPG_KEY_LIFECYCLE":    "throwaway one-time-ship",
+  "BUNDLE_SIZE":          "7.23 MB",
+  "RELEASE_DATE":         "2026-07-11",
+  "PROD_ALIAS":           "https://employment-agones-next.vercel.app",
+  "QA_ROUND":             "4",
+  "QA_GENERATED_ISO":     "2026-07-11T17:44:22.041406Z",
+  "LEAD_PLATFORM":        "Notion",
+  "CHANNEL":              "email",
+  "PROD_DEPLOY_STATUS":   "success",
+  "REFERENCE_NUM":        "10001-1003353506-S",
+  "LEAD_RECIPE_STEPS":    "6"
+}
