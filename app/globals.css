@@ -19,6 +19,13 @@
   --radius: 8px;
   --font-display: "Geist", "Inter", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
+
+  /* 3D city marker tier-depth, consumed by .city-marker-{peak,mid,low}
+     via cascade (see JobMap3D.jsx). Single source-of-truth so the
+     pillar height is designer-tunable in CSS without touching JS. */
+  --depth-peak: 120px;
+  --depth-mid: 80px;
+  --depth-low: 48px;
 }
 
 :root[data-theme="cyberpunk"] {
@@ -3158,8 +3165,21 @@ label span,
 
 /* Marker shell + tier variants.
    .city-marker-peak  – 8+ jobs, tallest pillar, glowing halo
-   .city-marker-mid   – 3-7 jobs, medium pillar, soft halo
-   .city-marker-low   – 1-2 jobs, low pillar, no halo */
+   .city-marker-mid   – 3-7 jobs, medium pillar, soft halo    .city-marker-low   – 1-2 jobs, low pillar, no halo */
+
+/* Tier-specific `--depth` cascade: the icon container carries the
+   .city-marker-{peak,mid,low} class and forwards the matching
+   `--depth-*` global token to its child .city-marker-pillar. */
+.city-marker-peak {
+  --depth: var(--depth-peak);
+}
+.city-marker-mid {
+  --depth: var(--depth-mid);
+}
+.city-marker-low {
+  --depth: var(--depth-low);
+}
+
 .city-marker {
   pointer-events: auto;
   transform-style: preserve-3d;

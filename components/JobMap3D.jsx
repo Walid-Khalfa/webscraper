@@ -1,32 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { extractPrimaryCity, GERMAN_CITY_COORDS, normalizeCityKey } from "../lib/german-city-map";
-import { logWarn, clientPrefix } from "./logger";
+import { normalizeCityKey } from "../lib/german-city-map";
+import { useGeocodedMarkers } from "./hooks/useGeocodedMarkers";
 
-// Tier thresholds (kept in sync with the German market signal:
-//   • peak: 8+ jobs    (a true top market)
-//   • mid : 3–7 jobs   (regular flux)
-//   • low : 1–2 jobs   (targeted opportunity)
-const TIER_PEAK_MIN = 8;
-const TIER_MID_MIN = 3;
-
-const TIER_DEPTH = {
-  peak: "120px",
-  mid: "64px",
-  low: "32px",
-};
-
-function classifyTier(count) {
-  if (count >= TIER_PEAK_MIN) return "peak";
-  if (count >= TIER_MID_MIN) return "mid";
-  return "low";
-}
-
-const geocodeCache = new Map();
+// 3D glassmorphism map. Tier classification + geocoding live in the
+// shared `useGeocodedMarkers` hook — this component focuses on rendering
+// the layered pillar+cap+initials+badge markup inside the
+// .city-map-shell / .city-map-shell.spotlight-on wrapper.
 
 function MapBounds({ positions }) {
   const map = useMap();
@@ -44,97 +28,7 @@ function MapBounds({ positions }) {
 }
 
 export default function JobMap3D({ jobs = [], selectedCity = "", onSelectCity }) {
-  const [markers, setMarkers] = useState([]);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const geocodeJobs = async () => {
-      const jobsByCity = {};
-      for (const job of jobs) {
-        if (!job.location) continue;
-        const rawOrt = extractPrimaryCity(job.location);
-        const rawOrtKey = normalizeCityKey(rawOrt);
-        if (!jobsByCity[rawOrtKey]) {
-          jobsByCity[rawOrtKey] = {
-            cityName: rawOrt,
-            jobs: [],
-          };
-        }
-        jobsByCity[rawOrtKey].jobs.push(job);
-      }
-
-      const newMarkers = [];
-
-      for (const key in jobsByCity) {
-        const { cityName, jobs: cityJobs } = jobsByCity[key];
-        let coords = null;
-
-        if (GERMAN_CITY_COORDS[key]) {
-          coords = GERMAN_CITY_COORDS[key];
-        } else if (geocodeCache.has(key)) {
-          coords = geocodeCache.get(key);
-        } else {
-          try {
-            await new Promise((r) => window.setTimeout(r, 250)); // rate limit nominatim
-            const res = await fetch(
-              `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName + ", Germany")}`,
-            );
-            if (res.ok) {
-              const data = await res.json();
-              if (data && data.length > 0) {
-                coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-                geocodeCache.set(key, coords);
-              } else {
-                geocodeCache.set(key, null);
-              }
-            }
-          } catch (e) {
-            // Geocoding failures are not fatal — the marker just won't
-            // appear for that city. We log via the unified logfmt pipeline
-            // so a Vercel-side drain sees the failure alongside the
-            // server-side geocoding errors (if any). We deliberately omit
-            // the raw error blob — DevTools already showed the stack via
-            // the catch above, and the JSON-encoded stack would dominate
-            // the line.
-            logWarn(clientPrefix("jobmap3d"), "Geocoding failed", {
-              city: cityName,
-              error_message: e?.message,
-            });
-            geocodeCache.set(key, null);
-          }
-        }
-
-        if (coords) {
-          newMarkers.push({
-            cityName,
-            position: coords,
-            jobs: cityJobs,
-            tier: classifyTier(cityJobs.length),
-          });
-        }
-      }
-
-      if (isMounted) {
-        setMarkers(newMarkers);
-      }
-    };
-
-    if (jobs.length > 0) {
-      geocodeJobs();
-    } else {
-      setMarkers([]);
-    }
-
-    return () => {
-      isMounted = false;
-    };
-  }, [jobs]);
+  const { markers, mounted } = useGeocodedMarkers(jobs);
 
   if (!mounted) {
     return (
@@ -157,11 +51,13 @@ export default function JobMap3D({ jobs = [], selectedCity = "", onSelectCity })
 
   const getMarker3DIcon = (cityName, count, isActive, tier) => {
     const initials = cityName.slice(0, 2).toUpperCase();
-    const depth = TIER_DEPTH[tier] || TIER_DEPTH.low;
     return L.divIcon({
       className: `custom-map-marker city-marker city-marker-${tier}${isActive ? " is-active" : ""}`,
+      // The pillar consumes var(--depth) via CSS cascade. The tier class on
+      // the icon container is the only place we declare the depth, which
+      // removes the dual source-of-truth that lived in this file before.
       html: `
-        <div class="city-marker-pillar" style="--depth: ${depth}">
+        <div class="city-marker-pillar">
           <div class="city-marker-cap">
             <span class="city-marker-initials">${initials}</span>
             ${count > 1 ? `<span class="city-marker-badge">${count}</span>` : ""}
