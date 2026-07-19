@@ -51,7 +51,7 @@ const Dashboard = dynamic(() => import("./Dashboard"));
 const KanbanBoard = dynamic(() => import("./KanbanBoard"), {
   loading: () => null,
 });
-const JobMap = dynamic(() => import("./JobMap"), {
+const JobMap = dynamic(() => import("./JobMap3D"), {
   ssr: false,
   loading: () => <div style={{ height: "400px", width: "100%", background: "#f0f0f0", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center" }}>Karte wird geladen...</div>,
 }) as React.ComponentType<any>;

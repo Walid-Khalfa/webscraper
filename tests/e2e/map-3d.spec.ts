@@ -98,11 +98,19 @@ test.describe("3D-Karte + Coach-Overlay", () => {
     // Step 4 – submit the search.
     await page.locator("button:has-text('Recherche starten')").click();
 
-    // Wait until results render. Scope to the results-header section so
-    // we don't collide with the empty-state and the alerts h2 elements.
-    await expect(
-      page.locator(".results-header").getByRole("heading", { level: 2 }).first(),
-    ).toBeVisible({ timeout: 15_000 });
+    // Wait until results have actually finished loading. The h2 inside
+    // .results-header is visible the moment search.hasSearched flips to
+    // true (which happens BEFORE the mocked API response is wired into
+    // state). If we click the Karte chip while search.loading is still
+    // true, the outer ternary in JobPortalClient routes us to the
+    // skeleton branch instead of the map branch — which is exactly why
+    // .results-map-container never appears in the DOM in this test.
+    const resultsHeader = page
+      .locator(".results-header")
+      .getByRole("heading", { level: 2 })
+      .first();
+    await expect(resultsHeader).toBeVisible({ timeout: 15_000 });
+    await expect(resultsHeader).not.toContainText("werden geladen", { timeout: 15_000 });
 
     // Step 5 – switch to the "Karte" view via the toolbar chip group.
     // Wait for the chip to be visible AND enabled before clicking (defensive
@@ -119,6 +127,18 @@ test.describe("3D-Karte + Coach-Overlay", () => {
     await karteChip.click();
     // Verify the chip is now active.
     await expect(karteChip).toHaveClass(/active/);
+
+    // PROBE: identify which render branch we actually entered so the
+    // failure path is unambiguous (map-shell vs zero-state vs grid).
+    const branchState = await page.evaluate(() => ({
+      hasMapContainer: !!document.querySelector(".results-map-container"),
+      hasMapExplorer: !!document.querySelector(".map-explorer"),
+      hasZeroState: !!document.querySelector(".zero-state"),
+      hasResultsGrid: !!document.querySelector(".results-grid"),
+      hasResultsList: !!document.querySelector(".results-grid.results-list"),
+      hasShowcase: !!document.querySelector(".showcase-stack"),
+    }));
+    console.log("DEBUG_BRANCH_AFTER_KARTE", JSON.stringify(branchState));
 
     // Step 6 – assert the 3D map shell, the coach overlay and at least
     // one peak (Berlin) marker are present. The shell mount is async
