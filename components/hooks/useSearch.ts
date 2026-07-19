@@ -225,6 +225,17 @@ function getCityMarketSignal(count: number) {
   return "Selection ciblee";
 }
 
+// Maps a job's gross salary string (in EUR) to a comparable numeric value so
+// the coach overlay can surface the highest-paying opportunity near the user.
+function getJobSalaryMagnitude(job: any) {
+  const values = String(job?.salary || "")
+    .match(/\d{1,3}(?:\.\d{3})*(?:,\d+)?/g)
+    ?.map((entry: string) => Number(entry.replaceAll(".", "").replace(",", ".")))
+    .filter((entry: number) => Number.isFinite(entry));
+  if (!values?.length) return 0;
+  return Math.max(...values);
+}
+
 function mergePayload(currentPayload: any, nextPayload: any) {
   const currentItems = extractJobItems(currentPayload);
   const nextItems = extractJobItems(nextPayload);
@@ -331,7 +342,7 @@ export function useSearch({
       .map((entry) => ({
         ...entry,
         count: entry.jobs.length,
-        note: (CITY_MARKET_NOTES as Record<string, string>)[entry.cityKey] || "Opportunites transverses et vivier local",
+        note: CITY_MARKET_NOTES[entry.cityKey] || "Opportunites transverses et vivier local",
         signal: getCityMarketSignal(entry.jobs.length),
       }))
       .sort((left, right) => right.count - left.count || left.cityName.localeCompare(right.cityName, "de-DE"));
@@ -355,6 +366,31 @@ export function useSearch({
   );
 
   const mapJobs = selectedCityGuide?.jobs?.length ? selectedCityGuide.jobs : jobsWithClientFilters;
+
+  // Top 3 villes recommandées (peak markets). Drives the coach overlay and
+  // the glowing markers: a recruiter should see "where to look first".
+  const recommendedCities = useMemo(
+    () => cityGuide.slice(0, 3).map((entry) => ({
+      cityKey: entry.cityKey,
+      cityName: entry.cityName,
+      count: entry.count,
+      signal: entry.signal,
+      note: entry.note,
+    })),
+    [cityGuide],
+  );
+
+  // Offre phare parmi les résultats filtres — mise en avant dans le panneau
+  // opportunite. On privilegie la ville selectionnee si elle est disponible.
+  const topOpportunity = useMemo(() => {
+    if (!mapJobs?.length) return null;
+    const ranked = mapJobs
+      .map((job: any) => ({ job, salary: getJobSalaryMagnitude(job) }))
+      .filter((entry: any) => entry.salary > 0)
+      .sort((left: any, right: any) => right.salary - left.salary);
+    const list = ranked.length ? ranked.map((entry: any) => entry.job) : mapJobs;
+    return list[0] || null;
+  }, [mapJobs]);
 
   const jobPostingJsonLd = useMemo(() => {
     if (!jobsWithClientFilters.length) return null;
@@ -643,6 +679,8 @@ export function useSearch({
     jobsWithClientFilters,
     cityGuide,
     selectedCityGuide,
+    recommendedCities,
+    topOpportunity,
     mapJobs,
     jobPostingJsonLd,
     totalResults,

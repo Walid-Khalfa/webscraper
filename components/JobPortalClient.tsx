@@ -51,7 +51,7 @@ const Dashboard = dynamic(() => import("./Dashboard"));
 const KanbanBoard = dynamic(() => import("./KanbanBoard"), {
   loading: () => null,
 });
-const JobMap = dynamic(() => import("./JobMap"), {
+const JobMap = dynamic(() => import("./JobMap3D"), {
   ssr: false,
   loading: () => <div style={{ height: "400px", width: "100%", background: "#f0f0f0", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center" }}>Karte wird geladen...</div>,
 }) as React.ComponentType<any>;
@@ -59,6 +59,10 @@ const AlertManager = dynamic(() => import("./AlertManager"), {
   loading: () => null,
 });
 const EmailDigestPreview = dynamic(() => import("./EmailDigestPreview"), {
+  loading: () => null,
+});
+const MapCoachOverlay = dynamic(() => import("./MapCoachOverlay"), {
+  ssr: false,
   loading: () => null,
 });
 
@@ -96,6 +100,22 @@ export default function Home({ initialShowcase, platformInsights }: HomeProps) {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [saasStatus, setSaasStatus] = useState("");
   const [saasLoading, setSaasLoading] = useState(false);
+  const [coachDismissed, setCoachDismissed] = useState(true);
+
+  // Re-show the coach overlay on a fresh session by reading a single
+  // flag from localStorage. We default to "visible" so first-time users
+  // see the 3D map tour.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const dismissed = window.localStorage.getItem("khalfajobs:coach-3d");
+      if (dismissed !== "dismissed") {
+        setCoachDismissed(false);
+      }
+    } catch {
+      setCoachDismissed(false);
+    }
+  }, []);
 
   // 3. Favorites hook
   const favs = useFavorites({
@@ -149,6 +169,17 @@ export default function Home({ initialShowcase, platformInsights }: HomeProps) {
     saasLoading,
     setSaasLoading,
   });
+
+  // Whenever the user lands on the map view with fresh results, re-arm
+  // the coach so subsequent searches still benefit from the guidance.
+  // This hook sits at the bottom of the hook chain so we can read
+  // `search` and `ui` directly without temporal-dead-zone issues.
+  useEffect(() => {
+    if (!search?.hasSearched) return;
+    if (ui?.viewMode === "map" && search?.jobsWithClientFilters?.length > 0) {
+      setCoachDismissed(false);
+    }
+  }, [search?.hasSearched, ui?.viewMode, search?.jobsWithClientFilters?.length]);
 
   // Keep parent state in sync with agency hook's local state
   useEffect(() => {
@@ -720,7 +751,40 @@ export default function Home({ initialShowcase, platformInsights }: HomeProps) {
                     </div>
 
                     <div className="results-map-container">
-                      <JobMap jobs={search.jobsWithClientFilters} selectedCity={search.selectedMapCity} onSelectCity={search.setSelectedMapCity} />
+                      <JobMap
+                        jobs={search.jobsWithClientFilters}
+                        selectedCity={search.selectedMapCity}
+                        onSelectCity={search.setSelectedMapCity}
+                        recommendedCities={search.recommendedCities}
+                        showSpotlight={
+                          search.selectedMapCity !== ALL_MAP_CITIES &&
+                          Boolean(search.selectedMapCity)
+                        }
+                      />
+                      <MapCoachOverlay
+                        active={!coachDismissed}
+                        onDismiss={() => {
+                          setCoachDismissed(true);
+                          if (typeof window !== "undefined") {
+                            try {
+                              window.localStorage.setItem(
+                                "khalfajobs:coach-3d",
+                                "dismissed",
+                              );
+                            } catch {
+                              /* localStorage may be disabled */
+                            }
+                          }
+                        }}
+                        recommendedCities={search.recommendedCities as any}
+                        topOpportunity={search.topOpportunity}
+                        onSelectCity={(cityName: string) =>
+                          search.setSelectedMapCity(cityName)
+                        }
+                        keyword={search.keyword}
+                        location={search.location}
+                        totalHits={search.jobsWithClientFilters.length}
+                      />
                     </div>
 
                     <div className="map-results-panel">
