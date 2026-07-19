@@ -342,7 +342,7 @@ export function useSearch({
       .map((entry) => ({
         ...entry,
         count: entry.jobs.length,
-        note: (CITY_MARKET_NOTES as Record<string, string>)[entry.cityKey] || "Opportunites transverses et vivier local",
+        note: CITY_MARKET_NOTES[entry.cityKey] || "Opportunites transverses et vivier local",
         signal: getCityMarketSignal(entry.jobs.length),
       }))
       .sort((left, right) => right.count - left.count || left.cityName.localeCompare(right.cityName, "de-DE"));
