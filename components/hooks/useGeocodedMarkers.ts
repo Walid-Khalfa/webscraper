@@ -81,15 +81,12 @@ export function useGeocodedMarkers(jobs: any[] = []) {
         const { cityName, jobs: cityJobs } = jobsByCity[key];
         let coords: [number, number] | null = null;
 
-        // GERMAN_CITY_COORDS is exported from a .js module, so TS infers
-        // it as a sealed object literal without an index signature.
-        // Cast to Record<string, [number, number]> once per lookup so the
-        // strict-mode tsc --noEmit check stays green without touching the
-        // source library file.
-        const knownCoords = GERMAN_CITY_COORDS as unknown as Record<string, [number, number]>;
-
-        if (knownCoords[key]) {
-          coords = knownCoords[key];
+        // GERMAN_CITY_COORDS is typed at the source via JSDoc
+        // (Record<string, [number, number]>) in lib/german-city-map.js,
+        // so string-key indexing is safe under strict TypeScript without
+        // any cast on this side.
+        if (GERMAN_CITY_COORDS[key]) {
+          coords = GERMAN_CITY_COORDS[key];
         } else if (geocodeCache.has(key)) {
           coords = geocodeCache.get(key) ?? null;
         } else {
