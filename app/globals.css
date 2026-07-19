@@ -3080,3 +3080,684 @@ label span,
 .workspace-card-header h3 {
   font-family: var(--font-display) !important;
 }
+
+/* =========================================================================
+ * 3D MAP — glassmorphism coach overlay, parametric markers, tilt container,
+ * ripple halo, drop-in cascade, spotlight, reduced-motion fallbacks.
+ * ========================================================================= */
+
+.city-map-shell {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(0, 40, 142, 0.16) 0%,
+      rgba(0, 40, 142, 0) 60%
+    ),
+    linear-gradient(180deg, #f4f6ff 0%, #eef0fa 100%);
+  isolation: isolate;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.8),
+    0 12px 34px -12px rgba(13, 26, 64, 0.28);
+}
+
+/* Tilted Leaflet canvas. The parent provides perspective so the markers
+   appear raised off the surface, like a command-deck surface. We disable
+   the tilt on small screens and for users that prefer reduced motion. */
+.city-map-canvas {
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  transform-style: preserve-3d;
+  perspective: 1400px;
+  perspective-origin: 50% 28%;
+}
+
+@media (min-width: 880px) {
+  .city-map-canvas .leaflet-map-pane {
+    transform: rotateX(28deg) scale(1.04) translateZ(0);
+    transform-origin: 50% 70%;
+  }
+  .city-map-canvas .leaflet-tile-pane {
+    filter: saturate(0.92) brightness(1.02);
+  }
+  .city-map-canvas .leaflet-control-container {
+    transform: translateY(0);
+  }
+}
+
+.city-map-shell.reduced-motion .city-map-canvas .leaflet-map-pane,
+.city-map-shell.spotlight-on .city-map-canvas .leaflet-map-pane {
+  transform: none !important;
+}
+
+/* Spotlight vignette – high-contrast focus on the selected city. */
+.city-map-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    50% 45% at 50% 38%,
+    rgba(8, 12, 32, 0) 0%,
+    rgba(8, 12, 32, 0.18) 65%,
+    rgba(8, 12, 32, 0.42) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 3;
+}
+.city-map-shell.spotlight-on::before {
+  opacity: 1;
+}
+
+/* Marker shell + tier variants.
+   .city-marker-peak  – 8+ jobs, tallest pillar, glowing halo
+   .city-marker-mid   – 3-7 jobs, medium pillar, soft halo
+   .city-marker-low   – 1-2 jobs, low pillar, no halo */
+.city-marker {
+  pointer-events: auto;
+  transform-style: preserve-3d;
+}
+
+.city-marker-pillar {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  width: 52px;
+  height: var(--depth, 14px);
+  transform-style: preserve-3d;
+  animation: city-marker-drop-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: calc(var(--index) * 70ms);
+}
+
+.city-map-shell.reduced-motion .city-marker-pillar {
+  animation: none !important;
+}
+
+.city-marker-cap {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 8px;
+  border-radius: 999px;
+  background: linear-gradient(160deg, #ffffff 0%, #d8def2 100%);
+  border: 1.5px solid #1f2547;
+  box-shadow:
+    0 6px 14px rgba(15, 24, 64, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--ink);
+  transform: translateZ(36px);
+}
+
+.city-marker-mid .city-marker-cap {
+  background: linear-gradient(160deg, #ffffff 0%, #f5e9c4 100%);
+  border-color: #6b4d10;
+  transform: translateZ(22px);
+}
+
+.city-marker-peak .city-marker-cap {
+  background: linear-gradient(155deg, #ffe27a 0%, #ff7d3c 100%);
+  color: #1a1b22;
+  border-color: #6b1a06;
+  transform: translateZ(48px);
+  box-shadow:
+    0 10px 22px rgba(255, 126, 60, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.city-marker-is-active .city-marker-cap,
+.city-marker-peak.is-active .city-marker-cap,
+.city-marker-mid.is-active .city-marker-cap,
+.city-marker-low.is-active .city-marker-cap {
+  outline: 3px solid var(--signal);
+  outline-offset: 3px;
+}
+
+.city-marker-initials {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.city-marker-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--white);
+  font-size: 0.66rem;
+  box-shadow: 0 2px 8px rgba(0, 40, 142, 0.45);
+}
+
+.city-marker-peak .city-marker-badge {
+  background: #1a1b22;
+  color: #ffce45;
+}
+
+.city-marker-stem {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 10px;
+  height: var(--depth, 14px);
+  background: linear-gradient(180deg, #1a1b22 0%, #4b5577 100%);
+  border-radius: 4px;
+  transform: translateX(-50%) translateZ(8px);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.35);
+}
+
+.city-marker-mid .city-marker-stem {
+  background: linear-gradient(180deg, #4e3d12 0%, #9c7c2a 100%);
+}
+
+.city-marker-peak .city-marker-stem {
+  background: linear-gradient(180deg, #6b1a06 0%, #ff7d3c 100%);
+  box-shadow: 0 0 24px rgba(255, 126, 60, 0.55);
+}
+
+.city-marker-shadow {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  width: 36px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(20, 24, 60, 0.45), transparent 70%);
+  transform: translateX(-50%) translateZ(0);
+  filter: blur(1px);
+}
+
+.city-marker-ribbon {
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%) translateZ(56px);
+  padding: 3px 8px;
+  background: linear-gradient(135deg, #ffce45 0%, #ff7d3c 100%);
+  color: #1a1b22;
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(255, 126, 60, 0.45);
+  white-space: nowrap;
+}
+
+/* Pulsing halo for peak markets – clearly visible from any zoom level. */
+.city-marker-peak::after {
+  content: "";
+  position: absolute;
+  bottom: -14px;
+  left: 50%;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 174, 60, 0.4), transparent 70%);
+  transform: translateX(-50%);
+  animation: city-marker-pulse 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.city-map-shell.reduced-motion .city-marker-peak::after {
+  animation: none;
+}
+
+@keyframes city-marker-drop-in {
+  0% {
+    transform: translateY(-90px) translateZ(0);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(8px) translateZ(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) translateZ(0);
+  }
+}
+
+@keyframes city-marker-pulse {
+  0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.35);
+    opacity: 0.25;
+  }
+}
+
+/* 3D popup – inherits the tilt and adds a glassy lift. */
+.city-popup-3d .leaflet-popup-content-wrapper {
+  padding: 0 !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(31, 31, 56, 0.18) !important;
+  border-radius: 16px !important;
+  box-shadow:
+    0 18px 40px -10px rgba(15, 24, 64, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85) !important;
+}
+.city-popup-3d .leaflet-popup-content {
+  margin: 0 !important;
+  width: 260px !important;
+}
+.city-popup-3d .leaflet-popup-tip-container {
+  filter: drop-shadow(0 4px 12px rgba(15, 24, 64, 0.25));
+}
+
+.city-popup-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px 12px;
+}
+
+.city-popup-head {
+  display: grid;
+  gap: 4px;
+}
+.city-popup-rank {
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-dark);
+  font-weight: 800;
+}
+.city-popup-head h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.city-popup-head p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--steel);
+  font-weight: 600;
+}
+
+.city-popup-focus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.city-popup-focus li {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(0, 40, 142, 0.08);
+  color: var(--accent-dark);
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.city-popup-note {
+  margin: 0;
+  color: var(--steel);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.city-popup-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.city-popup-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--white);
+  border: 1px solid var(--accent-dark);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.city-popup-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0, 40, 142, 0.35);
+}
+
+/* Reset the legacy styles so old markers can't leak through if a page
+   still mounts the previous JobMap variant. */
+.custom-map-marker {
+  background: transparent !important;
+  border: 0 !important;
+}
+.custom-map-marker .marker-wrapper,
+.custom-map-marker .marker-circle,
+.custom-map-marker .marker-badge {
+  display: none;
+}
+
+/* Glassmorphism coach overlay — drifts above the map stage. */
+.map-coach {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 8;
+  display: grid;
+  gap: 12px;
+  width: min(360px, calc(100% - 24px));
+  padding: 16px 38px 14px 16px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid rgba(31, 31, 56, 0.18);
+  border-radius: 18px;
+  box-shadow:
+    0 16px 36px -12px rgba(15, 24, 64, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  font-family: var(--font-body);
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  pointer-events: auto;
+}
+.map-coach.is-mounted {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.map-coach-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 999px;
+  background: rgba(15, 24, 64, 0.06);
+  border: 1px solid rgba(15, 24, 64, 0.18);
+  cursor: pointer;
+  color: var(--ink);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.map-coach-close:hover {
+  transform: translateY(-1px);
+  background: rgba(15, 24, 64, 0.12);
+}
+
+.map-coach-head {
+  display: grid;
+  gap: 6px;
+}
+.map-coach-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.map-coach-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.map-coach-copy {
+  margin: 0;
+  color: var(--steel);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.map-coach-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.74rem;
+  color: var(--steel);
+  font-weight: 700;
+}
+.map-coach-legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 4px;
+}
+.map-coach-legend-dot.is-peak {
+  background: linear-gradient(135deg, #ffce45 0%, #ff7d3c 100%);
+}
+.map-coach-legend-dot.is-mid {
+  background: linear-gradient(135deg, #ffe27a 0%, #9c7c2a 100%);
+}
+.map-coach-legend-dot.is-low {
+  background: linear-gradient(180deg, #1a1b22 0%, #4b5577 100%);
+}
+
+.map-coach-recommendations {
+  display: grid;
+  gap: 6px;
+}
+
+.map-coach-chip {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(15, 24, 64, 0.16);
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--ink);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.map-coach-chip:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 18px rgba(0, 40, 142, 0.18);
+}
+.map-coach-chip.is-top {
+  border-color: var(--signal);
+  background: linear-gradient(135deg, rgba(255, 206, 69, 0.22), rgba(255, 125, 60, 0.18));
+}
+.map-coach-chip-rank {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.78rem;
+  color: var(--accent-dark);
+}
+.map-coach-chip.is-top .map-coach-chip-rank {
+  color: #6b1a06;
+}
+.map-coach-chip-name {
+  font-weight: 800;
+  font-size: 0.92rem;
+}
+.map-coach-chip-meta {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  font-size: 0.7rem;
+  color: var(--steel);
+  font-weight: 700;
+}
+.map-coach-chip-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.map-coach-chip-meta em {
+  font-style: normal;
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent-dark);
+}
+
+.map-coach-opportunity {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(255, 206, 69, 0.25), rgba(255, 125, 60, 0.18));
+  border: 1px solid rgba(176, 96, 20, 0.4);
+}
+.map-coach-opportunity-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b1a06;
+}
+.map-coach-opportunity strong {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.map-coach-opportunity-meta {
+  font-size: 0.78rem;
+  color: var(--steel);
+  font-weight: 700;
+}
+.map-coach-opportunity-salary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--accent-dark);
+}
+
+.map-coach-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 4px;
+}
+.map-coach-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--white);
+  border: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.map-coach-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 40, 142, 0.32);
+}
+.map-coach-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.map-coach-progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(15, 24, 64, 0.18);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.map-coach-progress-dot.is-on {
+  background: var(--accent);
+  transform: scale(1.2);
+}
+
+.map-coach-context {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Embedded coach on narrow viewports – keeps it readable under the
+   search overlay on tablets & phones. */
+@media (max-width: 720px) {
+  .map-coach {
+    width: calc(100% - 24px);
+    padding: 14px 36px 12px 14px;
+    font-size: 0.95em;
+  }
+  .map-coach-title {
+    font-size: 0.98rem;
+  }
+}
+
+/* Suppress the leaflet default zoom indicator on mobile so it doesn't
+   clash with the 3D effect – we still keep the controls but minimize them. */
+@media (max-width: 720px) {
+  .city-map-canvas .leaflet-control-zoom {
+    display: none;
+  }
+  .city-map-canvas .leaflet-map-pane {
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .city-map-shell * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Reinforce the existing map stage so the 3D shell fits the canvas. */
+.results-map-container {
+  position: relative;
+  height: clamp(360px, 56vh, 640px);
+  border-radius: 18px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #eef0fa 0%, #dde2f4 100%);
+}
